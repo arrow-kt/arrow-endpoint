@@ -8,10 +8,10 @@ buildscript {
 }
 
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.4.31'
+    id 'org.jetbrains.kotlin.jvm' version '1.4.32'
 }
 
-group 'org.example'
+group 'com.fortysevendegrees'
 version '1.0-SNAPSHOT'
 
 repositories {

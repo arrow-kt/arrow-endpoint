@@ -15,9 +15,9 @@ import com.fortysevendegrees.tapir.ServerResponse
 import arrow.core.Either
 import arrow.core.tail
 import com.fortysevendegrees.tapir.Params
-import com.fortysevendegrees.tapir.model.CodecFormat
-import com.fortysevendegrees.tapir.model.Headers
-import com.fortysevendegrees.tapir.model.StatusCode
+import com.fortysevendegrees.thool.model.CodecFormat
+import com.fortysevendegrees.thool.model.Headers
+import com.fortysevendegrees.thool.model.StatusCode
 import com.fortysevendegrees.tapir.server.ServerEndpoint
 
 class ServerInterpreter<B>(

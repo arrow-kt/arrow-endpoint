@@ -1,4 +1,4 @@
-package com.fortysevendegrees.tapir.model
+package com.fortysevendegrees.thool.model
 
 // https://tools.ietf.org/html/rfc2616#page-21
 object Rfc2616 {

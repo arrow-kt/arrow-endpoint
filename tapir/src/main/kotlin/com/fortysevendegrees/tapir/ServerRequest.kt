@@ -1,7 +1,7 @@
 package com.fortysevendegrees.tapir
 
-import com.fortysevendegrees.tapir.model.QueryParams
-import com.fortysevendegrees.tapir.model.RequestMetadata
+import com.fortysevendegrees.thool.model.QueryParams
+import com.fortysevendegrees.thool.model.RequestMetadata
 import java.net.InetSocketAddress
 
 interface ServerRequest : RequestMetadata {

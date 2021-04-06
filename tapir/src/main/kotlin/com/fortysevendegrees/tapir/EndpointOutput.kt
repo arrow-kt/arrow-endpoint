@@ -1,7 +1,7 @@
 package com.fortysevendegrees.tapir
 
-import com.fortysevendegrees.tapir.model.CodecFormat
-import com.fortysevendegrees.tapir.model.StatusCode as MStatusCode
+import com.fortysevendegrees.thool.model.CodecFormat
+import com.fortysevendegrees.thool.model.StatusCode as MStatusCode
 
 // Elements that can occur as Output
 // Such as StatusCode, Void, etc

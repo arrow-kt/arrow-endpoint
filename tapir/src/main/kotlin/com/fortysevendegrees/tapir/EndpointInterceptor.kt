@@ -1,9 +1,9 @@
 package com.fortysevendegrees.tapir
 
-import com.fortysevendegrees.tapir.model.Header
-import com.fortysevendegrees.tapir.model.ResponseMetadata
-import com.fortysevendegrees.tapir.model.StatusCode
-import com.fortysevendegrees.tapir.model.toStringSafe
+import com.fortysevendegrees.thool.model.Header
+import com.fortysevendegrees.thool.model.ResponseMetadata
+import com.fortysevendegrees.thool.model.StatusCode
+import com.fortysevendegrees.thool.model.toStringSafe
 
 /**
  * Allows intercepting the handling of a request by an endpoint, when either the endpoint's inputs have been

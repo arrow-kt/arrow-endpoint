@@ -2,7 +2,7 @@ package com.fortysevendegrees.tapir
 
 import arrow.core.Tuple4
 import arrow.core.Tuple5
-import com.fortysevendegrees.tapir.model.CodecFormat
+import com.fortysevendegrees.thool.model.CodecFormat
 import kotlinx.coroutines.flow.Flow
 import java.nio.charset.Charset
 

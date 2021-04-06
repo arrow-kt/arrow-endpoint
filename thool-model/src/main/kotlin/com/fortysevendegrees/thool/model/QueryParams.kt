@@ -1,4 +1,4 @@
-package com.fortysevendegrees.tapir.model
+package com.fortysevendegrees.thool.model
 
 data class QueryParams(val ps: List<Pair<String, List<String>>>) {
 

@@ -5,8 +5,8 @@ import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
 import arrow.core.andThen
-import com.fortysevendegrees.tapir.model.CodecFormat
-import com.fortysevendegrees.tapir.model.Cookie
+import com.fortysevendegrees.thool.model.CodecFormat
+import com.fortysevendegrees.thool.model.Cookie
 import java.io.InputStream
 import java.math.BigDecimal
 import java.nio.ByteBuffer

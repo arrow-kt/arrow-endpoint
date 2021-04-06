@@ -1,4 +1,4 @@
-package com.fortysevendegrees.tapir.model
+package com.fortysevendegrees.thool.model
 
 import java.nio.charset.Charset
 

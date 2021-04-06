@@ -1,14 +1,14 @@
 package com.fortysevendegrees.tapir.ktor
 
 import com.fortysevendegrees.tapir.RawBodyType
-import io.ktor.application.*
-import io.ktor.util.*
-import io.ktor.utils.io.*
-import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flow
 import com.fortysevendegrees.tapir.server.intrepreter.RequestBody
+import io.ktor.application.ApplicationCall
+import io.ktor.util.cio.toByteArray
+import io.ktor.utils.io.consumeEachBufferRange
+import io.ktor.utils.io.jvm.javaio.toInputStream
 import java.nio.ByteBuffer
 
 internal class KtorRequestBody(val ctx: ApplicationCall) : RequestBody {

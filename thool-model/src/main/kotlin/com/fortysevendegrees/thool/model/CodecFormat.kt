@@ -1,4 +1,4 @@
-package com.fortysevendegrees.tapir.model
+package com.fortysevendegrees.thool.model
 
 sealed class CodecFormat {
   abstract val mediaType: MediaType

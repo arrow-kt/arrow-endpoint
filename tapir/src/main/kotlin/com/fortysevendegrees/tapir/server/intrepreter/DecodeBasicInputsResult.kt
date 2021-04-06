@@ -10,8 +10,8 @@ import com.fortysevendegrees.tapir.basicInputSortIndex
 import com.fortysevendegrees.tapir.headAndTailOrNull
 import com.fortysevendegrees.tapir.initAndLastOrNull
 import com.fortysevendegrees.tapir.updated
-import com.fortysevendegrees.tapir.model.Method
-import com.fortysevendegrees.tapir.model.QueryParams
+import com.fortysevendegrees.thool.model.Method
+import com.fortysevendegrees.thool.model.QueryParams
 
 
 sealed interface DecodeBasicInputsResult {

@@ -1,6 +1,6 @@
 package com.fortysevendegrees.tapir
 
-import com.fortysevendegrees.tapir.model.CodecFormat
+import com.fortysevendegrees.thool.model.CodecFormat
 
 /** A transput is EITHER an input, or an output (see: https://ell.stackexchange.com/questions/21405/hypernym-for-input-and-output).
  * The transput traits contain common functionality, shared by all inputs and outputs.

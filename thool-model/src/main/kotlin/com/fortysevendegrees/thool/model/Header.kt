@@ -1,9 +1,9 @@
-package com.fortysevendegrees.tapir.model
+package com.fortysevendegrees.thool.model
 
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
-import com.fortysevendegrees.tapir.model.HeaderNames.SensitiveHeaders
+import com.fortysevendegrees.thool.model.HeaderNames.SensitiveHeaders
 import java.lang.IllegalStateException
 
 /** An HTTP header. The [[name]] property is case-insensitive during equality checks.
