@@ -3,7 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.serialization'
 }
 
-group 'org.example'
+group 'com.fortysevendegrees'
 version '1.0-SNAPSHOT'
 
 repositories {
@@ -12,6 +12,7 @@ repositories {
 
 dependencies {
     implementation project(':tapir')
+    implementation project(":thool-model")
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
     implementation "io.arrow-kt:arrow-core:0.13.1"
     implementation "io.ktor:ktor-server-core:1.5.3"

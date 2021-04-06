@@ -1,4 +1,4 @@
 rootProject.name = 'POC-TapirPort'
 include 'ktor-server'
 include 'tapir'
-
+include 'thool-model'

@@ -2,8 +2,8 @@ package com.fortysevendegrees.tapir.server.intrepreter
 
 import com.fortysevendegrees.tapir.RawBodyType
 import kotlinx.coroutines.flow.Flow
-import com.fortysevendegrees.tapir.model.CodecFormat
-import com.fortysevendegrees.tapir.model.HasHeaders
+import com.fortysevendegrees.thool.model.CodecFormat
+import com.fortysevendegrees.thool.model.HasHeaders
 import java.nio.charset.Charset
 
 interface ToResponseBody<B> {

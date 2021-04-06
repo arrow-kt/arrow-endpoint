@@ -1,4 +1,4 @@
-package com.fortysevendegrees.tapir.model
+package com.fortysevendegrees.thool.model
 
 interface ResponseMetadata : HasHeaders {
   val code: StatusCode

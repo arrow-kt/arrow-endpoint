@@ -1,10 +1,10 @@
 package com.fortysevendegrees.tapir
 
-import com.fortysevendegrees.tapir.model.CodecFormat
-import com.fortysevendegrees.tapir.model.Cookie
-import com.fortysevendegrees.tapir.model.HeaderNames
-import com.fortysevendegrees.tapir.model.Method
-import com.fortysevendegrees.tapir.model.QueryParams
+import com.fortysevendegrees.thool.model.CodecFormat
+import com.fortysevendegrees.thool.model.Cookie
+import com.fortysevendegrees.thool.model.HeaderNames
+import com.fortysevendegrees.thool.model.Method
+import com.fortysevendegrees.thool.model.QueryParams
 import kotlinx.coroutines.flow.Flow
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets

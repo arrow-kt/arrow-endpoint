@@ -35,5 +35,4 @@ class EndpointTest : StringSpec({
       val e10: Endpoint<Pair<String, Int>, Unit, Unit> = endpoint.withInput(stringBody()).withInput(path(Codec.int))
     }
   }
-
 })

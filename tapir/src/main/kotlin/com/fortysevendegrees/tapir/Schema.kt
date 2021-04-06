@@ -104,7 +104,7 @@ data class Schema<T>(
     fun required(): List<FieldName> =
       fields.mapNotNull { (f, s) -> if (!s.isOptional) f else null }
 
-    override fun show(): String = "object(${fields.map { f -> "${f.first}->${f.second.show()}" }.joinToString(",")}"
+    override fun show(): String = "object(${fields.joinToString(",") { f -> "${f.first}->${f.second.show()}" }}"
 
     companion object {
       val Empty = SProduct(SObjectInfo.unit, emptyList())

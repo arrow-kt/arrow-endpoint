@@ -2,8 +2,8 @@ package com.fortysevendegrees.tapir
 
 import arrow.core.Tuple4
 import arrow.core.Tuple5
-import com.fortysevendegrees.tapir.model.CodecFormat
-import com.fortysevendegrees.tapir.model.Method
+import com.fortysevendegrees.thool.model.CodecFormat
+import com.fortysevendegrees.thool.model.Method
 
 // Elements that can occur as Input
 // Such as Query, PathCapture, Cookie, etc
@@ -39,11 +39,11 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
   }
 
   data class QueryParams<A>(
-    override val codec: Codec<com.fortysevendegrees.tapir.model.QueryParams, A, CodecFormat.TextPlain>,
+    override val codec: Codec<com.fortysevendegrees.thool.model.QueryParams, A, CodecFormat.TextPlain>,
     override val info: EndpointIO.Info<A>
-  ) : Basic<com.fortysevendegrees.tapir.model.QueryParams, A, CodecFormat.TextPlain> {
+  ) : Basic<com.fortysevendegrees.thool.model.QueryParams, A, CodecFormat.TextPlain> {
     override fun <B> copyWith(
-      c: Codec<com.fortysevendegrees.tapir.model.QueryParams, B, CodecFormat.TextPlain>,
+      c: Codec<com.fortysevendegrees.thool.model.QueryParams, B, CodecFormat.TextPlain>,
       i: EndpointIO.Info<B>
     ): QueryParams<B> = QueryParams(c, i)
     override fun toString(): String = "?..."
