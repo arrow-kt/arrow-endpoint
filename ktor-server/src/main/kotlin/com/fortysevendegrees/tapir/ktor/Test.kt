@@ -39,10 +39,3 @@ fun Application.module(testing: Boolean = false) = Tapir {
     Either.Right(Project("other-$project", "other-$language"))
   })
 }
-
-fun <A> Flow<A>.repeat(): Flow<A> =
-  flow {
-    while (true) {
-      collect { emit(it) }
-    }
-  }

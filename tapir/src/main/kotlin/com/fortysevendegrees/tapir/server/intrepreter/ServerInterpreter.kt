@@ -35,7 +35,6 @@ class ServerInterpreter<B>(
 
   suspend operator fun <I, E, O> invoke(se: ServerEndpoint<I, E, O>): ServerResponse<B>? {
     val valueToResponse: suspend (i: I) -> ServerResponse<B> = { i ->
-      println("I'm gonna blow here? : $i")
       when (val res = se.logic(i)) {
         is Either.Left -> outputToResponse(StatusCode.BadRequest, se.endpoint.errorOutput, res.value)
         is Either.Right -> outputToResponse(StatusCode.Ok, se.endpoint.output, res.value)
@@ -44,15 +43,11 @@ class ServerInterpreter<B>(
 
     val decodedBasicInputs = DecodeBasicInputs.apply(se.endpoint.input, request)
 
-    println("decodedBasicInputs: $decodedBasicInputs")
-
     return when (val values = decodeBody(decodedBasicInputs)) {
       is DecodeBasicInputsResult.Values ->
         when (val res = InputValueResult.from(se.endpoint.input, values)) {
           is InputValueResult.Value ->
-            println("Going to cast ${res.params} to I").let {
-              callInterceptorsOnDecodeSuccess(interceptors, se.endpoint, res.params.asAny as I, valueToResponse)
-            }
+            callInterceptorsOnDecodeSuccess(interceptors, se.endpoint, res.params.asAny as I, valueToResponse)
           is InputValueResult.Failure -> callInterceptorsOnDecodeFailure(
             interceptors,
             se.endpoint,
@@ -75,15 +70,12 @@ class ServerInterpreter<B>(
     i: I,
     callLogic: suspend (I) -> ServerResponse<B>
   ): ServerResponse<B> =
-    println("I didn't fail to cast here: $i. interceptors: $interceptors").let {
-      interceptors.firstOrNull()?.onDecodeSuccess(request, endpoint, i) { output ->
-        when (output) {
-          null -> callInterceptorsOnDecodeSuccess(interceptors.tail(), endpoint, i, callLogic)
-          else -> outputToResponse(StatusCode.Ok, output.output as EndpointOutput<Any?>, output.value)
-        }
-      } ?: callLogic(i)
-    }
-
+    interceptors.firstOrNull()?.onDecodeSuccess(request, endpoint, i) { output ->
+      when (output) {
+        null -> callInterceptorsOnDecodeSuccess(interceptors.tail(), endpoint, i, callLogic)
+        else -> outputToResponse(StatusCode.Ok, output.output as EndpointOutput<Any?>, output.value)
+      }
+    } ?: callLogic(i)
 
   private suspend fun callInterceptorsOnDecodeFailure(
     interceptors: List<EndpointInterceptor<B>>,
@@ -127,7 +119,6 @@ class ServerInterpreter<B>(
     }
 
   private fun <O> outputToResponse(defaultStatusCode: StatusCode, output: EndpointOutput<O>, v: O): ServerResponse<B> {
-    println("outputToResponse: $output")
     val outputValues = OutputValues.of(
       toResponseBody,
       output,

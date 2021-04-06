@@ -94,10 +94,6 @@ object DecodeBasicInputs {
 
     val basicInputs = input.asListOfBasicInputs().mapIndexed { index, input -> IndexedBasicInput(input, index) }
 
-    println("basicInputs: $basicInputs. size: ${basicInputs.size}")
-    val placeholder = List(basicInputs.size) { null }
-    println("placeholder: $placeholder")
-
     val methodInputs = basicInputs.filter { (input, _) -> isRequestMethod(input) }
     val pathInputs = basicInputs.filter { (input, _) -> isPath(input) }
     val otherInputs = basicInputs
@@ -110,11 +106,10 @@ object DecodeBasicInputs {
       whenOthers(methodInputs),
       whenPath(pathInputs),
       whenOthers(otherInputs)
-    ).invoke(DecodeBasicInputsResult.Values(placeholder, null), ctx).first
-      .also { println("===========================> $it") }
+    ).invoke(DecodeBasicInputsResult.Values(List(basicInputs.size) { null }, null), ctx).first
   }
 
-  /** We're decoding paths differently than other inputs. We first com.fortysevendegrees.tapir.map all path segments to their decoding results
+  /** We're decoding paths differently than other inputs. We firstmap all path segments to their decoding results
    * (not checking if this is a successful or failed decoding at this stage). This is collected as the
    * `decodedPathInputs` value.
    *

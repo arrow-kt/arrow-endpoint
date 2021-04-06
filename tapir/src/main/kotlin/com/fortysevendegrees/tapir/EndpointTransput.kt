@@ -5,7 +5,7 @@ import com.fortysevendegrees.tapir.model.CodecFormat
 /** A transput is EITHER an input, or an output (see: https://ell.stackexchange.com/questions/21405/hypernym-for-input-and-output).
  * The transput traits contain common functionality, shared by all inputs and outputs.
  *
- * Note that implementations of `com.fortysevendegrees.tapir.EndpointIO` can be used BOTH as inputs and outputs.
+ * Note that implementations of `EndpointIO` can be used BOTH as inputs and outputs.
  *
  * The hierarchy is as follows:
  *

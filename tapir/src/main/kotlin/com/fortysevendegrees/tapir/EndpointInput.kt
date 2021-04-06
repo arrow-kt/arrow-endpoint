@@ -75,7 +75,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
 
   data class PathCapture<A>(
     val name: String?,
-    override val codec: Codec<String, A, CodecFormat.TextPlain>,
+    override val codec: PlainCodec<A>,
     override val info: EndpointIO.Info<A>
   ) : Basic<String, A, CodecFormat.TextPlain> {
     override fun <B> copyWith(

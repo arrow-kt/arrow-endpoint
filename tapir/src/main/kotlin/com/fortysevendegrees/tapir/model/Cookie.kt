@@ -6,9 +6,8 @@ import arrow.core.left
 import arrow.core.right
 import arrow.core.sequenceEither
 
-
-/** A cookie name-value pair.
- *
+/**
+ * A cookie name-value pair.
  * The `name` and `value` should be already encoded (if necessary), as when serialised, they end up unmodified in
  * the header.
  */

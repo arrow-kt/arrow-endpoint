@@ -40,16 +40,16 @@ object Tapir {
   fun <A> query(name: String, codec: Codec<List<String>, A, CodecFormat.TextPlain>): EndpointInput.Query<A> =
     EndpointInput.Query(name, codec, EndpointIO.Info.empty())
 
-  fun <A> query(name: String, codec: Codec<String, A, CodecFormat.TextPlain>): EndpointInput.Query<A> =
+  fun <A> query(name: String, codec: PlainCodec<A>): EndpointInput.Query<A> =
     EndpointInput.Query(name, Codec.listHead(codec), EndpointIO.Info.empty())
 
   fun queryParams(): EndpointInput.QueryParams<QueryParams> =
     EndpointInput.QueryParams(Codec.idPlain(), EndpointIO.Info.empty())
 
-  fun <A> path(name: String, codec: Codec<String, A, CodecFormat.TextPlain>): EndpointInput.PathCapture<A> =
+  fun <A> path(name: String, codec: PlainCodec<A>): EndpointInput.PathCapture<A> =
     EndpointInput.PathCapture(name, codec, EndpointIO.Info.empty())
 
-  fun <A> path(codec: Codec<String, A, CodecFormat.TextPlain>): EndpointInput.PathCapture<A> =
+  fun <A> path(codec: PlainCodec<A>): EndpointInput.PathCapture<A> =
     EndpointInput.PathCapture(null, codec, EndpointIO.Info.empty())
 
   fun paths(): EndpointInput.PathsCapture<List<String>> =
@@ -86,7 +86,7 @@ object Tapir {
     )
 
   fun <A> plainBody(
-    codec: Codec<String, A, CodecFormat.TextPlain>,
+    codec: PlainCodec<A>,
     charset: Charset = StandardCharsets.UTF_8
   ): EndpointIO.Body<String, A> =
     EndpointIO.Body(RawBodyType.StringBody(charset), codec, EndpointIO.Info.empty())

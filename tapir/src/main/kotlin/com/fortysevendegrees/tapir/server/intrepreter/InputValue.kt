@@ -1,5 +1,6 @@
 import com.fortysevendegrees.tapir.CombineParams
 import com.fortysevendegrees.tapir.DecodeResult
+import com.fortysevendegrees.tapir.EndpointIO
 import com.fortysevendegrees.tapir.EndpointInput
 import com.fortysevendegrees.tapir.Mapping
 import com.fortysevendegrees.tapir.Params
@@ -20,35 +21,25 @@ sealed interface InputValueResult {
 
     private fun from(input: EndpointInput<*>, remainingBasicValues: List<Any?>): InputValueResult =
       when (input) {
-        is EndpointInput.Pair<*, *, *> -> println("EndpointInput.Pair(${input.first}, ${input.second}) - $remainingBasicValues").let {
-          handlePair(
-            input.first,
-            input.second,
-            input.combine,
-            remainingBasicValues
-          )
-        }
-//      is com.fortysevendegrees.tapir.EndpointIO.Pair<*, *>    -> handlePair(left, right, combine, remainingBasicValues)
-        is EndpointInput.MappedPair<*, *, *, *> -> println("InputValueResult.from.EndpointInput.MappedPair<*, *, *>").let {
+        is EndpointInput.Pair<*, *, *> -> handlePair(input.first, input.second, input.combine, remainingBasicValues)
+        is EndpointIO.Pair<*, *, *> -> handlePair(input.first, input.second, input.combine, remainingBasicValues)
+        is EndpointInput.MappedPair<*, *, *, *> ->
           handleMappedPair(
             input.input as EndpointInput<Any?>,
             input.mapping as Mapping<Any?, Any?>,
             remainingBasicValues
           )
-        }
-//      is com.fortysevendegrees.tapir.EndpointIO.MappedPair<*, *, *>       -> handleMappedPair(wrapped, codec, remainingBasicValues)
-//      auth: com.fortysevendegrees.tapir.EndpointInput.Auth<_>                 -> apply(auth.input, remainingBasicValues)
+        is EndpointIO.MappedPair<*, *, *, *> -> handleMappedPair(
+          input.wrapped as EndpointInput<Any?>,
+          input.mapping as Mapping<Any?, Any?>,
+          remainingBasicValues
+        )
+//      is EndpointInput.Auth<_>                 -> apply(auth.input, remainingBasicValues)
         is EndpointInput.Basic<*, *, *> ->
           remainingBasicValues.headAndTailOrNull()?.let { (v, valuesTail) ->
-            println("InputValueResult.from.EndpointInput.Basic<*>: v: $v, valuesTail: $valuesTail")
             Value(Params.ParamsAsAny(v), valuesTail)
           }
             ?: throw IllegalStateException("Mismatch between basic input values: $remainingBasicValues, and basic inputs in: $input")
-//      is com.fortysevendegrees.tapir.EndpointInput.MappedTriple -> TODO()
-//      is com.fortysevendegrees.tapir.EndpointInput.MappedTuple4 -> TODO()
-//      is com.fortysevendegrees.tapir.EndpointInput.Triple -> TODO()
-//      is com.fortysevendegrees.tapir.EndpointInput.Tuple4 -> TODO()
-        else -> TODO()
       }
 
     private fun handlePair(
