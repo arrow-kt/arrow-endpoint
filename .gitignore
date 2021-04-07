@@ -135,3 +135,18 @@ gradle-app.setting
 **/build/
 
 # End of https://www.toptal.com/developers/gitignore/api/intellij+all,gradle,kotlin
+
+
+######################
+
+reports/
+
+# End of https://www.gitignore.io/api/android,intellij
+/.idea/misc.xml
+
+.DS_Store
+
+target/
+
+.bash_profile
+**/.kotlintest/

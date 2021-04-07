@@ -11,7 +11,7 @@ repositories {
 }
 
 dependencies {
-    implementation project(':tapir')
+    implementation project(':core')
     implementation project(":thool-model")
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
     implementation "io.arrow-kt:arrow-core:0.13.1"
