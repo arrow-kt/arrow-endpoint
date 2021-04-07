@@ -99,18 +99,6 @@ data class Schema<T>(
   fun <U> modifyUnsafe(vararg fields: String, modify: (Schema<U>) -> Schema<U>): Schema<T> =
     modifyAtPath(fields.toList(), modify)
 
-  data class SProduct(override val info: SchemaType.SObjectInfo, val fields: List<Pair<FieldName, Schema<*>>>) :
-    SchemaType.SObject() {
-    fun required(): List<FieldName> =
-      fields.mapNotNull { (f, s) -> if (!s.isOptional) f else null }
-
-    override fun show(): String = "object(${fields.joinToString(",") { f -> "${f.first}->${f.second.show()}" }}"
-
-    companion object {
-      val Empty = SProduct(SObjectInfo.unit, emptyList())
-    }
-  }
-
   data class SCoproduct(override val info: SObjectInfo, val schemas: List<Schema<*>>, val discriminator: SchemaType.Discriminator?) :
     SchemaType.SObject() {
 

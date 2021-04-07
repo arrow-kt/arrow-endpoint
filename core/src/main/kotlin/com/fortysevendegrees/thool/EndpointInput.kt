@@ -11,18 +11,26 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
 
   // Marker for EndpointInput with single output
   sealed interface Single<A> : EndpointInput<A>
-  sealed interface Basic<L, A, CF: CodecFormat> : Single<A>, EndpointTransput.Basic<L, A, CF> {
+  sealed interface Basic<L, A, CF : CodecFormat> : Single<A>, EndpointTransput.Basic<L, A, CF> {
 
     override fun <B> copyWith(c: Codec<L, B, CF>, i: EndpointIO.Info<B>): Basic<L, B, CF>
 
     override fun <B> map(mapping: Mapping<A, B>): Basic<L, B, CF> = copyWith(codec.map(mapping), info.map(mapping))
     override fun schema(s: Schema<A>?): EndpointInput.Basic<L, A, CF> = copyWith(codec.schema(s), info)
-    override fun modifySchema(modify: (Schema<A>) -> Schema<A>): EndpointInput.Basic<L, A, CF> = copyWith(codec.modifySchema(modify), info)
+    override fun modifySchema(modify: (Schema<A>) -> Schema<A>): EndpointInput.Basic<L, A, CF> =
+      copyWith(codec.modifySchema(modify), info)
+
     override fun description(d: String): EndpointInput.Basic<L, A, CF> = copyWith(codec, info.description(d))
-    override fun default(d: A): EndpointInput.Basic<L, A, CF> = copyWith(codec.modifySchema { it.default(d, codec.encode(d)) }, info)
+    override fun default(d: A): EndpointInput.Basic<L, A, CF> =
+      copyWith(codec.modifySchema { it.default(d, codec.encode(d)) }, info)
+
     override fun example(t: A): EndpointInput.Basic<L, A, CF> = copyWith(codec, info.example(t))
-    override fun example(example: EndpointIO.Info.Example<A>): EndpointInput.Basic<L, A, CF> = copyWith(codec, info.example(example))
-    override fun examples(examples: List<EndpointIO.Info.Example<A>>): EndpointInput.Basic<L, A, CF> = copyWith(codec, info.examples(examples))
+    override fun example(example: EndpointIO.Info.Example<A>): EndpointInput.Basic<L, A, CF> =
+      copyWith(codec, info.example(example))
+
+    override fun examples(examples: List<EndpointIO.Info.Example<A>>): EndpointInput.Basic<L, A, CF> =
+      copyWith(codec, info.examples(examples))
+
     override fun deprecated(): EndpointInput.Basic<L, A, CF> = copyWith(codec, info.deprecated(true))
   }
 
@@ -35,6 +43,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
       c: Codec<List<String>, B, CodecFormat.TextPlain>,
       i: EndpointIO.Info<B>
     ): Query<B> = Query(name, c, i)
+
     override fun toString(): String = addValidatorShow("?$name", codec.validator())
   }
 
@@ -46,6 +55,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
       c: Codec<com.fortysevendegrees.thool.model.QueryParams, B, CodecFormat.TextPlain>,
       i: EndpointIO.Info<B>
     ): QueryParams<B> = QueryParams(c, i)
+
     override fun toString(): String = "?..."
   }
 
@@ -58,6 +68,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
       c: Codec<Unit, B, CodecFormat.TextPlain>,
       i: EndpointIO.Info<B>
     ): FixedMethod<B> = FixedMethod(m, c, i)
+
     override fun toString(): String = m.value
   }
 
@@ -70,6 +81,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
       c: Codec<Unit, B, CodecFormat.TextPlain>,
       i: EndpointIO.Info<B>
     ): FixedPath<B> = FixedPath(s, c, i)
+
     override fun toString(): String = "/$s"
   }
 
@@ -82,6 +94,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
       c: Codec<String, B, CodecFormat.TextPlain>,
       i: EndpointIO.Info<B>
     ): PathCapture<B> = PathCapture(name, c, i)
+
     fun name(n: String): PathCapture<A> = copy(name = n)
     override fun toString(): String = addValidatorShow("/[${name ?: ""}]", codec.validator())
   }
@@ -94,6 +107,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
       c: Codec<List<String>, B, CodecFormat.TextPlain>,
       i: EndpointIO.Info<B>
     ): PathsCapture<B> = PathsCapture(c, i)
+
     override fun toString(): String = "/..."
   }
 
@@ -106,6 +120,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
       c: Codec<String?, B, CodecFormat.TextPlain>,
       i: EndpointIO.Info<B>
     ): Cookie<B> = Cookie(name, c, i)
+
     override fun toString(): String = addValidatorShow("{cookie $name}", codec.validator())
   }
 
@@ -128,17 +143,18 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
     when {
       isDefinedAt(this) -> handle(this)
       this is Pair<*, *, *> -> first.traverseInputs(isDefinedAt, handle) + second.traverseInputs(isDefinedAt, handle)
+      this is EndpointInput.Pair<*, *, *> -> first.traverseInputs(isDefinedAt, handle) + second.traverseInputs(isDefinedAt, handle)
       this is EndpointIO.Pair<*, *, *> -> first.traverseInputs(isDefinedAt, handle) + second.traverseInputs(
         isDefinedAt,
         handle
       )
-      this is MappedPair<*, *, *, *> -> input.traverseInputs(isDefinedAt, handle)
+      this is EndpointInput.MappedPair<*, *, *, *> -> input.traverseInputs(isDefinedAt, handle)
       this is EndpointIO.MappedPair<*, *, *, *> -> wrapped.traverseInputs(isDefinedAt, handle)
       // is EndpointInput.Auth<*> -> input.traverseInputs(isDefinedAt, handle)
       else -> emptyList()
     }
 
-  fun asListOfBasicInputs(includeAuth: Boolean = true): List<Basic<*, * ,* >> =
+  fun asListOfBasicInputs(includeAuth: Boolean = true): List<Basic<*, *, *>> =
     traverseInputs({ it is Basic<*, *, *> /* || it is EndpointInput.Auth */ }) {
       when (it) {
         is Basic<*, *, *> -> listOf(it)
@@ -146,6 +162,15 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
         else -> throw IllegalStateException("")
       }
     }
+
+  fun method(): Method? =
+    traverseInputs({ it is FixedMethod }) { listOf((it as FixedMethod).m) }
+      .firstOrNull()
+
+//  fun auth(): Method? =
+//    traverseInputs({ it is Auth }) { listOf((it as Auth).m) }
+//      .firstOrNull()
+
 }
 
 // We need to support this Arity-22
