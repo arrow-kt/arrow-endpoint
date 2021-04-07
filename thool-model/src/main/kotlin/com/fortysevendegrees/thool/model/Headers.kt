@@ -32,6 +32,6 @@ interface HasHeaders {
       }
     }
 
-//  fun cookies(): List<Either<String, CookieWithMeta>> = headers(HeaderNames.SetCookie).com.fortysevendegrees.thool.map(h => CookieWithMeta.parse(h))
-//  def unsafeCookies: Seq[CookieWithMeta] = cookies.com.fortysevendegrees.thool.map(_.fold(e => throw new RuntimeException(e), identity[CookieWithMeta]))
+//  fun cookies(): List<Either<String, CookieWithMeta>> = headers(HeaderNames.SetCookie).com.fortysevendegrees.tapir.map(h => CookieWithMeta.parse(h))
+//  def unsafeCookies: Seq[CookieWithMeta] = cookies.com.fortysevendegrees.tapir.map(_.fold(e => throw new RuntimeException(e), identity[CookieWithMeta]))
 }

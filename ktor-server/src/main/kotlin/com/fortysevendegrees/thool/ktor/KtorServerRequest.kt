@@ -2,13 +2,15 @@ package com.fortysevendegrees.thool.ktor
 
 import com.fortysevendegrees.thool.ConnectionInfo
 import com.fortysevendegrees.thool.ServerRequest
-import io.ktor.application.*
-import io.ktor.request.*
-import io.ktor.util.*
 import com.fortysevendegrees.thool.model.Header
 import com.fortysevendegrees.thool.model.Method
 import com.fortysevendegrees.thool.model.QueryParams
 import com.fortysevendegrees.thool.model.Uri
+import io.ktor.application.ApplicationCall
+import io.ktor.request.httpMethod
+import io.ktor.request.httpVersion
+import io.ktor.request.path
+import io.ktor.util.flattenEntries
 
 internal class KtorServerRequest(val ctx: ApplicationCall) : ServerRequest {
   override val protocol: String = ctx.request.httpVersion

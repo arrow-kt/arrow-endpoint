@@ -46,7 +46,7 @@ data class Uri(
 ////    ui match
 ////  {
 ////    case Some (v) => this.copy(authority = Some(authority.getOrElse(Authority.Empty).userInfo(Some(v))))
-////    case None => this.copy(authority = authority.com.fortysevendegrees.thool.map(_.userInfo(None)))
+////    case None => this.copy(authority = authority.com.fortysevendegrees.tapir.map(_.userInfo(None)))
 ////  }
 //
 //  fun userInfo(): UserInfo? =  TODO()//authority.flatMap(_.userInfo)
@@ -61,11 +61,11 @@ data class Uri(
 //  fun hostSegment(s: Option[Segment]): Uri = TODO()
 ////    this.copy(authority = authority match
 ////  {
-////    case Some (a) => s.com.fortysevendegrees.thool.map(a.hostSegment(_))
-////    case None => s . com.fortysevendegrees.thool.map (Authority(None, _, None))
+////    case Some (a) => s.com.fortysevendegrees.tapir.map(a.hostSegment(_))
+////    case None => s . com.fortysevendegrees.tapir.map (Authority(None, _, None))
 ////  })
 //
-//  fun host: Option[String] = authority.com.fortysevendegrees.thool.map(_.hostSegment.v)
+//  fun host: Option[String] = authority.com.fortysevendegrees.tapir.map(_.hostSegment.v)
 //
 //  /** Replace the port. Adds an empty host if one is absent. */
 //  fun port(p: Int): Uri = port(Some(p))
@@ -74,7 +74,7 @@ data class Uri(
 //  fun port(p: Option[Int]): Uri = TODO()
 ////    p match  {
 ////    case Some (v) => this.copy(authority = Some(authority.getOrElse(Authority.Empty).port(v)))
-////    case None => this.copy(authority = authority.com.fortysevendegrees.thool.map(_.port(None)))
+////    case None => this.copy(authority = authority.com.fortysevendegrees.tapir.map(_.port(None)))
 ////  }
 //
 //  fun port: Option[Int] = authority.flatMap(_.port)
@@ -86,13 +86,13 @@ data class Uri(
 //  fun authority(a: Some[Authority]): Uri = this.copy(authority = a)
 //
 //  fun addPath(p: String, ps: String*): Uri = addPath(p :: ps.toList)
-//  fun addPath(ps: scala.collection.Seq[String]): Uri = addPathSegments(ps.toList.com.fortysevendegrees.thool.map(PathSegment(_)))
+//  fun addPath(ps: scala.collection.Seq[String]): Uri = addPathSegments(ps.toList.com.fortysevendegrees.tapir.map(PathSegment(_)))
 //  fun addPathSegment(s: Segment): Uri = addPathSegments(List(s))
 //  fun addPathSegments(s1: Segment, s2: Segment, ss: Segment*): Uri = addPathSegments(s1 :: s2 :: ss.toList)
 //  fun addPathSegments(ss: scala.collection.Seq[Segment]): Uri = copy(pathSegments = pathSegments.addSegments(ss))
 //
 //  fun withPath(p: String, ps: String*): Uri = withPath(p :: ps.toList)
-//  fun withPath(ps: scala.collection.Seq[String]): Uri = withPathSegments(ps.toList.com.fortysevendegrees.thool.map(PathSegment(_)))
+//  fun withPath(ps: scala.collection.Seq[String]): Uri = withPathSegments(ps.toList.com.fortysevendegrees.tapir.map(PathSegment(_)))
 //  fun withPathSegment(s: Segment): Uri = withPathSegments(List(s))
 //  fun withPathSegments(s1: Segment, s2: Segment, ss: Segment*): Uri = withPathSegments(s1 :: s2 :: ss.toList)
 //  fun withPathSegments(ss: scala.collection.Seq[Segment]): Uri = copy(pathSegments = pathSegments.withSegments(ss))
@@ -107,12 +107,12 @@ data class Uri(
 //    withPath(ps)
 //  }
 //
-//  fun path: Seq[String] = pathSegments.segments.com.fortysevendegrees.thool.map(_.v).toList
+//  fun path: Seq[String] = pathSegments.segments.com.fortysevendegrees.tapir.map(_.v).toList
 //
 //  //
 //
 //  fun addParam(k: String, v: String): Uri = addParams(k -> v)
-//  fun addParam(k: String, v: Option[String]): Uri = v.com.fortysevendegrees.thool.map(addParam(k, _)).getOrElse(this)
+//  fun addParam(k: String, v: Option[String]): Uri = v.com.fortysevendegrees.tapir.map(addParam(k, _)).getOrElse(this)
 //  fun addParams(ps: Map[String, String]): Uri = addParams(ps.toSeq: _*)
 //  fun addParams(mqp: QueryParams): Uri =
 //  {
@@ -120,7 +120,7 @@ data class Uri(
 //  }
 //  fun addParams(ps: (String, String)*): Uri =
 //  {
-//    this.copy(querySegments = querySegments++ ps . com.fortysevendegrees.thool.map {
+//    this.copy(querySegments = querySegments++ ps . com.fortysevendegrees.tapir.map {
 //      case(k, v) =>
 //      KeyValue(k, v)
 //    })
@@ -130,7 +130,7 @@ data class Uri(
 //  fun withParam(k: String, v: String): Uri = withParams(k -> v)
 //
 //  /** Replace query with the given single optional parameter. */
-//  fun withParam(k: String, v: Option[String]): Uri = v.com.fortysevendegrees.thool.map(withParam(k, _)).getOrElse(this)
+//  fun withParam(k: String, v: Option[String]): Uri = v.com.fortysevendegrees.tapir.map(withParam(k, _)).getOrElse(this)
 //
 //  /** Replace query with the given parameters. */
 //  fun withParams(ps: Map[String, String]): Uri = withParams(ps.toSeq: _*)
@@ -139,7 +139,7 @@ data class Uri(
 //  fun withParams(mqp: QueryParams): Uri = this.copy(querySegments = QuerySegment.fromQueryParams(mqp).toList)
 //
 //  /** Replace query with the given parameters. */
-//  fun withParams(ps: (String, String)*): Uri = this.copy(querySegments = ps.com.fortysevendegrees.thool.map
+//  fun withParams(ps: (String, String)*): Uri = this.copy(querySegments = ps.com.fortysevendegrees.tapir.map
 //  {
 //    case(k, v) =>
 //    KeyValue(k, v)
@@ -164,12 +164,12 @@ data class Uri(
 //  fun fragment(f: String): Uri = fragment(Some(f))
 //
 //  /** Replace the fragment. */
-//  fun fragment(f: Option[String]): Uri = fragmentSegment(f.com.fortysevendegrees.thool.map(FragmentSegment(_)))
+//  fun fragment(f: Option[String]): Uri = fragmentSegment(f.com.fortysevendegrees.tapir.map(FragmentSegment(_)))
 //
 //  /** Replace the fragment. */
 //  fun fragmentSegment(s: Option[Segment]): Uri = this.copy(fragmentSegment = s)
 //
-//  fun fragment: Option[String] = fragmentSegment.com.fortysevendegrees.thool.map(_.v)
+//  fun fragment: Option[String] = fragmentSegment.com.fortysevendegrees.tapir.map(_.v)
 //
 //  //
 //
@@ -183,17 +183,17 @@ data class Uri(
 //  //
 //
 //  fun hostSegmentEncoding(encoding: Encoding): Uri =
-//  copy(authority = authority.com.fortysevendegrees.thool.map(a => a.copy(hostSegment = a.hostSegment.encoding(encoding))))
+//  copy(authority = authority.com.fortysevendegrees.tapir.map(a => a.copy(hostSegment = a.hostSegment.encoding(encoding))))
 //
 //  fun pathSegmentsEncoding(encoding: Encoding): Uri = copy(pathSegments = pathSegments match
 //  {
 //    case Uri . EmptyPath => Uri . EmptyPath
-//      case Uri . AbsolutePath (segments) => Uri.AbsolutePath(segments.com.fortysevendegrees.thool.map(_.encoding(encoding)))
-//    case Uri . RelativePath (segments) => Uri.RelativePath(segments.com.fortysevendegrees.thool.map(_.encoding(encoding)))
+//      case Uri . AbsolutePath (segments) => Uri.AbsolutePath(segments.com.fortysevendegrees.tapir.map(_.encoding(encoding)))
+//    case Uri . RelativePath (segments) => Uri.RelativePath(segments.com.fortysevendegrees.tapir.map(_.encoding(encoding)))
 //  })
 //
 //  /** Replace encoding for query segments: applies to key-value, only-value and plain ones. */
-//  fun querySegmentsEncoding(encoding: Encoding): Uri = copy(querySegments = querySegments.com.fortysevendegrees.thool.map
+//  fun querySegmentsEncoding(encoding: Encoding): Uri = copy(querySegments = querySegments.com.fortysevendegrees.tapir.map
 //  {
 //    case KeyValue (k, v, _, _) => KeyValue(k, v, encoding, encoding)
 //    case Value (v, _)          => Value(v, encoding)
@@ -201,7 +201,7 @@ data class Uri(
 //  })
 //
 //  /** Replace encoding for the value part of key-value query segments and for only-value ones. */
-//  fun queryValueSegmentsEncoding(valueEncoding: Encoding): Uri = copy(querySegments = querySegments.com.fortysevendegrees.thool.map
+//  fun queryValueSegmentsEncoding(valueEncoding: Encoding): Uri = copy(querySegments = querySegments.com.fortysevendegrees.tapir.map
 //  {
 //    case KeyValue (k, v, keyEncoding, _) => KeyValue(k, v, keyEncoding, valueEncoding)
 //    case Value (v, _)                    => Value(v, valueEncoding)
@@ -209,7 +209,7 @@ data class Uri(
 //  })
 //
 //  fun fragmentSegmentEncoding(encoding: Encoding): Uri =
-//  copy(fragmentSegment = fragmentSegment.com.fortysevendegrees.thool.map(f => f.encoding(encoding)))
+//  copy(fragmentSegment = fragmentSegment.com.fortysevendegrees.tapir.map(f => f.encoding(encoding)))
 //
 //  override fun toString: String =
 //  {
@@ -232,7 +232,7 @@ data class Uri(
 //      encodeQuerySegments(t, previousWasPlain = false, sb)
 //    }
 //
-//    val schemeS = scheme.com.fortysevendegrees.thool.map(s => encode (Rfc3986.Scheme)(s) + ":").getOrElse("")
+//    val schemeS = scheme.com.fortysevendegrees.tapir.map(s => encode (Rfc3986.Scheme)(s) + ":").getOrElse("")
 //    val authorityS = authority.fold("")(_.toString)
 //    val pathPrefixS = pathSegments match {
 //      case _ if authority.isEmpty && scheme.isDefined => ""
@@ -240,7 +240,7 @@ data class Uri(
 //      case Uri . AbsolutePath (_)                        => "/"
 //      case Uri . RelativePath (_)                        => ""
 //    }
-//    val pathS = pathSegments.segments.com.fortysevendegrees.thool.map(_.encoded).mkString("/")
+//    val pathS = pathSegments.segments.com.fortysevendegrees.tapir.map(_.encoded).mkString("/")
 //    val queryPrefixS = if (querySegments.isEmpty) "" else "?"
 //
 //    val queryS = encodeQuerySegments(querySegments.toList, previousWasPlain = true, new StringBuilder ())
@@ -272,24 +272,24 @@ data class Uri(
 //  fun safeApply (host: String, port: Int): Either[String, Uri] =
 //  safeApply("http", Some(Authority(host, port)), Vector.empty, Vector.empty, None)
 //  fun safeApply (host: String, port: Int, path: Seq[String]): Either[String, Uri] =
-//  safeApply("http", Some(Authority(host, port)), path.com.fortysevendegrees.thool.map(PathSegment(_)), Vector.empty, None)
+//  safeApply("http", Some(Authority(host, port)), path.com.fortysevendegrees.tapir.map(PathSegment(_)), Vector.empty, None)
 //  fun safeApply (scheme: String, path: Seq[String]): Either[String, Uri] =
-//  safeApply(scheme, None, path.com.fortysevendegrees.thool.map(PathSegment(_)), Vector.empty, None)
+//  safeApply(scheme, None, path.com.fortysevendegrees.tapir.map(PathSegment(_)), Vector.empty, None)
 //  fun safeApply (scheme: String, host: String): Either[String, Uri] =
 //  safeApply(scheme, Some(Authority(host)), Vector.empty, Vector.empty, None)
 //  fun safeApply (scheme: String, host: String, port: Int): Either[String, Uri] =
 //  safeApply(scheme, Some(Authority(host, port)), Vector.empty, Vector.empty, None)
 //  fun safeApply (scheme: String, host: String, port: Int, path: Seq[String]): Either[String, Uri] =
-//  safeApply(scheme, Some(Authority(host, port)), path.com.fortysevendegrees.thool.map(PathSegment(_)), Vector.empty, None)
+//  safeApply(scheme, Some(Authority(host, port)), path.com.fortysevendegrees.tapir.map(PathSegment(_)), Vector.empty, None)
 //  fun safeApply (scheme: String, host: String, path: Seq[String]): Either[String, Uri] =
-//  safeApply(scheme, Some(Authority(host)), path.com.fortysevendegrees.thool.map(PathSegment(_)), Vector.empty, None)
+//  safeApply(scheme, Some(Authority(host)), path.com.fortysevendegrees.tapir.map(PathSegment(_)), Vector.empty, None)
 //  fun safeApply (scheme: String, host: String, path: Seq[String], fragment: Option[String]): Either[String, Uri] =
 //  safeApply(
 //    scheme,
 //    Some(Authority(host)),
-//    path.com.fortysevendegrees.thool.map(PathSegment(_)),
+//    path.com.fortysevendegrees.tapir.map(PathSegment(_)),
 //    Vector.empty,
-//    fragment.com.fortysevendegrees.thool.map(FragmentSegment(_))
+//    fragment.com.fortysevendegrees.tapir.map(FragmentSegment(_))
 //  )
 //  fun safeApply (
 //    scheme: String,
@@ -303,9 +303,9 @@ data class Uri(
 //  safeApply(
 //    scheme,
 //    Some(Authority(userInfo, HostSegment(host), port)),
-//    path.com.fortysevendegrees.thool.map(PathSegment(_)),
+//    path.com.fortysevendegrees.tapir.map(PathSegment(_)),
 //    querySegments,
-//    fragment.com.fortysevendegrees.thool.map(FragmentSegment(_))
+//    fragment.com.fortysevendegrees.tapir.map(FragmentSegment(_))
 //  )
 //  fun safeApply (
 //    scheme: String,
@@ -314,7 +314,7 @@ data class Uri(
 //  querySegments: Seq[QuerySegment],
 //  fragmentSegment: Option[Segment]
 //  ): Either[String, Uri] =
-//  Validate.all(validateScheme(Some(scheme)), validateHost(authority.com.fortysevendegrees.thool.map(_.hostSegment.v)))(
+//  Validate.all(validateScheme(Some(scheme)), validateHost(authority.com.fortysevendegrees.tapir.map(_.hostSegment.v)))(
 //    apply(
 //      Some(scheme),
 //      authority,
@@ -331,24 +331,24 @@ data class Uri(
 //  fun unsafeApply (host: String, port: Int): Uri =
 //  unsafeApply("http", Some(Authority(host, port)), Vector.empty, Vector.empty, None)
 //  fun unsafeApply (host: String, port: Int, path: Seq[String]): Uri =
-//  unsafeApply("http", Some(Authority(host, port)), path.com.fortysevendegrees.thool.map(PathSegment(_)), Vector.empty, None)
+//  unsafeApply("http", Some(Authority(host, port)), path.com.fortysevendegrees.tapir.map(PathSegment(_)), Vector.empty, None)
 //  fun unsafeApply (scheme: String, path: Seq[String]): Uri =
-//  unsafeApply(scheme, None, path.com.fortysevendegrees.thool.map(PathSegment(_)), Vector.empty, None)
+//  unsafeApply(scheme, None, path.com.fortysevendegrees.tapir.map(PathSegment(_)), Vector.empty, None)
 //  fun unsafeApply (scheme: String, host: String): Uri =
 //  unsafeApply(scheme, Some(Authority(host)), Vector.empty, Vector.empty, None)
 //  fun unsafeApply (scheme: String, host: String, port: Int): Uri =
 //  unsafeApply(scheme, Some(Authority(host, port)), Vector.empty, Vector.empty, None)
 //  fun unsafeApply (scheme: String, host: String, port: Int, path: Seq[String]): Uri =
-//  unsafeApply(scheme, Some(Authority(host, port)), path.com.fortysevendegrees.thool.map(PathSegment(_)), Vector.empty, None)
+//  unsafeApply(scheme, Some(Authority(host, port)), path.com.fortysevendegrees.tapir.map(PathSegment(_)), Vector.empty, None)
 //  fun unsafeApply (scheme: String, host: String, path: Seq[String]): Uri =
-//  unsafeApply(scheme, Some(Authority(host)), path.com.fortysevendegrees.thool.map(PathSegment(_)), Vector.empty, None)
+//  unsafeApply(scheme, Some(Authority(host)), path.com.fortysevendegrees.tapir.map(PathSegment(_)), Vector.empty, None)
 //  fun unsafeApply (scheme: String, host: String, path: Seq[String], fragment: Option[String]): Uri =
 //  unsafeApply(
 //    scheme,
 //    Some(Authority(host)),
-//    path.com.fortysevendegrees.thool.map(PathSegment(_)),
+//    path.com.fortysevendegrees.tapir.map(PathSegment(_)),
 //    Vector.empty,
-//    fragment.com.fortysevendegrees.thool.map(FragmentSegment(_))
+//    fragment.com.fortysevendegrees.tapir.map(FragmentSegment(_))
 //  )
 //  fun unsafeApply (
 //    scheme: String,
@@ -362,9 +362,9 @@ data class Uri(
 //  unsafeApply(
 //    scheme,
 //    Some(Authority(userInfo, HostSegment(host), port)),
-//    path.com.fortysevendegrees.thool.map(PathSegment(_)),
+//    path.com.fortysevendegrees.tapir.map(PathSegment(_)),
 //    querySegments,
-//    fragment.com.fortysevendegrees.thool.map(FragmentSegment(_))
+//    fragment.com.fortysevendegrees.tapir.map(FragmentSegment(_))
 //  )
 //  fun unsafeApply (
 //    scheme: String,
@@ -399,7 +399,7 @@ data class Uri(
 //    Some(Authority(host)),
 //    PathSegments.absoluteOrEmptyS(path),
 //    Vector.empty,
-//    fragment.com.fortysevendegrees.thool.map(FragmentSegment(_))
+//    fragment.com.fortysevendegrees.tapir.map(FragmentSegment(_))
 //  )
 //  fun apply (
 //    scheme: String,
@@ -415,7 +415,7 @@ data class Uri(
 //      Some(Authority(userInfo, HostSegment(host), port)),
 //      PathSegments.absoluteOrEmptyS(path),
 //      querySegments,
-//      fragment.com.fortysevendegrees.thool.map(FragmentSegment(_))
+//      fragment.com.fortysevendegrees.tapir.map(FragmentSegment(_))
 //    )
 //  }
 //  fun apply (
@@ -444,7 +444,7 @@ data class Uri(
 //
 //  /** Create a relative URI with an absolute path. */
 //  fun relative (path: Seq[String], querySegments: Seq[QuerySegment], fragment: Option[String]): Uri =
-//  apply(None, None, PathSegments.absoluteOrEmptyS(path), querySegments, fragment.com.fortysevendegrees.thool.map(FragmentSegment(_)))
+//  apply(None, None, PathSegments.absoluteOrEmptyS(path), querySegments, fragment.com.fortysevendegrees.tapir.map(FragmentSegment(_)))
 //
 //  /** Create a relative URI with a relative path. */
 //  fun pathRelative (path: Seq[String]): Uri = pathRelative(path, Vector.empty, None)
@@ -454,7 +454,7 @@ data class Uri(
 //
 //  /** Create a relative URI with a relative path. */
 //  fun pathRelative (path: Seq[String], querySegments: Seq[QuerySegment], fragment: Option[String]): Uri =
-//  apply(None, None, RelativePath(path.com.fortysevendegrees.thool.map(PathSegment(_))), querySegments, fragment.com.fortysevendegrees.thool.map(FragmentSegment(_)))
+//  apply(None, None, RelativePath(path.com.fortysevendegrees.tapir.map(PathSegment(_))), querySegments, fragment.com.fortysevendegrees.tapir.map(FragmentSegment(_)))
 //
 //  //
 //
@@ -537,7 +537,7 @@ sealed interface PathSegments {
 //    fun segments : collection . Seq [Segment]
 //
 //    fun add (p: String, ps: String*): PathSegments = add(p::ps.toList)
-//    fun add (ps: scala.collection.Seq[String]): PathSegments = addSegments(ps.toList.com.fortysevendegrees.thool.map(PathSegment(_)))
+//    fun add (ps: scala.collection.Seq[String]): PathSegments = addSegments(ps.toList.com.fortysevendegrees.tapir.map(PathSegment(_)))
 //    fun addSegment (s: Segment): PathSegments = addSegments(List(s))
 //    fun addSegments (s1: Segment, s2: Segment, ss: Segment*): PathSegments = addSegments(s1::s2::ss.toList)
 //    fun addSegments (ss: scala.collection.Seq[Segment]): PathSegments = {
@@ -546,13 +546,13 @@ sealed interface PathSegments {
 //  }
 //
 //    fun withS (p: String, ps: String*): PathSegments = withS(p::ps.toList)
-//    fun withS (ps: scala.collection.Seq[String]): PathSegments = withSegments(ps.toList.com.fortysevendegrees.thool.map(PathSegment(_)))
+//    fun withS (ps: scala.collection.Seq[String]): PathSegments = withSegments(ps.toList.com.fortysevendegrees.tapir.map(PathSegment(_)))
 //    fun withSegment (s: Segment): PathSegments = withSegments(List(s))
 //    fun withSegments (s1: Segment, s2: Segment, ss: Segment*): PathSegments = withSegments(s1::s2::ss.toList)
 //    fun withSegments (ss: scala.collection.Seq[Segment]): PathSegments
 //  }
 //  object PathSegments {
-//    fun absoluteOrEmptyS(segments: Seq[String]): PathSegments = absoluteOrEmpty(segments.com.fortysevendegrees.thool.map(PathSegment(_)))
+//    fun absoluteOrEmptyS(segments: Seq[String]): PathSegments = absoluteOrEmpty(segments.com.fortysevendegrees.tapir.map(PathSegment(_)))
 //    fun absoluteOrEmpty(segments: Seq[Segment]): PathSegments =
 //    if (segments.isEmpty) EmptyPath else AbsolutePath(segments)
 //  }
@@ -563,11 +563,11 @@ sealed interface PathSegments {
 //  }
 //  case class AbsolutePath(segments: Seq[Segment]) extends PathSegments {
 //    override fun withSegments(ss: scala. collection . Seq [Segment]): AbsolutePath = copy(segments = ss.toList)
-//    override fun toString: String = "/"+segments.com.fortysevendegrees.thool.map(_.encoded).mkString("/")
+//    override fun toString: String = "/"+segments.com.fortysevendegrees.tapir.map(_.encoded).mkString("/")
 //  }
 //  case class RelativePath(segments: Seq[Segment]) extends PathSegments {
 //    override fun withSegments(ss: scala. collection . Seq [Segment]): RelativePath = copy(segments = ss.toList)
-//    override fun toString: String = segments.com.fortysevendegrees.thool.map(_.encoded).mkString("/")
+//    override fun toString: String = segments.com.fortysevendegrees.tapir.map(_.encoded).mkString("/")
 //  }
 //
 //  object PathSegment {
@@ -627,7 +627,7 @@ sealed interface PathSegments {
 //        case(k, vs) =>
 //        vs match {
 //          case Seq () => List(Value(k))
-//          case s => s . com.fortysevendegrees.thool.map (v => KeyValue(k, v))
+//          case s => s . com.fortysevendegrees.tapir.map (v => KeyValue(k, v))
 //        }
 //      }
 //    }

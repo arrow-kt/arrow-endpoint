@@ -1,12 +1,14 @@
 package com.fortysevendegrees.thool.ktor
 
 import com.fortysevendegrees.thool.RawBodyType
-import io.ktor.http.*
-import io.ktor.http.content.*
 import kotlinx.coroutines.flow.Flow
 import com.fortysevendegrees.thool.model.CodecFormat
 import com.fortysevendegrees.thool.model.HasHeaders
 import com.fortysevendegrees.thool.server.intrepreter.ToResponseBody
+import io.ktor.content.ByteArrayContent
+import io.ktor.http.ContentType
+import io.ktor.http.content.OutgoingContent
+import io.ktor.http.withCharset
 import io.ktor.utils.io.ByteWriteChannel
 import kotlinx.coroutines.flow.collect
 import java.nio.charset.Charset
@@ -29,7 +31,12 @@ class KtorToResponseBody : ToResponseBody<KtorResponseBody> {
   ): KtorResponseBody =
     ByteFlowContent(v, headers.contentLength(), format.toContentType(headers, charset))
 
-  private fun <R> rawValueToEntity(bodyType: RawBodyType<R>, headers: HasHeaders, format: CodecFormat, r: R): KtorResponseBody =
+  private fun <R> rawValueToEntity(
+    bodyType: RawBodyType<R>,
+    headers: HasHeaders,
+    format: CodecFormat,
+    r: R
+  ): KtorResponseBody =
     when (bodyType) {
       is RawBodyType.StringBody -> ByteArrayContent(
         (r as String).toByteArray(bodyType.charset),
@@ -64,7 +71,7 @@ class ByteFlowContent(
 ) : OutgoingContent.WriteChannelContent() {
 
   override suspend fun writeTo(channel: ByteWriteChannel): Unit {
-      flow.collect(channel::writeByte)
+    flow.collect(channel::writeByte)
   }
 }
 

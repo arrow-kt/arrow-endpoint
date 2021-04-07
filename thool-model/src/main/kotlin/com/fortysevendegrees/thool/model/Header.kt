@@ -8,7 +8,7 @@ import java.lang.IllegalStateException
 
 /** An HTTP header. The [[name]] property is case-insensitive during equality checks.
  *
- * To compare if two headers have the same name, use the [[is]] com.fortysevendegrees.thool.method, which does a case-insensitive check,
+ * To compare if two headers have the same name, use the [[is]] com.fortysevendegrees.tapir.method, which does a case-insensitive check,
  * instead of comparing the [[name]] property.
  *
  * The [[name]] and [[value]] should be already encoded (if necessary), as when serialised, they end up unmodified in
@@ -41,25 +41,25 @@ data class Header(val name: String, val value: String) {
     fun safe(name: String, value: String): Either<String, Header> =
       Rfc2616.validateToken("Header name", name)?.left() ?: Header(name, value).right()
 
-//    def accept(mediaType: MediaType, additionalMediaTypes: MediaType*): Header = accept(s"${(mediaType :: additionalMediaTypes.toList).com.fortysevendegrees.thool.map(_.noCharset).mkString(", ")}")
+//    def accept(mediaType: MediaType, additionalMediaTypes: MediaType*): Header = accept(s"${(mediaType :: additionalMediaTypes.toList).com.fortysevendegrees.tapir.map(_.noCharset).mkString(", ")}")
 //    def accept(mediaRanges: String): Header = Header(HeaderNames.Accept, mediaRanges)
 //    def acceptCharset(charsetRanges: String): Header = Header(HeaderNames.AcceptCharset, charsetRanges)
 //    def acceptEncoding(encodingRanges: String): Header = Header(HeaderNames.AcceptEncoding, encodingRanges)
 //    def accessControlAllowCredentials(allow: Boolean): Header =Header(HeaderNames.AccessControlAllowCredentials, allow.toString)
 //    def accessControlAllowHeaders(headerNames: String*): Header =Header(HeaderNames.AccessControlAllowHeaders, headerNames.mkString(", "))
-//    def accessControlAllowMethods(methods: Method*): Header =Header(HeaderNames.AccessControlAllowMethods, methods.com.fortysevendegrees.thool.map(_.com.fortysevendegrees.thool.method).mkString(", "))
+//    def accessControlAllowMethods(methods: Method*): Header =Header(HeaderNames.AccessControlAllowMethods, methods.com.fortysevendegrees.tapir.map(_.com.fortysevendegrees.tapir.method).mkString(", "))
 //    def accessControlAllowOrigin(originRange: String): Header =Header(HeaderNames.AccessControlAllowOrigin, originRange)
 //    def accessControlExposeHeaders(headerNames: String*): Header =Header(HeaderNames.AccessControlExposeHeaders, headerNames.mkString(", "))
 //    def accessControlMaxAge(deltaSeconds: Long): Header =Header(HeaderNames.AccessControlMaxAge, deltaSeconds.toString)
 //    def accessControlRequestHeaders(headerNames: String*): Header =Header(HeaderNames.AccessControlRequestHeaders, headerNames.mkString(", "))
-//    def accessControlRequestMethod(com.fortysevendegrees.thool.method: Method): Header =Header(HeaderNames.AccessControlRequestMethod, com.fortysevendegrees.thool.method.toString)
+//    def accessControlRequestMethod(com.fortysevendegrees.tapir.method: Method): Header =Header(HeaderNames.AccessControlRequestMethod, com.fortysevendegrees.tapir.method.toString)
 //    def authorization(authType: String, credentials: String): Header =Header(HeaderNames.Authorization, s"$authType $credentials")
 //    def cacheControl(first: CacheDirective, other: CacheDirective*): Header = cacheControl(first +: other)
-//    def cacheControl(directives: Iterable[CacheDirective]): Header =Header(HeaderNames.CacheControl, directives.com.fortysevendegrees.thool.map(_.toString).mkString(", "))
+//    def cacheControl(directives: Iterable[CacheDirective]): Header =Header(HeaderNames.CacheControl, directives.com.fortysevendegrees.tapir.map(_.toString).mkString(", "))
 //    def contentLength(length: Long): Header = Header(HeaderNames.ContentLength, length.toString)
 //    def contentEncoding(encoding: String): Header = Header(HeaderNames.ContentEncoding, encoding)
 //    def contentType(mediaType: MediaType): Header = Header(HeaderNames.ContentType, mediaType.toString)
-//    def cookie(firstCookie: Cookie, otherCookies: Cookie*): Header =Header(HeaderNames.Cookie, (firstCookie +: otherCookies).com.fortysevendegrees.thool.map(_.toString).mkString("; "))
+//    def cookie(firstCookie: Cookie, otherCookies: Cookie*): Header =Header(HeaderNames.Cookie, (firstCookie +: otherCookies).com.fortysevendegrees.tapir.map(_.toString).mkString("; "))
 //    def etag(tag: String): Header = etag(ETag(tag))
 //    def etag(tag: ETag): Header = Header(HeaderNames.Etag, tag.toString)
 //    def expires(i: Instant): Header =Header(HeaderNames.Expires, DateTimeFormatter.RFC_1123_DATE_TIME.format(i.atZone(GMT)))
