@@ -12,12 +12,17 @@ sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
 
   sealed interface Single<A> : EndpointIO<A>, EndpointInput.Single<A>, EndpointOutput.Single<A>
 
-  sealed interface Basic<L, A, CF : CodecFormat> : Single<A>, EndpointInput.Basic<L, A, CF>, EndpointOutput.Basic<L, A, CF> {
+  sealed interface Basic<L, A, CF : CodecFormat> :
+    Single<A>,
+    EndpointInput.Basic<L, A, CF>,
+    EndpointOutput.Basic<L, A, CF> {
     override fun <B> copyWith(c: Codec<L, B, CF>, i: Info<B>): Basic<L, B, CF>
 
     override fun <B> map(mapping: Mapping<A, B>): Basic<L, B, CF> = copyWith(codec.map(mapping), info.map(mapping))
     override fun schema(s: Schema<A>?): Basic<L, A, CF> = copyWith(codec.schema(s), info)
-    override fun modifySchema(modify: (Schema<A>) -> Schema<A>): Basic<L, A, CF> = copyWith(codec.modifySchema(modify), info)
+    override fun modifySchema(modify: (Schema<A>) -> Schema<A>): Basic<L, A, CF> =
+      copyWith(codec.modifySchema(modify), info)
+
     override fun description(d: String): Basic<L, A, CF> = copyWith(codec, info.description(d))
     override fun default(d: A): Basic<L, A, CF> = copyWith(codec.modifySchema { it.default(d, codec.encode(d)) }, info)
     override fun example(t: A): Basic<L, A, CF> = copyWith(codec, info.example(t))
@@ -56,6 +61,7 @@ sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
   ) : Basic<R, T, CodecFormat> {
     override fun <B> copyWith(c: Codec<R, B, CodecFormat>, i: Info<B>): Body<R, B> =
       Body(bodyType, c, i)
+
     override fun toString(): String {
       val charset = when (bodyType) {
         is RawBodyType.StringBody -> " (${bodyType.charset})"
@@ -75,6 +81,7 @@ sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
       c: Codec<Flow<Byte>, B, CodecFormat>,
       i: Info<B>
     ): StreamBody<B> = StreamBody(c, i, charset)
+
     override fun toString(): String = "{body as stream}"
   }
 
@@ -121,7 +128,6 @@ sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
     override fun <D> map(mapping: Mapping<C, D>): MappedPair<A, B, C, D> = MappedPair(this, mapping)
     override fun toString(): String = "EndpointIO.Pair($first, $second)"
   }
-
 }
 
 fun addValidatorShow(s: String, v: Validator<*>): String =
@@ -130,7 +136,9 @@ fun addValidatorShow(s: String, v: Validator<*>): String =
 // We need to support this Arity-22
 @JvmName("and")
 fun <A, B> EndpointIO<A>.and(other: EndpointIO<B>): EndpointIO<Pair<A, B>> =
-  EndpointIO.Pair(this, other,
+  EndpointIO.Pair(
+    this,
+    other,
     { p1, p2 -> Params.ParamsAsList(listOf(p1.asAny, p2.asAny)) },
     { p ->
       Pair(
@@ -142,21 +150,27 @@ fun <A, B> EndpointIO<A>.and(other: EndpointIO<B>): EndpointIO<Pair<A, B>> =
 
 @JvmName("andRightUnit")
 fun <A> EndpointIO<A>.and(other: EndpointIO<Unit>): EndpointIO<A> =
-  EndpointIO.Pair(this, other,
+  EndpointIO.Pair(
+    this,
+    other,
     { p1, _ -> p1 },
     { p -> Pair(p, Params.Unit) }
   )
 
 @JvmName("andLeftUnit")
 fun <A> EndpointIO<Unit>.and(other: EndpointIO<A>, dummy: Unit = Unit): EndpointIO<A> =
-  EndpointIO.Pair(this, other,
+  EndpointIO.Pair(
+    this,
+    other,
     { _, p2 -> p2 },
     { p -> Pair(Params.Unit, p) }
   )
 
 @JvmName("and3")
 fun <A, B, C> EndpointIO<Pair<A, B>>.and(other: EndpointIO<C>): EndpointIO<Triple<A, B, C>> =
-  EndpointIO.Pair(this, other,
+  EndpointIO.Pair(
+    this,
+    other,
     { p1, p2 -> Params.ParamsAsList(p1.asList + p2.asAny) },
     { p ->
       Pair(
@@ -168,7 +182,9 @@ fun <A, B, C> EndpointIO<Pair<A, B>>.and(other: EndpointIO<C>): EndpointIO<Tripl
 
 @JvmName("and2Pair")
 fun <A, B, C, D> EndpointIO<Pair<A, B>>.and(other: EndpointIO<Pair<C, D>>): EndpointIO<Tuple4<A, B, C, D>> =
-  EndpointIO.Pair(this, other,
+  EndpointIO.Pair(
+    this,
+    other,
     { p1, p2 -> Params.ParamsAsList(p1.asList + p2.asList) },
     { p ->
       Pair(
@@ -180,7 +196,9 @@ fun <A, B, C, D> EndpointIO<Pair<A, B>>.and(other: EndpointIO<Pair<C, D>>): Endp
 
 @JvmName("and4")
 fun <A, B, C, D> EndpointIO<Triple<A, B, C>>.and(other: EndpointIO<D>): EndpointIO<Tuple4<A, B, C, D>> =
-  EndpointIO.Pair(this, other,
+  EndpointIO.Pair(
+    this,
+    other,
     { p1, p2 -> Params.ParamsAsList(p1.asList + p2.asAny) },
     { p ->
       Pair(
@@ -192,7 +210,9 @@ fun <A, B, C, D> EndpointIO<Triple<A, B, C>>.and(other: EndpointIO<D>): Endpoint
 
 @JvmName("and5")
 fun <A, B, C, D, E> EndpointIO<Tuple4<A, B, C, D>>.and(other: EndpointIO<D>): EndpointIO<Tuple5<A, B, C, D, E>> =
-  EndpointIO.Pair(this, other,
+  EndpointIO.Pair(
+    this,
+    other,
     { p1, p2 -> Params.ParamsAsList(p1.asList + p2.asAny) },
     { p ->
       Pair(

@@ -1,3 +1,5 @@
+package com.fortysevendegrees.thool.server.intrepreter
+
 import com.fortysevendegrees.thool.CombineParams
 import com.fortysevendegrees.thool.DecodeResult
 import com.fortysevendegrees.thool.EndpointIO

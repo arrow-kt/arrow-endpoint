@@ -1,3 +1,5 @@
+package com.fortysevendegrees.thool.server.intrepreter
+
 import com.fortysevendegrees.thool.EndpointIO
 import com.fortysevendegrees.thool.EndpointOutput
 import com.fortysevendegrees.thool.Mapping
@@ -10,7 +12,6 @@ import com.fortysevendegrees.thool.model.Header
 import com.fortysevendegrees.thool.model.HeaderNames
 import com.fortysevendegrees.thool.model.MediaType
 import com.fortysevendegrees.thool.model.StatusCode
-import com.fortysevendegrees.thool.server.intrepreter.ToResponseBody
 import kotlinx.coroutines.flow.Flow
 import java.nio.charset.Charset
 
@@ -59,8 +60,22 @@ data class OutputValues<B>(
       when (output) {
         is EndpointIO.Single<*> -> applySingle(rawToResponseBody, output, value, ov)
         is EndpointOutput.Single<*> -> applySingle(rawToResponseBody, output, value, ov)
-        is EndpointOutput.Pair<*, *, *> -> applyPair(rawToResponseBody, output.first, output.second, output.split, value, ov)
-        is EndpointIO.Pair<*, *, *> -> applyPair(rawToResponseBody, output.first, output.second, output.split, value, ov)
+        is EndpointOutput.Pair<*, *, *> -> applyPair(
+          rawToResponseBody,
+          output.first,
+          output.second,
+          output.split,
+          value,
+          ov
+        )
+        is EndpointIO.Pair<*, *, *> -> applyPair(
+          rawToResponseBody,
+          output.first,
+          output.second,
+          output.split,
+          value,
+          ov
+        )
         is EndpointOutput.Void -> throw IllegalArgumentException("Cannot encode a void output!")
       }
 

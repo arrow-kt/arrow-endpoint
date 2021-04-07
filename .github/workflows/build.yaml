@@ -1,0 +1,14 @@
+name: Build
+
+on: pull_request
+
+jobs:
+  build:
+    env:
+      JAVA_OPTS: -Xms512m -Xmx1024m
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Build project
+        run: ./gradlew ktlintCheck build

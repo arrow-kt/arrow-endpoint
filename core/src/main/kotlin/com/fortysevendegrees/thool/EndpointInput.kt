@@ -11,18 +11,26 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
 
   // Marker for EndpointInput with single output
   sealed interface Single<A> : EndpointInput<A>
-  sealed interface Basic<L, A, CF: CodecFormat> : Single<A>, EndpointTransput.Basic<L, A, CF> {
+  sealed interface Basic<L, A, CF : CodecFormat> : Single<A>, EndpointTransput.Basic<L, A, CF> {
 
     override fun <B> copyWith(c: Codec<L, B, CF>, i: EndpointIO.Info<B>): Basic<L, B, CF>
 
     override fun <B> map(mapping: Mapping<A, B>): Basic<L, B, CF> = copyWith(codec.map(mapping), info.map(mapping))
     override fun schema(s: Schema<A>?): EndpointInput.Basic<L, A, CF> = copyWith(codec.schema(s), info)
-    override fun modifySchema(modify: (Schema<A>) -> Schema<A>): EndpointInput.Basic<L, A, CF> = copyWith(codec.modifySchema(modify), info)
+    override fun modifySchema(modify: (Schema<A>) -> Schema<A>): EndpointInput.Basic<L, A, CF> =
+      copyWith(codec.modifySchema(modify), info)
+
     override fun description(d: String): EndpointInput.Basic<L, A, CF> = copyWith(codec, info.description(d))
-    override fun default(d: A): EndpointInput.Basic<L, A, CF> = copyWith(codec.modifySchema { it.default(d, codec.encode(d)) }, info)
+    override fun default(d: A): EndpointInput.Basic<L, A, CF> =
+      copyWith(codec.modifySchema { it.default(d, codec.encode(d)) }, info)
+
     override fun example(t: A): EndpointInput.Basic<L, A, CF> = copyWith(codec, info.example(t))
-    override fun example(example: EndpointIO.Info.Example<A>): EndpointInput.Basic<L, A, CF> = copyWith(codec, info.example(example))
-    override fun examples(examples: List<EndpointIO.Info.Example<A>>): EndpointInput.Basic<L, A, CF> = copyWith(codec, info.examples(examples))
+    override fun example(example: EndpointIO.Info.Example<A>): EndpointInput.Basic<L, A, CF> =
+      copyWith(codec, info.example(example))
+
+    override fun examples(examples: List<EndpointIO.Info.Example<A>>): EndpointInput.Basic<L, A, CF> =
+      copyWith(codec, info.examples(examples))
+
     override fun deprecated(): EndpointInput.Basic<L, A, CF> = copyWith(codec, info.deprecated(true))
   }
 
@@ -35,6 +43,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
       c: Codec<List<String>, B, CodecFormat.TextPlain>,
       i: EndpointIO.Info<B>
     ): Query<B> = Query(name, c, i)
+
     override fun toString(): String = addValidatorShow("?$name", codec.validator())
   }
 
@@ -46,6 +55,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
       c: Codec<com.fortysevendegrees.thool.model.QueryParams, B, CodecFormat.TextPlain>,
       i: EndpointIO.Info<B>
     ): QueryParams<B> = QueryParams(c, i)
+
     override fun toString(): String = "?..."
   }
 
@@ -58,6 +68,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
       c: Codec<Unit, B, CodecFormat.TextPlain>,
       i: EndpointIO.Info<B>
     ): FixedMethod<B> = FixedMethod(m, c, i)
+
     override fun toString(): String = m.value
   }
 
@@ -70,6 +81,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
       c: Codec<Unit, B, CodecFormat.TextPlain>,
       i: EndpointIO.Info<B>
     ): FixedPath<B> = FixedPath(s, c, i)
+
     override fun toString(): String = "/$s"
   }
 
@@ -82,6 +94,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
       c: Codec<String, B, CodecFormat.TextPlain>,
       i: EndpointIO.Info<B>
     ): PathCapture<B> = PathCapture(name, c, i)
+
     fun name(n: String): PathCapture<A> = copy(name = n)
     override fun toString(): String = addValidatorShow("/[${name ?: ""}]", codec.validator())
   }
@@ -94,6 +107,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
       c: Codec<List<String>, B, CodecFormat.TextPlain>,
       i: EndpointIO.Info<B>
     ): PathsCapture<B> = PathsCapture(c, i)
+
     override fun toString(): String = "/..."
   }
 
@@ -106,6 +120,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
       c: Codec<String?, B, CodecFormat.TextPlain>,
       i: EndpointIO.Info<B>
     ): Cookie<B> = Cookie(name, c, i)
+
     override fun toString(): String = addValidatorShow("{cookie $name}", codec.validator())
   }
 
@@ -138,7 +153,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
       else -> emptyList()
     }
 
-  fun asListOfBasicInputs(includeAuth: Boolean = true): List<Basic<*, * ,* >> =
+  fun asListOfBasicInputs(includeAuth: Boolean = true): List<Basic<*, *, *>> =
     traverseInputs({ it is Basic<*, *, *> /* || it is EndpointInput.Auth */ }) {
       when (it) {
         is Basic<*, *, *> -> listOf(it)
@@ -151,7 +166,9 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
 // We need to support this Arity-22
 @JvmName("and")
 fun <A, B> EndpointInput<A>.and(other: EndpointInput<B>): EndpointInput<Pair<A, B>> =
-  EndpointInput.Pair(this, other,
+  EndpointInput.Pair(
+    this,
+    other,
     { p1, p2 -> Params.ParamsAsList(listOf(p1.asAny, p2.asAny)) },
     { p ->
       Pair(
@@ -163,14 +180,18 @@ fun <A, B> EndpointInput<A>.and(other: EndpointInput<B>): EndpointInput<Pair<A, 
 
 @JvmName("andLeftUnit")
 fun <A> EndpointInput<Unit>.and(other: EndpointInput<A>, dummy: Unit = Unit): EndpointInput<A> =
-  EndpointInput.Pair(this, other,
+  EndpointInput.Pair(
+    this,
+    other,
     { _, p2 -> p2 },
     { p -> Pair(Params.Unit, p) }
   )
 
 @JvmName("and2")
 fun <A, B, C> EndpointInput<Pair<A, B>>.and(other: EndpointInput<C>): EndpointInput<Triple<A, B, C>> =
-  EndpointInput.Pair(this, other,
+  EndpointInput.Pair(
+    this,
+    other,
     { p1, p2 -> Params.ParamsAsList(p1.asList + p2.asAny) },
     { p ->
       Pair(
@@ -182,7 +203,9 @@ fun <A, B, C> EndpointInput<Pair<A, B>>.and(other: EndpointInput<C>): EndpointIn
 
 @JvmName("and2Pair")
 fun <A, B, C, D> EndpointInput<Pair<A, B>>.and(other: EndpointInput<Pair<C, D>>): EndpointInput<Tuple4<A, B, C, D>> =
-  EndpointInput.Pair(this, other,
+  EndpointInput.Pair(
+    this,
+    other,
     { p1, p2 -> Params.ParamsAsList(p1.asList + p2.asList) },
     { p ->
       Pair(
@@ -194,7 +217,9 @@ fun <A, B, C, D> EndpointInput<Pair<A, B>>.and(other: EndpointInput<Pair<C, D>>)
 
 @JvmName("and2Unit")
 fun <A, B> EndpointInput<Pair<A, B>>.and(other: EndpointInput<Unit>): EndpointInput<Pair<A, B>> =
-  EndpointInput.Pair(this, other,
+  EndpointInput.Pair(
+    this,
+    other,
     { p1, _ -> p1 },
     { p ->
       Pair(
@@ -206,7 +231,9 @@ fun <A, B> EndpointInput<Pair<A, B>>.and(other: EndpointInput<Unit>): EndpointIn
 
 @JvmName("and4")
 fun <A, B, C, D> EndpointInput<Triple<A, B, C>>.and(other: EndpointInput<D>): EndpointInput<Tuple4<A, B, C, D>> =
-  EndpointInput.Pair(this, other,
+  EndpointInput.Pair(
+    this,
+    other,
     { p1, p2 -> Params.ParamsAsList(p1.asList + p2.asAny) },
     { p ->
       Pair(
@@ -218,7 +245,9 @@ fun <A, B, C, D> EndpointInput<Triple<A, B, C>>.and(other: EndpointInput<D>): En
 
 @JvmName("and5")
 fun <A, B, C, D, E> EndpointInput<Tuple4<A, B, C, D>>.and(other: EndpointInput<D>): EndpointInput<Tuple5<A, B, C, D, E>> =
-  EndpointInput.Pair(this, other,
+  EndpointInput.Pair(
+    this,
+    other,
     { p1, p2 -> Params.ParamsAsList(p1.asList + p2.asAny) },
     { p ->
       Pair(

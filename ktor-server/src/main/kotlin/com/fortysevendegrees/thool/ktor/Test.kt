@@ -17,9 +17,11 @@ fun Application.module(testing: Boolean = false) = Thool {
     .withInput(fixedPath("ping"))
     .withOutput(stringBody())
 
-  install(ServerEndpoint(pong) {
-    Either.Right("Pong")
-  })
+  install(
+    ServerEndpoint(pong) {
+      Either.Right("Pong")
+    }
+  )
 
   val helloWorld: Endpoint<Pair<String, String>, Unit, Project> =
     endpoint
@@ -31,7 +33,9 @@ fun Application.module(testing: Boolean = false) = Thool {
 
   println(helloWorld.renderPath()) // /hello?project={project}&language={language}
 
-  install(ServerEndpoint(helloWorld) { (project, language) ->
-    Either.Right(Project("other-$project", "other-$language"))
-  })
+  install(
+    ServerEndpoint(helloWorld) { (project, language) ->
+      Either.Right(Project("other-$project", "other-$language"))
+    }
+  )
 }

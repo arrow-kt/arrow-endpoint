@@ -1,15 +1,11 @@
 package com.fortysevendegrees.thool.server.intrepreter
 
 import com.fortysevendegrees.thool.Codec
-import DecodeBasicInputs
-import DecodeBasicInputsResult
 import com.fortysevendegrees.thool.DecodeResult
 import com.fortysevendegrees.thool.Endpoint
 import com.fortysevendegrees.thool.EndpointInput
 import com.fortysevendegrees.thool.EndpointInterceptor
 import com.fortysevendegrees.thool.EndpointOutput
-import InputValueResult
-import OutputValues
 import com.fortysevendegrees.thool.ServerRequest
 import com.fortysevendegrees.thool.ServerResponse
 import arrow.core.Either

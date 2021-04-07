@@ -38,5 +38,4 @@ sealed class CodecFormat {
   object TextEventStream : CodecFormat() {
     override val mediaType = MediaType.TextEventStream
   }
-
 }
