@@ -1,6 +1,5 @@
 package com.fortysevendegrees.thool
 
-import com.fortysevendegrees.thool.Validator.Single.*
 import com.fortysevendegrees.thool.Validator.Single.Primitive.Max
 import com.fortysevendegrees.thool.Validator.Single.Primitive.MaxLength
 import com.fortysevendegrees.thool.Validator.Single.Primitive.MaxSize
@@ -8,6 +7,10 @@ import com.fortysevendegrees.thool.Validator.Single.Primitive.Min
 import com.fortysevendegrees.thool.Validator.Single.Primitive.MinLength
 import com.fortysevendegrees.thool.Validator.Single.Primitive.MinSize
 import com.fortysevendegrees.thool.Validator.Single.Primitive.Pattern
+import com.fortysevendegrees.thool.Validator.Single.CollectionElements
+import com.fortysevendegrees.thool.Validator.Single.Mapped
+import com.fortysevendegrees.thool.Validator.Single.Primitive
+import com.fortysevendegrees.thool.Validator.Single.Custom
 import arrow.core.Option
 
 sealed class Validator<A> {
@@ -16,7 +19,9 @@ sealed class Validator<A> {
   open fun <B> contramap(g: (B) -> A): Validator<B> = Mapped(this, g)
 
   open fun asOptionElement(): Validator<Option<A>> = CollectionElements(this).contramap { it.toList() }
-  open fun asNullableElement(): Validator<A?> = CollectionElements(this).contramap { it?.let { listOf(it) } ?: emptyList() }
+  open fun asNullableElement(): Validator<A?> =
+    CollectionElements(this).contramap { it?.let { listOf(it) } ?: emptyList() }
+
   open fun asArrayElements(): Validator<Array<A>> = CollectionElements(this).contramap { it.toList() }
   open fun asListElements(): Validator<List<A>> = CollectionElements(this).contramap { it }
 
@@ -217,12 +222,14 @@ sealed class Validator<A> {
       is Primitive.Enum -> "in(${possibleValues.joinToString(",")}"
       is CollectionElements<*> -> elementValidator.show()?.let { "elements($it)" }
       is Mapped<*, *> -> wrapped.toString()
-      is All<*> -> validators.takeIf { it.isNotEmpty() }?.joinToString(",", prefix = "all(", postfix = ")") { it.toString() }
-      is Any<*> -> validators.takeIf { it.isNotEmpty() }?.joinToString(",", prefix = "any(", postfix = ")") { it.toString() } ?: "reject"
+      is All<*> -> validators.takeIf { it.isNotEmpty() }
+        ?.joinToString(",", prefix = "all(", postfix = ")") { it.toString() }
+      is Any<*> -> validators.takeIf { it.isNotEmpty() }
+        ?.joinToString(",", prefix = "any(", postfix = ")") { it.toString() } ?: "reject"
     }
 }
 
-//object com.fortysevendegrees.thool.Validator extends ValidatorEnumMacro {
+// object com.fortysevendegrees.thool.Validator extends ValidatorEnumMacro {
 //  // Used to capture encoding of a value to a raw format, which will then be directly rendered as a string in
 //  // documentation. This is needed as codecs for nested types aren't available.
 //  type EncodeToRaw < A > = T => Option[scala.Any]
@@ -300,7 +307,7 @@ sealed class Validator<A> {
 //      case Ref (_) => Some("recursive")
 //    }
 //  }
-//}
+//  }
 
 sealed class ValidationError<A> {
   abstract fun prependPath(f: FieldName): ValidationError<A>
@@ -324,5 +331,4 @@ sealed class ValidationError<A> {
     ValidationError<A>() {
     override fun prependPath(f: FieldName): ValidationError<A> = copy(path = listOf(f) + path)
   }
-
 }

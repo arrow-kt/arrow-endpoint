@@ -116,7 +116,6 @@ interface Mapping<L, H> {
   }
 }
 
-
 sealed class DecodeResult<out A> {
   abstract fun <B> map(transform: (A) -> B): DecodeResult<B>
   abstract fun <B> flatMap(transform: (A) -> DecodeResult<B>): DecodeResult<B>

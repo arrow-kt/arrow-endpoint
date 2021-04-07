@@ -19,7 +19,6 @@ interface ResponseMetadata : HasHeaders {
   val isServerError: Boolean
     get() = code.isServerError()
 
-
   companion object {
     operator fun invoke(statusCode: StatusCode, _statusText: String, _headers: List<Header>): ResponseMetadata =
       object : ResponseMetadata {

@@ -91,7 +91,6 @@ sealed class SchemaType {
     override fun show(): String = "ref($info)"
   }
 
-
   data class SObjectInfo(val fullName: String, val typeParameterShortNames: List<String> = emptyList()) {
     companion object {
       val unit: SObjectInfo = SObjectInfo(fullName = "Unit")

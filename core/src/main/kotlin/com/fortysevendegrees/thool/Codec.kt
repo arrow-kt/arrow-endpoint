@@ -49,12 +49,15 @@ interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
 
       override fun schema(): Schema<HH> =
         this@Codec.schema()
-          .map({ v ->
-            when (val res = codec.decode(v)) {
-              is DecodeResult.Failure -> null
-              is DecodeResult.Value -> res.value
-            }
-          }, codec::encode)
+          .map(
+            { v ->
+              when (val res = codec.decode(v)) {
+                is DecodeResult.Failure -> null
+                is DecodeResult.Value -> res.value
+              }
+            },
+            codec::encode
+          )
           .validate(codec.validator())
     }
 
@@ -137,7 +140,7 @@ interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
         .schema(Schema.offsetDateTime)
 
     val zonedDateTime: Codec<String, ZonedDateTime, CodecFormat.TextPlain> =
-      //string.com.fortysevendegrees.thool.map(ZonedDateTime.parse(_))(DateTimeFormatter.ISO_ZONED_DATE_TIME.format).schema(com.fortysevendegrees.thool.Schema.schemaForZonedDateTime)
+      // string.com.fortysevendegrees.thool.map(ZonedDateTime.parse(_))(DateTimeFormatter.ISO_ZONED_DATE_TIME.format).schema(com.fortysevendegrees.thool.Schema.schemaForZonedDateTime)
       string.map({ ZonedDateTime.parse(it) }, DateTimeFormatter.ISO_ZONED_DATE_TIME::format)
         .schema(Schema.zonedDateTime)
 
@@ -297,16 +300,21 @@ interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
       rawDecode: (String) -> DecodeResult<A>,
       encode: (A) -> String
     ): Codec<String, A, CF> =
-      fromDecodeAndMeta(schema, cf, { s: String ->
-        val toDecode = if (schema.isOptional && s == "") "null" else s
-        rawDecode(toDecode)
-      }) { t -> if (schema.isOptional) "" else encode(t) }
-
+      fromDecodeAndMeta(
+        schema,
+        cf,
+        { s: String ->
+          val toDecode = if (schema.isOptional && s == "") "null" else s
+          rawDecode(toDecode)
+        }
+      ) { t ->
+        if (schema.isOptional) "" else encode(t)
+      }
   }
 }
 
-
-/** The raw format of the body: what do we need to know, to read it and pass to a codec for further decoding.
+/**
+ * The raw format of the body: what do we need to know, to read it and pass to a codec for further decoding.
  */
 sealed interface RawBodyType<R> {
 

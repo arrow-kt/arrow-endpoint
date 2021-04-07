@@ -51,10 +51,12 @@ class KtorToResponseBody : ToResponseBody<KtorResponseBody> {
   private fun CodecFormat.toContentType(headers: HasHeaders, charset: Charset?): ContentType =
     headers.contentType()?.let(ContentType::parse) ?: when (this) {
       is CodecFormat.Json -> ContentType.Application.Json
-      is CodecFormat.TextPlain -> ContentType.Text.Plain
-        .withCharset(charset ?: StandardCharsets.UTF_8)
-      is CodecFormat.TextHtml -> ContentType.Text.Html
-        .withCharset(charset ?: StandardCharsets.UTF_8)
+      is CodecFormat.TextPlain ->
+        ContentType.Text.Plain
+          .withCharset(charset ?: StandardCharsets.UTF_8)
+      is CodecFormat.TextHtml ->
+        ContentType.Text.Html
+          .withCharset(charset ?: StandardCharsets.UTF_8)
       is CodecFormat.OctetStream -> ContentType.Application.OctetStream
       is CodecFormat.Zip -> ContentType.Application.Zip
       is CodecFormat.XWwwFormUrlencoded -> ContentType.Application.FormUrlEncoded
@@ -74,4 +76,3 @@ class ByteFlowContent(
     flow.collect(channel::writeByte)
   }
 }
-
