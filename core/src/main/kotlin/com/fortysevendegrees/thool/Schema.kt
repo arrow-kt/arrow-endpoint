@@ -99,7 +99,11 @@ data class Schema<T>(
   fun <U> modifyUnsafe(vararg fields: String, modify: (Schema<U>) -> Schema<U>): Schema<T> =
     modifyAtPath(fields.toList(), modify)
 
-  data class SCoproduct(override val info: SObjectInfo, val schemas: List<Schema<*>>, val discriminator: SchemaType.Discriminator?) :
+  data class SCoproduct(
+    override val info: SObjectInfo,
+    val schemas: List<Schema<*>>,
+    val discriminator: SchemaType.Discriminator?
+  ) :
     SchemaType.SObject() {
 
     override fun show(): String = "oneOf:" + schemas.joinToString(",")
@@ -112,9 +116,16 @@ data class Schema<T>(
       SCoproduct(
         info,
         schemas.map { s ->
-          when(s.schemaType) {
+          when (s.schemaType) {
             is SchemaType.SObject.SProduct ->
-              s.copy(schemaType = s.schemaType.copy(fields = s.schemaType.fields.toList() + Pair(discriminatorName, discriminatorSchema)))
+              s.copy(
+                schemaType = s.schemaType.copy(
+                  fields = s.schemaType.fields.toList() + Pair(
+                    discriminatorName,
+                    discriminatorSchema
+                  )
+                )
+              )
             else -> s
           }
         },
@@ -139,7 +150,8 @@ data class Schema<T>(
             fields = schemaType.fields.map { field ->
               val (fieldName, fieldSchema) = field
               if (fieldName.name == head) Pair(fieldName, fieldSchema.modifyAtPath(tail, modify)) else field
-            })
+            }
+          )
           schemaType is SchemaType.SObject.SOpenProduct && head == ModifyCollectionElements ->
             schemaType.copy(valueSchema = schemaType.valueSchema.modifyAtPath(tail, modify))
           schemaType is SchemaType.SObject.SCoproduct ->
@@ -208,5 +220,4 @@ data class Schema<T>(
     // Java Math
     val bigDecimal: Schema<BigDecimal> = Schema(SchemaType.SString)
   }
-
 }

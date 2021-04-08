@@ -151,5 +151,4 @@ object Thool {
 
   private fun <A> EndpointInput<A>.withMethod(other: EndpointInput.FixedMethod<Unit>): EndpointInput<A> =
     EndpointInput.Pair(this, other, { p1, _ -> p1 }, { p -> Pair(p, Params.Unit) })
-
 }

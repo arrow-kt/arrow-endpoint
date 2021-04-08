@@ -43,11 +43,11 @@ data class Uri(
 //   * is defined.
 //   */
 //  fun userInfo(ui: UserInfo?): Uri = TODO()
-////    ui match
-////  {
-////    case Some (v) => this.copy(authority = Some(authority.getOrElse(Authority.Empty).userInfo(Some(v))))
-////    case None => this.copy(authority = authority.com.fortysevendegrees.tapir.map(_.userInfo(None)))
-////  }
+// //    ui match
+// //  {
+// //    case Some (v) => this.copy(authority = Some(authority.getOrElse(Authority.Empty).userInfo(Some(v))))
+// //    case None => this.copy(authority = authority.com.fortysevendegrees.tapir.map(_.userInfo(None)))
+// //  }
 //
 //  fun userInfo(): UserInfo? =  TODO()//authority.flatMap(_.userInfo)
 //
@@ -59,11 +59,11 @@ data class Uri(
 //
 //  /** Replace the host. Does not validate the new host value if it's nonempty. */
 //  fun hostSegment(s: Option[Segment]): Uri = TODO()
-////    this.copy(authority = authority match
-////  {
-////    case Some (a) => s.com.fortysevendegrees.tapir.map(a.hostSegment(_))
-////    case None => s . com.fortysevendegrees.tapir.map (Authority(None, _, None))
-////  })
+// //    this.copy(authority = authority match
+// //  {
+// //    case Some (a) => s.com.fortysevendegrees.tapir.map(a.hostSegment(_))
+// //    case None => s . com.fortysevendegrees.tapir.map (Authority(None, _, None))
+// //  })
 //
 //  fun host: Option[String] = authority.com.fortysevendegrees.tapir.map(_.hostSegment.v)
 //
@@ -72,10 +72,10 @@ data class Uri(
 //
 //  /** Replace the port. Adds an empty host if one is absent, and port is defined. */
 //  fun port(p: Option[Int]): Uri = TODO()
-////    p match  {
-////    case Some (v) => this.copy(authority = Some(authority.getOrElse(Authority.Empty).port(v)))
-////    case None => this.copy(authority = authority.com.fortysevendegrees.tapir.map(_.port(None)))
-////  }
+// //    p match  {
+// //    case Some (v) => this.copy(authority = Some(authority.getOrElse(Authority.Empty).port(v)))
+// //    case None => this.copy(authority = authority.com.fortysevendegrees.tapir.map(_.port(None)))
+// //  }
 //
 //  fun port: Option[Int] = authority.flatMap(_.port)
 //
@@ -250,13 +250,13 @@ data class Uri(
 //
 //    s"$schemeS$authorityS$pathPrefixS$pathS$queryPrefixS$queryS$fragS"
 //  }
-//}
+// }
 //
-///** For a general description of the behavior of `apply`, `parse`, `safeApply` and `unsafeApply` methods, see [[sttp.model]].
+// /** For a general description of the behavior of `apply`, `parse`, `safeApply` and `unsafeApply` methods, see [[sttp.model]].
 // *
 // * The `safeApply` methods return a validation error if the scheme contains illegal characters or if the host is empty.
 // */
-//object Uri extends UriInterpolator {
+// object Uri extends UriInterpolator {
 //  private val AllowedSchemeCharacters = "[a-zA-Z][a-zA-Z0-9+-.]*".r
 //  private fun validateHost(host: Option[String]): Option[String] =
 //  host.flatMap(h => if (h.isEmpty) Some("Host cannot be empty") else None)
@@ -519,7 +519,6 @@ data class Uri(
 //  object FragmentEncoding {
 //    val Standard: Encoding = encode(Rfc3986.Fragment)
 //  }
-
 }
 
 typealias Encoding = (String) -> String
@@ -578,7 +577,8 @@ sealed interface PathSegments {
 //    fun apply(v: String): Segment = Segment(v, FragmentEncoding.Standard)
 //  }
 }
-  sealed interface QuerySegment
+
+sealed interface QuerySegment
 //  object QuerySegment {
 //
 //    /** @param keyEncoding See [[Plain.encoding]]

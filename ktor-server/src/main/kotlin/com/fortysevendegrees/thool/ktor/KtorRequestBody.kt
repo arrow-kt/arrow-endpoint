@@ -37,5 +37,4 @@ internal class KtorRequestBody(val ctx: ApplicationCall) : RequestBody {
 
   fun ByteArray.asFlow(): Flow<Byte> =
     flow { forEach { emit(it) } }
-  
 }

@@ -1,6 +1,0 @@
-rootProject.name = 'thool'
-include 'ktor-server'
-include 'core'
-include 'thool-model'
-include 'graphql'
-include 'examples'

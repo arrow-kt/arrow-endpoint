@@ -16,5 +16,4 @@ data class QueryParams(val ps: List<Pair<String, List<String>>>) {
   fun param(k: String, v: String): QueryParams = QueryParams(ps + Pair(k, listOf(v)))
   fun param(k: String, v: List<String>): QueryParams = QueryParams(ps + Pair(k, v))
   fun param(p: Map<String, String>): QueryParams = QueryParams(ps + p.map { (k, v) -> Pair(k, listOf(v)) })
-
 }

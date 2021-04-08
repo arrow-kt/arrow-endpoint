@@ -1,4 +1,3 @@
-import com.fortysevendegrees.thool.Codec
 import com.fortysevendegrees.thool.Endpoint
 import com.fortysevendegrees.thool.EndpointIO
 import com.fortysevendegrees.thool.EndpointInput
@@ -6,9 +5,7 @@ import com.fortysevendegrees.thool.EndpointOutput
 import com.fortysevendegrees.thool.EndpointTransput
 import com.fortysevendegrees.thool.Schema
 import com.fortysevendegrees.thool.SchemaType
-import com.fortysevendegrees.thool.Thool
 import com.fortysevendegrees.thool.model.Method
-import com.fortysevendegrees.thool.withInput
 import graphql.Scalars
 import graphql.schema.Coercing
 import graphql.schema.GraphQLArgument

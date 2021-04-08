@@ -9,17 +9,21 @@ sealed interface EndpointOutput<A> : EndpointTransput<A> {
 
   sealed interface Single<A> : EndpointOutput<A>
 
-  sealed interface Basic<L, A, CF: CodecFormat> : Single<A>, EndpointTransput.Basic<L, A, CF> {
+  sealed interface Basic<L, A, CF : CodecFormat> : Single<A>, EndpointTransput.Basic<L, A, CF> {
     override fun <B> copyWith(c: Codec<L, B, CF>, i: EndpointIO.Info<B>): Basic<L, B, CF>
 
     override fun <B> map(mapping: Mapping<A, B>): Basic<L, B, CF> = copyWith(codec.map(mapping), info.map(mapping))
     override fun schema(s: Schema<A>?): Basic<L, A, CF> = copyWith(codec.schema(s), info)
-    override fun modifySchema(modify: (Schema<A>) -> Schema<A>): Basic<L, A, CF> = copyWith(codec.modifySchema(modify), info)
+    override fun modifySchema(modify: (Schema<A>) -> Schema<A>): Basic<L, A, CF> =
+      copyWith(codec.modifySchema(modify), info)
+
     override fun description(d: String): Basic<L, A, CF> = copyWith(codec, info.description(d))
     override fun default(d: A): Basic<L, A, CF> = copyWith(codec.modifySchema { it.default(d, codec.encode(d)) }, info)
     override fun example(t: A): Basic<L, A, CF> = copyWith(codec, info.example(t))
     override fun example(example: EndpointIO.Info.Example<A>): Basic<L, A, CF> = copyWith(codec, info.example(example))
-    override fun examples(examples: List<EndpointIO.Info.Example<A>>): Basic<L, A, CF> = copyWith(codec, info.examples(examples))
+    override fun examples(examples: List<EndpointIO.Info.Example<A>>): Basic<L, A, CF> =
+      copyWith(codec, info.examples(examples))
+
     override fun deprecated(): Basic<L, A, CF> = copyWith(codec, info.deprecated(true))
   }
 
@@ -33,6 +37,7 @@ sealed interface EndpointOutput<A> : EndpointTransput<A> {
       i: EndpointIO.Info<B>
     ): StatusCode<B> =
       StatusCode(documentedCodes, c, i)
+
     override fun toString(): String = "status code - possible codes ($documentedCodes)"
     fun description(code: MStatusCode, d: String): StatusCode<A> {
       val updatedCodes = documentedCodes + Pair(code, EndpointIO.Info.empty<Unit>().description(d))
@@ -50,6 +55,7 @@ sealed interface EndpointOutput<A> : EndpointTransput<A> {
       i: EndpointIO.Info<B>
     ): FixedStatusCode<B> =
       FixedStatusCode(statusCode, c, i)
+
     override fun toString(): String = "status code ($statusCode)"
   }
 
@@ -88,19 +94,21 @@ sealed interface EndpointOutput<A> : EndpointTransput<A> {
     override fun <D> map(mapping: Mapping<C, D>): EndpointOutput<D> = MappedPair(this, mapping)
     override fun toString(): String = "EndpointOutput.Pair($first, $second)"
   }
-
 }
 
 // We need to support this Arity-22
 @JvmName("and")
 fun <A, B> EndpointOutput<A>.and(other: EndpointOutput<B>): EndpointOutput<Pair<A, B>> =
-  EndpointOutput.Pair(this, other,
+  EndpointOutput.Pair(
+    this,
+    other,
     { p1, p2 -> Params.ParamsAsList(listOf(p1.asAny, p2.asAny)) },
     { p ->
       Pair(
         Params.ParamsAsAny(p.asList.first()),
         Params.ParamsAsAny(p.asList.last())
-      ) }
+      )
+    }
   )
 
 @JvmName("andLeftUnit")
@@ -123,7 +131,9 @@ fun <A> EndpointOutput<A>.and(other: EndpointOutput<Unit>): EndpointOutput<A> =
 
 @JvmName("and3")
 fun <A, B, C> EndpointOutput<Pair<A, B>>.and(other: EndpointOutput<C>): EndpointOutput<Triple<A, B, C>> =
-  EndpointOutput.Pair(this, other,
+  EndpointOutput.Pair(
+    this,
+    other,
     { p1, p2 -> Params.ParamsAsList(p1.asList + p2.asAny) },
     { p ->
       Pair(

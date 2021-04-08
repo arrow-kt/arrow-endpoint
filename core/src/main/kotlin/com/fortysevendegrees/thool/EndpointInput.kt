@@ -143,7 +143,10 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
     when {
       isDefinedAt(this) -> handle(this)
       this is Pair<*, *, *> -> first.traverseInputs(isDefinedAt, handle) + second.traverseInputs(isDefinedAt, handle)
-      this is EndpointInput.Pair<*, *, *> -> first.traverseInputs(isDefinedAt, handle) + second.traverseInputs(isDefinedAt, handle)
+      this is EndpointInput.Pair<*, *, *> -> first.traverseInputs(isDefinedAt, handle) + second.traverseInputs(
+        isDefinedAt,
+        handle
+      )
       this is EndpointIO.Pair<*, *, *> -> first.traverseInputs(isDefinedAt, handle) + second.traverseInputs(
         isDefinedAt,
         handle
@@ -170,13 +173,14 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
 //  fun auth(): Method? =
 //    traverseInputs({ it is Auth }) { listOf((it as Auth).m) }
 //      .firstOrNull()
-
 }
 
 // We need to support this Arity-22
 @JvmName("and")
 fun <A, B> EndpointInput<A>.and(other: EndpointInput<B>): EndpointInput<Pair<A, B>> =
-  EndpointInput.Pair(this, other,
+  EndpointInput.Pair(
+    this,
+    other,
     { p1, p2 -> Params.ParamsAsList(listOf(p1.asAny, p2.asAny)) },
     { p ->
       Pair(
@@ -188,14 +192,18 @@ fun <A, B> EndpointInput<A>.and(other: EndpointInput<B>): EndpointInput<Pair<A, 
 
 @JvmName("andLeftUnit")
 fun <A> EndpointInput<Unit>.and(other: EndpointInput<A>, dummy: Unit = Unit): EndpointInput<A> =
-  EndpointInput.Pair(this, other,
+  EndpointInput.Pair(
+    this,
+    other,
     { _, p2 -> p2 },
     { p -> Pair(Params.Unit, p) }
   )
 
 @JvmName("and2")
 fun <A, B, C> EndpointInput<Pair<A, B>>.and(other: EndpointInput<C>): EndpointInput<Triple<A, B, C>> =
-  EndpointInput.Pair(this, other,
+  EndpointInput.Pair(
+    this,
+    other,
     { p1, p2 -> Params.ParamsAsList(p1.asList + p2.asAny) },
     { p ->
       Pair(
@@ -207,7 +215,9 @@ fun <A, B, C> EndpointInput<Pair<A, B>>.and(other: EndpointInput<C>): EndpointIn
 
 @JvmName("and2Pair")
 fun <A, B, C, D> EndpointInput<Pair<A, B>>.and(other: EndpointInput<Pair<C, D>>): EndpointInput<Tuple4<A, B, C, D>> =
-  EndpointInput.Pair(this, other,
+  EndpointInput.Pair(
+    this,
+    other,
     { p1, p2 -> Params.ParamsAsList(p1.asList + p2.asList) },
     { p ->
       Pair(
@@ -219,7 +229,9 @@ fun <A, B, C, D> EndpointInput<Pair<A, B>>.and(other: EndpointInput<Pair<C, D>>)
 
 @JvmName("and2Unit")
 fun <A, B> EndpointInput<Pair<A, B>>.and(other: EndpointInput<Unit>): EndpointInput<Pair<A, B>> =
-  EndpointInput.Pair(this, other,
+  EndpointInput.Pair(
+    this,
+    other,
     { p1, _ -> p1 },
     { p ->
       Pair(
@@ -231,7 +243,9 @@ fun <A, B> EndpointInput<Pair<A, B>>.and(other: EndpointInput<Unit>): EndpointIn
 
 @JvmName("and4")
 fun <A, B, C, D> EndpointInput<Triple<A, B, C>>.and(other: EndpointInput<D>): EndpointInput<Tuple4<A, B, C, D>> =
-  EndpointInput.Pair(this, other,
+  EndpointInput.Pair(
+    this,
+    other,
     { p1, p2 -> Params.ParamsAsList(p1.asList + p2.asAny) },
     { p ->
       Pair(
@@ -243,7 +257,9 @@ fun <A, B, C, D> EndpointInput<Triple<A, B, C>>.and(other: EndpointInput<D>): En
 
 @JvmName("and5")
 fun <A, B, C, D, E> EndpointInput<Tuple4<A, B, C, D>>.and(other: EndpointInput<D>): EndpointInput<Tuple5<A, B, C, D, E>> =
-  EndpointInput.Pair(this, other,
+  EndpointInput.Pair(
+    this,
+    other,
     { p1, p2 -> Params.ParamsAsList(p1.asList + p2.asAny) },
     { p ->
       Pair(
