@@ -1,4 +1,3 @@
-import com.expediagroup.graphql.generator.SchemaGeneratorConfig
 import com.fortysevendegrees.thool.Codec
 import com.fortysevendegrees.thool.Endpoint
 import com.fortysevendegrees.thool.EndpointIO
@@ -8,11 +7,9 @@ import com.fortysevendegrees.thool.EndpointTransput
 import com.fortysevendegrees.thool.Schema
 import com.fortysevendegrees.thool.SchemaType
 import com.fortysevendegrees.thool.Thool
-import com.fortysevendegrees.thool.Thool.get
 import com.fortysevendegrees.thool.model.Method
 import com.fortysevendegrees.thool.withInput
 import graphql.Scalars
-import graphql.nextgen.GraphQL
 import graphql.schema.Coercing
 import graphql.schema.GraphQLArgument
 import graphql.schema.GraphQLFieldDefinition
@@ -26,45 +23,37 @@ import graphql.schema.GraphQLScalarType
 import graphql.schema.GraphQLSchema
 import java.lang.IllegalStateException
 
-
-data class Example(val id: Int, val value: String)
-
-val endpoint = Thool {
-  endpoint
-    .get()
-    .withInput(fixedPath("hello"))
-    .withInput(query("project", Codec.string))
-}
-
-fun <I, E, O> Endpoint<I, E, O>.toSchema(
-  config: SchemaGeneratorConfig
-): GraphQLSchema {
+/**
+ * The conversion rules are the following:
+ *   - GET endpoints are turned into Queries
+ *   - PUT, POST and DELETE endpoints are turned into Mutations
+ *   - fixed query paths are used to name GraphQL fields (e.g. an endpoint /book/add will give a GraphQL field named bookAdd)
+ *   - query parameters, headers, cookies and request body are used as GraphQL arguments
+ */
+fun <I, E, O> Endpoint<I, E, O>.toSchema(): GraphQLSchema {
   val builder = GraphQLSchema.Builder()
     .description(info.description)
 
-  val httpMethod = input.method() ?: Method.GET
-
-  when {
-    httpMethod == Method.PUT || httpMethod == Method.POST || httpMethod == Method.DELETE -> TODO("Mutation")
-    else ->
-      builder.query(
-        GraphQLObjectType.Builder()
-          .name(config.topLevelNames.query)
-          .description(endpoint.info.description)
-          .field(generateFunction(config))
-          .build()
-      )
+  // Not covering all methods here yet :scream:
+  when (input.method() ?: Method.GET) {
+    Method.PUT, Method.POST, Method.DELETE -> TODO("Mutation")
+    Method.GET -> builder.query(
+      GraphQLObjectType.Builder()
+        .name("Query")
+        .description(info.description)
+        .field(generateFunction())
+        .build()
+    )
+    else -> TODO("RIP")
   }
 
   return builder.build()
 }
 
-fun <I, E, O> Endpoint<I, E, O>.generateFunction(
-  config: SchemaGeneratorConfig
-): GraphQLFieldDefinition =
+fun <I, E, O> Endpoint<I, E, O>.generateFunction(): GraphQLFieldDefinition =
   GraphQLFieldDefinition.Builder()
     .name(extractPath())
-    .deprecate("deprecationReason")
+    .apply { if (info.deprecated) deprecate("This method is deprecated") }
     .arguments(input.getArguments())
     .type(output.getReturnType())
     .build()
@@ -163,28 +152,29 @@ fun <A> Schema<A>.toType(): GraphQLInputType =
     SchemaType.SInteger -> Scalars.GraphQLInt
     SchemaType.SNumber -> Scalars.GraphQLFloat
     SchemaType.SString -> Scalars.GraphQLString
-    SchemaType.SBinary -> Scalars.GraphQLByte
+    SchemaType.SDate -> Scalars.GraphQLString
+    SchemaType.SDateTime -> Scalars.GraphQLString
+    SchemaType.SBinary -> Scalars.GraphQLString
     is SchemaType.SArray -> GraphQLList.list(type.element.toType())
-    is SchemaType.SObject.SProduct -> GraphQLInputObjectType.newInputObject()
-      .name(type.info.fullName)
-      .fields(
-        type.fields.map { (name, schema) ->
-          GraphQLInputObjectField.newInputObjectField()
-            .name(name.name)
-            .type(schema.toType())
+    is SchemaType.SObject.SProduct ->
+      GraphQLInputObjectType.newInputObject()
+        .name(type.info.fullName)
+        .fields(
+          type.fields.map { (name, schema) ->
+            GraphQLInputObjectField.newInputObjectField()
+              .name(name.name)
+              .type(schema.toType())
 //            .description()
-            .build()
-        }
-      )
+              .build()
+          }
+        )
 //    .description()
-      .build()
+        .build()
 
     is SchemaType.SObject.SOpenProduct -> TODO()
     is SchemaType.SObject.SCoproduct -> TODO("???")
     is Schema.SCoproduct -> TODO("???")
     is SchemaType.SRef -> TODO()
-    SchemaType.SDate -> TODO("???")
-    SchemaType.SDateTime -> TODO("???")
   }
 
 private fun <I, E, O> Endpoint<I, E, O>.extractPath(): String {

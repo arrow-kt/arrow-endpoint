@@ -11,21 +11,8 @@ repositories {
 
 dependencies {
     implementation project(':core')
-    implementation project(":thool-model")
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
-    implementation "io.arrow-kt:arrow-core:0.13.1"
-
-    // Probably not needed since we're working directly with com.graphql-java
-    implementation "com.expediagroup:graphql-kotlin-schema-generator:4.0.0-alpha.17"
-
-    implementation "com.expediagroup:graphql-kotlin-server:4.0.0-alpha.17"
-
-    implementation "io.ktor:ktor-server-core:1.5.3"
-    implementation "io.ktor:ktor-server-netty:1.5.3"
-    implementation "ch.qos.logback:logback-classic:1.2.3"
-
-    // Additional Scalars for
-//    compile 'com.graphql-java:graphql-java-extended-scalars:16.0.0'
+    compile 'com.graphql-java:graphql-java:16.2'
 }
 
 compileKotlin {

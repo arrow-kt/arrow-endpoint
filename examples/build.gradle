@@ -1,0 +1,24 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+    id 'org.jetbrains.kotlin.plugin.serialization'
+}
+
+group 'com.fortysevendegrees'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':core')
+    implementation project(':graphql')
+    implementation project(':ktor-server')
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    implementation "io.arrow-kt:arrow-core:0.13.1"
+    implementation "com.expediagroup:graphql-kotlin-server:4.0.0-alpha.17"
+    implementation "io.ktor:ktor-server-core:1.5.3"
+    implementation "io.ktor:ktor-server-netty:1.5.3"
+    implementation "ch.qos.logback:logback-classic:1.2.3"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.1.0"
+}
