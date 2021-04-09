@@ -10,6 +10,7 @@ import com.fortysevendegrees.thool.Codec
 import com.fortysevendegrees.thool.Thool
 import com.fortysevendegrees.thool.Thool.get
 import com.fortysevendegrees.thool.withInput
+import com.fortysevendegrees.thool.withOutput
 import graphql.GraphQL
 import graphql.schema.GraphQLSchema
 import io.ktor.application.Application
@@ -33,6 +34,7 @@ val helloWorld =
     .withInput(Thool.fixedPath("test"))
     .withInput(Thool.query("project", Codec.string))
     .withInput(Thool.query("language", Codec.string))
+    .withOutput(Thool.anyJsonBody(Project.jsonCodec))
 //      .withOutput(Thool.anyJsonBody(Codec.json(Schema.string, { DecodeResult.Value(it) }, { it })))
 
 val schema: GraphQLSchema = helloWorld.toSchema()

@@ -1,4 +1,5 @@
 import arrow.core.Either
+import arrow.core.right
 import com.fortysevendegrees.thool.Codec
 import com.fortysevendegrees.thool.Endpoint
 import com.fortysevendegrees.thool.Thool
@@ -20,16 +21,20 @@ import kotlinx.serialization.json.Json
 @Serializable
 data class Project(
   val name: String,
-  val language: String
+  val language: String = "kotlin"
 ) {
   companion object {
     val schema: Schema<Project> = Schema(
       SProduct(
         SObjectInfo("Project"),
         listOf(
-          Pair(FieldName("name"), Schema.string),
           Pair(
-            FieldName("age"), Schema.int.description("test").default(10)
+            FieldName("name"),
+            Schema.string.description("The name of this project")
+          ),
+          Pair(
+            FieldName("language"),
+            Schema.string.description("The programming language used for this project").default("kotlin")
           )
         )
       )
@@ -46,6 +51,8 @@ fun Application.endpointModule() = Thool {
     .withOutput(stringBody())
 
   install(ServerEndpoint(pong) { Either.Right("Pong") })
+
+  install(ServerEndpoint(endpoint.get().withInput(fixedPath("empty"))) { it.right() })
 
   val helloWorld: Endpoint<Pair<String, String>, Unit, Project> =
     endpoint

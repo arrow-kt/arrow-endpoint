@@ -52,48 +52,54 @@ fun <I, E, O> Endpoint<I, E, O>.generateFunction(): GraphQLFieldDefinition =
     .name(extractPath())
     .apply { if (info.deprecated) deprecate("This method is deprecated") }
     .arguments(input.getArguments())
-    .type(output.getReturnType())
+    .type(output.getReturnType().firstOrNull() ?: unitScalar)
     .build()
 
-fun <O> EndpointOutput<O>.getReturnType(): GraphQLOutputType =
-  when (this) {
-    is EndpointOutput.StatusCode -> Scalars.GraphQLString
-    is EndpointIO.Body<*, *> ->
-      GraphQLObjectType.Builder()
-        .description(info.description)
-        .name("body")
+fun <O> EndpointOutput<O>.getReturnType(): List<GraphQLOutputType> =
+  traverseOutputs<GraphQLOutputType>(
+    { it !is EndpointOutput.Pair<*, *, *> && it !is EndpointOutput.MappedPair<*, *, *, *> && it !is EndpointOutput.MappedPair<*, *, *, *> && it !is EndpointOutput.MappedPair<*, *, *, *> }
+  ) {
+    when (it) {
+      is EndpointIO.Body<*, *> -> listOf(
+        GraphQLObjectType.Builder()
+          .description(it.info.description)
+          .name(it.codec.schema().name() ?: "body")
+          .fields(it.codec.schema().toFields())
 //        .type(codec.schema().toType())
-        .build()
-    is EndpointIO.Empty ->
-      GraphQLScalarType.newScalar()
-        .name("Empty")
-        .description("Represents empty Input or Output")
-        .coercing(object : Coercing<Unit, Unit> {
-          override fun serialize(dataFetcherResult: Any?) = Unit
-          override fun parseValue(input: Any?) = Unit
-          override fun parseLiteral(input: Any?) = Unit
-        })
-        .build()
-    is EndpointOutput.Void ->
-      GraphQLScalarType.newScalar()
-        .name("Void")
-        .description("Represents no error output")
-        .coercing(object : Coercing<Unit, Unit> {
-          override fun serialize(dataFetcherResult: Any?) = Unit
-          override fun parseValue(input: Any?) = Unit
-          override fun parseLiteral(input: Any?) = Unit
-        })
-        .build()
-    is EndpointIO.Header -> TODO()
-    is EndpointIO.StreamBody -> TODO()
-    is EndpointOutput.FixedStatusCode -> TODO()
+          .build()
+      )
+      is EndpointIO.Header -> TODO()
+      is EndpointIO.StreamBody -> TODO()
+      is EndpointOutput.FixedStatusCode -> TODO()
+      is EndpointOutput.StatusCode -> TODO()
+      is EndpointOutput.Void -> emptyList()
+      is EndpointIO.Empty -> emptyList()
 
-    // What to do with tupled outputs ??
-    is EndpointIO.MappedPair<*, *, *, *> -> TODO("MapperPair output: $this")
-    is EndpointOutput.Pair<*, *, *> -> TODO("Tupled output: $this")
-    is EndpointOutput.MappedPair<*, *, *, *> -> TODO("MapperPair output: $this")
-    is EndpointIO.Pair<*, *, *> -> TODO("Tupled output: $this")
+      is EndpointIO.MappedPair<*, *, *, *> -> emptyList()
+      is EndpointOutput.Pair<*, *, *> -> emptyList()
+      is EndpointOutput.MappedPair<*, *, *, *> -> emptyList()
+      is EndpointIO.Pair<*, *, *> -> emptyList()
+    }
   }
+
+val unitScalar: GraphQLScalarType =
+  GraphQLScalarType.newScalar()
+    .name("Unit")
+    .description("The Unit type has exactly one value, and is used when there is no other meaningful value that could be returned.")
+    .coercing(object : Coercing<Any?, Any?> {
+      override fun serialize(dataFetcherResult: Any?): Any? = Unit
+      override fun parseValue(input: Any?): Any? = Unit
+      override fun parseLiteral(input: Any?): Any? = Unit
+    }).build()
+
+val voidScalar: GraphQLScalarType =
+  GraphQLScalarType.newScalar()
+    .name("Void")
+    .coercing(object : Coercing<Any?, Any?> {
+      override fun serialize(dataFetcherResult: Any?): Any? = Unit
+      override fun parseValue(input: Any?): Any? = Unit
+      override fun parseLiteral(input: Any?): Any? = Unit
+    }).build()
 
 fun <I> EndpointInput<I>.getArguments(): List<GraphQLArgument> =
   traverseInputs(
@@ -103,15 +109,15 @@ fun <I> EndpointInput<I>.getArguments(): List<GraphQLArgument> =
       is EndpointIO.Body<*, *> -> listOf(
         GraphQLArgument.Builder()
           .description(it.info.description)
-          .name("body")
-          .type(it.codec.schema().toType())
+          .name(it.codec.schema().name() ?: "body")
+          .type(it.codec.schema().toInputType())
           .build()
       )
       is EndpointInput.Query -> listOf(
         GraphQLArgument.Builder()
           .name(it.name)
           .description(it.info.description)
-          .type(it.codec.schema().toType())
+          .type(it.codec.schema().toInputType())
           .build()
       )
 
@@ -119,7 +125,7 @@ fun <I> EndpointInput<I>.getArguments(): List<GraphQLArgument> =
         GraphQLArgument.Builder()
           .name(it.name)
           .description(it.info.description)
-          .type(it.codec.schema().toType())
+          .type(it.codec.schema().toInputType())
           .build()
       )
 
@@ -127,7 +133,7 @@ fun <I> EndpointInput<I>.getArguments(): List<GraphQLArgument> =
         GraphQLArgument.Builder()
           .name(it.name)
           .description(it.info.description)
-          .type(it.codec.schema().toType())
+          .type(it.codec.schema().toInputType())
           .build()
       )
 
@@ -143,16 +149,18 @@ fun <I> EndpointInput<I>.getArguments(): List<GraphQLArgument> =
     }
   }
 
-fun <A> Schema<A>.toType(): GraphQLInputType =
+fun <A> Schema<A>.toInputType(): GraphQLInputType =
   when (val type = this.schemaType) {
     SchemaType.SBoolean -> Scalars.GraphQLBoolean
     SchemaType.SInteger -> Scalars.GraphQLInt
     SchemaType.SNumber -> Scalars.GraphQLFloat
-    SchemaType.SString -> Scalars.GraphQLString
+    SchemaType.SString ->
+      Scalars.GraphQLString
+
     SchemaType.SDate -> Scalars.GraphQLString
     SchemaType.SDateTime -> Scalars.GraphQLString
     SchemaType.SBinary -> Scalars.GraphQLString
-    is SchemaType.SArray -> GraphQLList.list(type.element.toType())
+    is SchemaType.SArray -> GraphQLList.list(type.element.toInputType())
     is SchemaType.SObject.SProduct ->
       GraphQLInputObjectType.newInputObject()
         .name(type.info.fullName)
@@ -160,7 +168,7 @@ fun <A> Schema<A>.toType(): GraphQLInputType =
           type.fields.map { (name, schema) ->
             GraphQLInputObjectField.newInputObjectField()
               .name(name.name)
-              .type(schema.toType())
+              .type(schema.toInputType())
 //            .description()
               .build()
           }
@@ -172,6 +180,110 @@ fun <A> Schema<A>.toType(): GraphQLInputType =
     is SchemaType.SObject.SCoproduct -> TODO("???")
     is Schema.SCoproduct -> TODO("???")
     is SchemaType.SRef -> TODO()
+  }
+
+fun <A> Schema<A>.toOutputType(): GraphQLOutputType =
+  when (val type = this.schemaType) {
+    SchemaType.SBoolean -> Scalars.GraphQLBoolean
+    SchemaType.SInteger -> Scalars.GraphQLInt
+    SchemaType.SNumber -> Scalars.GraphQLFloat
+    SchemaType.SString -> Scalars.GraphQLString
+    SchemaType.SDate -> Scalars.GraphQLString
+    SchemaType.SDateTime -> Scalars.GraphQLString
+    SchemaType.SBinary -> Scalars.GraphQLString
+    is SchemaType.SArray -> GraphQLList.list(type.element.toOutputType())
+    is SchemaType.SObject.SProduct ->
+      GraphQLObjectType.newObject()
+        .name(type.info.fullName)
+        .fields(
+          type.fields.map { (name, schema) ->
+            GraphQLFieldDefinition.newFieldDefinition()
+              .name(name.name)
+              .type(schema.toOutputType())
+//            .description()
+              .build()
+          }
+        )
+//    .description()
+        .build()
+
+    is SchemaType.SObject.SOpenProduct -> TODO()
+    is SchemaType.SObject.SCoproduct -> TODO("???")
+    is Schema.SCoproduct -> TODO("???")
+    is SchemaType.SRef -> TODO()
+  }
+
+fun <A> Schema<A>.toFields(): List<GraphQLFieldDefinition> =
+  when (val type = this.schemaType) {
+    SchemaType.SBoolean -> listOf(
+      GraphQLFieldDefinition.newFieldDefinition()
+        .type(Scalars.GraphQLBoolean)
+        .build()
+    )
+    SchemaType.SInteger -> listOf(
+      GraphQLFieldDefinition.newFieldDefinition()
+        .type(Scalars.GraphQLInt)
+        .build()
+    )
+    SchemaType.SNumber -> listOf(
+      GraphQLFieldDefinition.newFieldDefinition()
+        .type(Scalars.GraphQLFloat)
+        .build()
+    )
+    SchemaType.SString -> listOf(
+      GraphQLFieldDefinition.newFieldDefinition()
+        .type(Scalars.GraphQLString)
+        .build()
+    )
+    SchemaType.SDate -> listOf(
+      GraphQLFieldDefinition.newFieldDefinition()
+        .type(Scalars.GraphQLString)
+        .build()
+    )
+    SchemaType.SDateTime -> listOf(
+      GraphQLFieldDefinition.newFieldDefinition()
+        .type(Scalars.GraphQLString)
+        .build()
+    )
+    SchemaType.SBinary -> listOf(
+      GraphQLFieldDefinition.newFieldDefinition()
+        .type(Scalars.GraphQLString)
+        .build()
+    )
+    is SchemaType.SArray -> listOf(
+      GraphQLFieldDefinition.newFieldDefinition()
+        .type(GraphQLList.list(type.element.toInputType()))
+        .build()
+    )
+    is SchemaType.SObject.SProduct ->
+      type.fields.map { (name, schema) ->
+        GraphQLFieldDefinition.newFieldDefinition()
+          .name(name.name)
+          .type(schema.toOutputType())
+          .build()
+      }
+
+    is SchemaType.SObject.SOpenProduct -> TODO()
+    is SchemaType.SObject.SCoproduct -> TODO("???")
+    is Schema.SCoproduct -> TODO("???")
+    is SchemaType.SRef -> TODO()
+  }
+
+fun Schema<*>.name(): String? =
+  when (val type = this.schemaType) {
+    is SchemaType.SArray -> "Array of ${type.element.name()}"
+    SchemaType.SBinary -> "Binary"
+    SchemaType.SBoolean -> "Boolean"
+    SchemaType.SDate -> "Date"
+    SchemaType.SDateTime -> "DateTime"
+    SchemaType.SInteger -> "Integer"
+    SchemaType.SNumber -> "Float"
+    is SchemaType.SObject.SCoproduct -> type.info.fullName
+    is Schema.SCoproduct -> type.info.fullName
+    is SchemaType.SObject.SOpenProduct -> type.info.fullName
+    is SchemaType.SObject.SProduct -> type.info.fullName
+    is SchemaType.SRef -> type.info.fullName
+    SchemaType.SString -> "String"
   }
 
 private fun <I, E, O> Endpoint<I, E, O>.extractPath(): String {

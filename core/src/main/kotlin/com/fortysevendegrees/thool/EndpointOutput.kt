@@ -73,10 +73,6 @@ sealed interface EndpointOutput<A> : EndpointTransput<A> {
 
   class Void<A> : EndpointOutput<A> {
     override fun <B> map(mapping: Mapping<A, B>): Void<B> = Void()
-
-    // This probably should be implemented as extension functions to overcome the `implicit concat: ParamConcat.Aux[T, U, TU]` (boilerplate heavy in Kotlin)
-//    override def and[U, TU](other: com.fortysevendegrees.thool.EndpointOutput[U])(implicit concat: ParamConcat.Aux[T, U, TU]): com.fortysevendegrees.thool.EndpointOutput[TU] =
-//    other.asInstanceOf[com.fortysevendegrees.thool.EndpointOutput[TU]]
     override fun toString(): String = "void"
   }
 
@@ -94,6 +90,23 @@ sealed interface EndpointOutput<A> : EndpointTransput<A> {
     override fun <D> map(mapping: Mapping<C, D>): EndpointOutput<D> = MappedPair(this, mapping)
     override fun toString(): String = "EndpointOutput.Pair($first, $second)"
   }
+
+  fun <A> traverseOutputs(isDefinedAt: (EndpointOutput<*>) -> Boolean, handle: (EndpointOutput<*>) -> List<A>): List<A> =
+    when {
+      isDefinedAt(this) -> handle(this)
+      this is EndpointOutput.Pair<*, *, *> -> first.traverseOutputs(isDefinedAt, handle) + second.traverseOutputs(
+        isDefinedAt,
+        handle
+      )
+      this is EndpointIO.Pair<*, *, *> -> first.traverseOutputs(isDefinedAt, handle) + second.traverseOutputs(
+        isDefinedAt,
+        handle
+      )
+      this is EndpointOutput.MappedPair<*, *, *, *> -> output.traverseOutputs(isDefinedAt, handle)
+      this is EndpointIO.MappedPair<*, *, *, *> -> wrapped.traverseOutputs(isDefinedAt, handle)
+//    this is EndpointOutput.OneOf<*, *> -> s.mappings.toList().flatMap { ut.output.traverseOutputs(handle) }
+      else -> emptyList()
+    }
 }
 
 // We need to support this Arity-22
