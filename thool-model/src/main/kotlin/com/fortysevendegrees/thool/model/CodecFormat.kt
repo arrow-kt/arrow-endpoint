@@ -1,41 +1,41 @@
 package com.fortysevendegrees.thool.model
 
-sealed class CodecFormat {
-  abstract val mediaType: MediaType
+sealed interface CodecFormat {
+  val mediaType: MediaType
 
-  object Json : CodecFormat() {
+  object Json : CodecFormat {
     override val mediaType = MediaType.ApplicationJson
   }
 
-  object Xml : CodecFormat() {
+  object Xml : CodecFormat {
     override val mediaType = MediaType.ApplicationXml
   }
 
-  object TextPlain : CodecFormat() {
+  object TextPlain : CodecFormat {
     override val mediaType = MediaType.TextPlain
   }
 
-  object TextHtml : CodecFormat() {
+  object TextHtml : CodecFormat {
     override val mediaType = MediaType.TextHtml
   }
 
-  object OctetStream : CodecFormat() {
+  object OctetStream : CodecFormat {
     override val mediaType = MediaType.ApplicationOctetStream
   }
 
-  object XWwwFormUrlencoded : CodecFormat() {
+  object XWwwFormUrlencoded : CodecFormat {
     override val mediaType = MediaType.ApplicationXWwwFormUrlencoded
   }
 
-  object MultipartFormData : CodecFormat() {
+  object MultipartFormData : CodecFormat {
     override val mediaType = MediaType.MultipartFormData
   }
 
-  object Zip : CodecFormat() {
+  object Zip : CodecFormat {
     override val mediaType = MediaType.ApplicationZip
   }
 
-  object TextEventStream : CodecFormat() {
+  object TextEventStream : CodecFormat {
     override val mediaType = MediaType.TextEventStream
   }
 }
