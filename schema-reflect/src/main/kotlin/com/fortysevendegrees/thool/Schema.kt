@@ -13,7 +13,8 @@ import java.time.OffsetDateTime
 import java.time.OffsetTime
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
-import java.util.*
+import java.util.UUID
+import java.util.Date
 import kotlin.reflect.KClass
 import kotlin.reflect.KVisibility
 
@@ -56,7 +57,7 @@ fun <A : Any> KClass<A>.schema(): Schema<A> =
     else -> (this as? KClass<Enum<*>>)?.let {
       Schema.Enum(
         Schema.ObjectInfo(it.qualifiedName ?: "<anonymous>"),
-        //MPP reflection??
+        // MPP reflection??
         it.java.enumConstants?.toList()?.map { Schema.EnumValue(it.name, it.ordinal) } ?: emptyList()
       )
     } ?: TODO("No schema supported for $this")
