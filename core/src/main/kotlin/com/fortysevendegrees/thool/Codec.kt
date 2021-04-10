@@ -34,9 +34,6 @@ interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
   fun schema(): Schema<H>
   val format: CF
 
-  override fun validator(): Validator<H> =
-    schema().validator
-
   override fun <HH> map(codec: Mapping<H, HH>): Codec<L, HH, CF> =
     object : Codec<L, HH, CF> {
       override fun rawDecode(l: L): DecodeResult<HH> =
@@ -49,16 +46,12 @@ interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
 
       override fun schema(): Schema<HH> =
         this@Codec.schema()
-          .map(
-            { v ->
-              when (val res = codec.decode(v)) {
-                is DecodeResult.Failure -> null
-                is DecodeResult.Value -> res.value
-              }
-            },
-            codec::encode
-          )
-          .validate(codec.validator())
+          .map { v ->
+            when (val res = codec.decode(v)) {
+              is DecodeResult.Failure -> null
+              is DecodeResult.Value -> res.value
+            }
+          }
     }
 
   fun <HH> mapDecode(f: (H) -> DecodeResult<HH>, g: (HH) -> H): Codec<L, HH, CF> =
@@ -88,12 +81,9 @@ interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
       override val format: CF2 = f
     }
 
-  override fun validate(v: Validator<H>): Codec<L, H, CF> =
-    schema(schema().validate(addEncodeToEnumValidator(v)))
-
   override fun decode(l: L): DecodeResult<H> {
     val res = super.decode(l)
-    val default = schema().default
+    val default = schema().info.default
     return when {
       res is DecodeResult.Failure.Missing && default != null ->
         DecodeResult.Value(default.first)
@@ -110,7 +100,7 @@ interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
         override val format: CF = f
       }
 
-    fun <L> idPlain(s: Schema<L> = Schema(SchemaType.SString)): Codec<L, L, CodecFormat.TextPlain> =
+    fun <L> idPlain(s: Schema<L> = Schema.string()): Codec<L, L, CodecFormat.TextPlain> =
       id(CodecFormat.TextPlain, s)
 
     fun <T> stringCodec(schema: Schema<T>, parse: (String) -> T): Codec<String, T, CodecFormat.TextPlain> =
@@ -304,11 +294,11 @@ interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
         schema,
         cf,
         { s: String ->
-          val toDecode = if (schema.isOptional && s == "") "null" else s
+          val toDecode = if (schema.isOptional() && s == "") "null" else s
           rawDecode(toDecode)
         }
       ) { t ->
-        if (schema.isOptional) "" else encode(t)
+        if (schema.isOptional() && (t == null || t == None)) "" else encode(t)
       }
   }
 }

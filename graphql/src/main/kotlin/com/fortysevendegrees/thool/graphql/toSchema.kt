@@ -1,10 +1,7 @@
 import com.fortysevendegrees.thool.Endpoint
-import com.fortysevendegrees.thool.EndpointIO
 import com.fortysevendegrees.thool.EndpointInput
 import com.fortysevendegrees.thool.EndpointOutput
-import com.fortysevendegrees.thool.EndpointTransput
 import com.fortysevendegrees.thool.Schema
-import com.fortysevendegrees.thool.SchemaType
 import com.fortysevendegrees.thool.asListOfBasicInputs
 import com.fortysevendegrees.thool.method
 import com.fortysevendegrees.thool.model.Method
@@ -21,7 +18,6 @@ import graphql.schema.GraphQLObjectType
 import graphql.schema.GraphQLOutputType
 import graphql.schema.GraphQLScalarType
 import graphql.schema.GraphQLSchema
-import java.lang.IllegalStateException
 
 /**
  * The conversion rules are the following:
@@ -106,7 +102,7 @@ fun <O> EndpointOutput<O>.getReturnType(): List<GraphQLOutputType> =
       it.codec.schema().toScalarOrNull()?.let(::listOf) ?: listOf(
         GraphQLObjectType.Builder()
           .description(it.info.description)
-          .name("body: ${it.codec.schema().name() ?: ""}")
+          .name(it.codec.schema().name())
           .fields(it.codec.schema().toFields())
           .build()
       )
@@ -115,7 +111,7 @@ fun <O> EndpointOutput<O>.getReturnType(): List<GraphQLOutputType> =
       it.codec.schema().toScalarOrNull()?.let(::listOf) ?: listOf(
         GraphQLObjectType.Builder()
           .description(it.info.description)
-          .name(it.codec.schema().name() ?: "")
+          .name(it.codec.schema().name())
           .fields(it.codec.schema().toFields())
           .build()
       )
@@ -124,7 +120,7 @@ fun <O> EndpointOutput<O>.getReturnType(): List<GraphQLOutputType> =
       it.codec.schema().toScalarOrNull()?.let(::listOf) ?: listOf(
         GraphQLObjectType.Builder()
           .description(it.info.description)
-          .name(it.codec.schema().name() ?: "")
+          .name(it.codec.schema().name())
           .fields(it.codec.schema().toFields())
           .build()
       )
@@ -135,7 +131,7 @@ fun <O> EndpointOutput<O>.getReturnType(): List<GraphQLOutputType> =
       it.codec.schema().toScalarOrNull()?.let(::listOf) ?: listOf(
         GraphQLObjectType.Builder()
           .description(it.info.description)
-          .name(it.codec.schema().name() ?: "")
+          .name(it.codec.schema().name())
           .fields(it.codec.schema().toFields())
           .build()
       )
@@ -144,19 +140,36 @@ fun <O> EndpointOutput<O>.getReturnType(): List<GraphQLOutputType> =
   )
 
 fun Schema<*>.toScalarOrNull(): GraphQLScalarType? =
-  when (this.schemaType) {
-    SchemaType.SBoolean -> Scalars.GraphQLBoolean
-    SchemaType.SInteger -> Scalars.GraphQLInt
-    SchemaType.SNumber -> Scalars.GraphQLFloat
-    SchemaType.SString -> Scalars.GraphQLString
-    SchemaType.SDate -> Scalars.GraphQLString
-    SchemaType.SDateTime -> Scalars.GraphQLString
-    SchemaType.SBinary -> Scalars.GraphQLString
-    is SchemaType.SArray -> null
-    is SchemaType.SObject.SCoproduct -> null
-    is SchemaType.SObject.SOpenProduct -> null
-    is SchemaType.SObject.SProduct -> null
-    is SchemaType.SRef -> null
+  when (this) {
+    is Schema.Boolean -> Scalars.GraphQLBoolean
+    is Schema.String -> Scalars.GraphQLString
+
+    is Schema.Number.Byte -> Scalars.GraphQLInt
+    is Schema.Number.Int -> Scalars.GraphQLInt
+    is Schema.Number.Short -> Scalars.GraphQLInt
+    is Schema.Number.UByte -> Scalars.GraphQLInt
+    is Schema.Number.UShort -> Scalars.GraphQLInt
+    is Schema.Number.Float -> Scalars.GraphQLFloat
+    is Schema.Number.Double -> Scalars.GraphQLFloat
+
+    is Schema.Binary -> Scalars.GraphQLString
+    is Schema.Date -> Scalars.GraphQLString
+    is Schema.DateTime -> Scalars.GraphQLString
+
+    is Schema.Nullable -> this.element.toScalarOrNull()
+
+    // TODO Check unsigned numbers
+    is Schema.Number.Long -> Scalars.GraphQLInt
+    is Schema.Number.ULong -> Scalars.GraphQLInt
+    is Schema.Number.UInt -> Scalars.GraphQLInt
+
+    is Schema.Coproduct -> null
+    is Schema.Either -> null
+    is Schema.Enum -> null
+    is Schema.List -> null
+    is Schema.Map -> null
+    is Schema.OpenProduct -> null
+    is Schema.Product -> null
   }
 
 val unitScalar: GraphQLScalarType =
@@ -222,52 +235,74 @@ fun <I> EndpointInput<I>.getArguments(): List<GraphQLArgument> =
   )
 
 fun <A> Schema<A>.toInputType(): GraphQLInputType =
-  when (val type = this.schemaType) {
-    SchemaType.SBoolean -> Scalars.GraphQLBoolean
-    SchemaType.SInteger -> Scalars.GraphQLInt
-    SchemaType.SNumber -> Scalars.GraphQLFloat
-    SchemaType.SString ->
-      Scalars.GraphQLString
+  when (this) {
+    is Schema.Boolean -> Scalars.GraphQLBoolean
+    is Schema.String -> Scalars.GraphQLString
+    is Schema.Number.Byte -> Scalars.GraphQLInt
+    is Schema.Number.Int -> Scalars.GraphQLInt
+    is Schema.Number.Short -> Scalars.GraphQLInt
+    is Schema.Number.UByte -> Scalars.GraphQLInt
+    is Schema.Number.UShort -> Scalars.GraphQLInt
+    is Schema.Number.Float -> Scalars.GraphQLFloat
+    is Schema.Number.Double -> Scalars.GraphQLFloat
+    is Schema.Binary -> Scalars.GraphQLString
+    is Schema.Date -> Scalars.GraphQLString
+    is Schema.DateTime -> Scalars.GraphQLString
+    is Schema.Nullable -> this.element.toInputType()
 
-    SchemaType.SDate -> Scalars.GraphQLString
-    SchemaType.SDateTime -> Scalars.GraphQLString
-    SchemaType.SBinary -> Scalars.GraphQLString
-    is SchemaType.SArray -> GraphQLList.list(type.element.toInputType())
-    is SchemaType.SObject.SProduct ->
+    // TODO Check unsigned numbers
+    is Schema.Number.Long -> Scalars.GraphQLInt
+    is Schema.Number.ULong -> Scalars.GraphQLInt
+    is Schema.Number.UInt -> Scalars.GraphQLInt
+
+    is Schema.List -> GraphQLList.list(element.toInputType())
+    is Schema.Product ->
       GraphQLInputObjectType.newInputObject()
-        .name(type.info.fullName)
+        .name(objectInfo.fullName)
         .fields(
-          type.fields.map { (name, schema) ->
+          fields.map { (name, schema) ->
             GraphQLInputObjectField.newInputObjectField()
               .name(name.name)
               .type(schema.toInputType())
-//            .description()
               .build()
           }
         )
-//    .description()
         .build()
 
-    is SchemaType.SObject.SOpenProduct -> TODO()
-    is SchemaType.SObject.SCoproduct -> TODO("???")
-    is SchemaType.SRef -> TODO()
+    is Schema.Map -> TODO("Map<keySchema, schemaValue>")
+    is Schema.OpenProduct -> TODO("Map<String, schemaValue>")
+    is Schema.Enum -> TODO("Union")
+    is Schema.Either -> TODO("Union")
+    is Schema.Coproduct -> TODO("Union")
   }
 
 fun <A> Schema<A>.toOutputType(): GraphQLOutputType =
-  when (val type = this.schemaType) {
-    SchemaType.SBoolean -> Scalars.GraphQLBoolean
-    SchemaType.SInteger -> Scalars.GraphQLInt
-    SchemaType.SNumber -> Scalars.GraphQLFloat
-    SchemaType.SString -> Scalars.GraphQLString
-    SchemaType.SDate -> Scalars.GraphQLString
-    SchemaType.SDateTime -> Scalars.GraphQLString
-    SchemaType.SBinary -> Scalars.GraphQLString
-    is SchemaType.SArray -> GraphQLList.list(type.element.toOutputType())
-    is SchemaType.SObject.SProduct ->
+  when (this) {
+    is Schema.Boolean -> Scalars.GraphQLBoolean
+    is Schema.String -> Scalars.GraphQLString
+    is Schema.Number.Byte -> Scalars.GraphQLInt
+    is Schema.Number.Int -> Scalars.GraphQLInt
+    is Schema.Number.Short -> Scalars.GraphQLInt
+    is Schema.Number.UByte -> Scalars.GraphQLInt
+    is Schema.Number.UShort -> Scalars.GraphQLInt
+    is Schema.Number.Float -> Scalars.GraphQLFloat
+    is Schema.Number.Double -> Scalars.GraphQLFloat
+    is Schema.Binary -> Scalars.GraphQLString
+    is Schema.Date -> Scalars.GraphQLString
+    is Schema.DateTime -> Scalars.GraphQLString
+    is Schema.Nullable -> this.element.toOutputType()
+
+    // TODO Check unsigned numbers
+    is Schema.Number.Long -> Scalars.GraphQLInt
+    is Schema.Number.ULong -> Scalars.GraphQLInt
+    is Schema.Number.UInt -> Scalars.GraphQLInt
+
+    is Schema.List -> GraphQLList.list(element.toInputType())
+    is Schema.Product ->
       GraphQLObjectType.newObject()
-        .name(type.info.fullName)
+        .name(objectInfo.fullName)
         .fields(
-          type.fields.map { (name, schema) ->
+          fields.map { (name, schema) ->
             GraphQLFieldDefinition.newFieldDefinition()
               .name(name.name)
               .type(schema.toOutputType())
@@ -278,84 +313,100 @@ fun <A> Schema<A>.toOutputType(): GraphQLOutputType =
 //    .description()
         .build()
 
-    is SchemaType.SObject.SOpenProduct -> TODO("Map<String, schemaValue>")
-    is SchemaType.SObject.SCoproduct -> TODO("Union")
-    is SchemaType.SRef -> TODO("Ref???????")
+    is Schema.Coproduct -> TODO("Union")
+    is Schema.Either -> TODO("Union")
+    is Schema.Enum -> TODO("Union")
+    is Schema.Map -> TODO("Map<String, schemaValue>")
+    is Schema.OpenProduct -> TODO("Map<A, schemaValue>")
   }
 
+val booleanOut = listOf(
+  GraphQLFieldDefinition.newFieldDefinition().type(Scalars.GraphQLBoolean)
+    .name("BooleanOut")
+    .build()
+)
+val intOut = listOf(
+  GraphQLFieldDefinition.newFieldDefinition().type(Scalars.GraphQLInt)
+    .name("IntOut")
+    .build()
+)
+val floatOut = listOf(
+  GraphQLFieldDefinition.newFieldDefinition().type(Scalars.GraphQLFloat)
+    .name("FloatOut")
+    .build()
+)
+val stringOut = listOf(
+  GraphQLFieldDefinition.newFieldDefinition().type(Scalars.GraphQLString)
+    .name("StringOut")
+    .build()
+)
+
 fun <A> Schema<A>.toFields(): List<GraphQLFieldDefinition> =
-  when (val type = this.schemaType) {
-    SchemaType.SBoolean -> listOf(
-      GraphQLFieldDefinition.newFieldDefinition()
-        .type(Scalars.GraphQLBoolean)
-        .build()
-    )
-    SchemaType.SInteger -> listOf(
-      GraphQLFieldDefinition.newFieldDefinition()
+  when (this) {
+    is Schema.Binary -> stringOut
+    is Schema.String -> stringOut
+    is Schema.Date -> stringOut
+    is Schema.DateTime -> stringOut
+    is Schema.Boolean -> booleanOut
+    is Schema.Number.Byte -> intOut
+    is Schema.Number.Int -> intOut
+    is Schema.Number.Short -> intOut
+    is Schema.Number.UByte -> intOut
+    is Schema.Number.UShort -> intOut
+    is Schema.Number.Float -> floatOut
+    is Schema.Number.Double -> floatOut
 
-        .name("IntOutput")
-        .type(Scalars.GraphQLInt)
-        .build()
-    )
-    SchemaType.SNumber -> listOf(
-      GraphQLFieldDefinition.newFieldDefinition()
-        .type(Scalars.GraphQLFloat)
-        .build()
-    )
-    SchemaType.SString -> listOf(
-      GraphQLFieldDefinition.newFieldDefinition()
+    // TODO Check unsigned numbers
+    is Schema.Number.Long -> intOut
+    is Schema.Number.UInt -> intOut
+    is Schema.Number.ULong -> intOut
 
-        .name("StringOutput")
-        .type(Scalars.GraphQLString)
-        .build()
-    )
-    SchemaType.SDate -> listOf(
+    is Schema.Nullable -> element.toFields()
+    is Schema.List -> listOf(
       GraphQLFieldDefinition.newFieldDefinition()
-        .type(Scalars.GraphQLString)
+        .type(GraphQLList.list(element.toInputType()))
         .build()
     )
-    SchemaType.SDateTime -> listOf(
-      GraphQLFieldDefinition.newFieldDefinition()
-        .type(Scalars.GraphQLString)
-        .build()
-    )
-    SchemaType.SBinary -> listOf(
-      GraphQLFieldDefinition.newFieldDefinition()
-        .type(Scalars.GraphQLString)
-        .build()
-    )
-    is SchemaType.SArray -> listOf(
-      GraphQLFieldDefinition.newFieldDefinition()
-        .type(GraphQLList.list(type.element.toInputType()))
-        .build()
-    )
-    is SchemaType.SObject.SProduct ->
-      type.fields.map { (name, schema) ->
+
+    is Schema.Product ->
+      fields.map { (name, schema) ->
         GraphQLFieldDefinition.newFieldDefinition()
           .name(name.name)
           .type(schema.toOutputType())
           .build()
       }
-
-    is SchemaType.SObject.SOpenProduct -> TODO("Map<String, valueSchema>")
-    is SchemaType.SObject.SCoproduct -> TODO("Union")
-    is SchemaType.SRef -> TODO("Ref????")
+    is Schema.OpenProduct -> TODO("Map<String, valuSchema>")
+    is Schema.Map -> TODO("Map<keySchema, valueSchema>")
+    is Schema.Either -> TODO("Union")
+    is Schema.Enum -> TODO("Union")
+    is Schema.Coproduct -> TODO("Union")
   }
 
-fun Schema<*>.name(): String? =
-  when (val type = this.schemaType) {
-    is SchemaType.SArray -> "Array of ${type.element.name()}"
-    SchemaType.SBinary -> "Binary"
-    SchemaType.SBoolean -> "Boolean"
-    SchemaType.SDate -> "Date"
-    SchemaType.SDateTime -> "DateTime"
-    SchemaType.SInteger -> "Integer"
-    SchemaType.SNumber -> "Float"
-    is SchemaType.SObject.SCoproduct -> type.info.fullName
-    is SchemaType.SObject.SOpenProduct -> type.info.fullName
-    is SchemaType.SObject.SProduct -> type.info.fullName
-    is SchemaType.SRef -> type.info.fullName
-    SchemaType.SString -> "String"
+fun Schema<*>.name(): String =
+  when (this) {
+    is Schema.Binary -> "Binary"
+    is Schema.Boolean -> "Boolean"
+    is Schema.Coproduct -> objectInfo.fullName
+    is Schema.Date -> "Date"
+    is Schema.DateTime -> "DateTime"
+    is Schema.Either -> "Either<${left.name()}, ${right.name()}>"
+    is Schema.Enum -> objectInfo.fullName
+    is Schema.List -> "Array of ${element.name()}"
+    is Schema.Map -> this.toString()
+    is Schema.Nullable -> element.name()
+    is Schema.Number.Byte -> "Byte"
+    is Schema.Number.Double -> "Double"
+    is Schema.Number.Float -> "Float"
+    is Schema.Number.Int -> "Int"
+    is Schema.Number.Long -> "Long"
+    is Schema.Number.Short -> "Short"
+    is Schema.Number.UByte -> "UByte"
+    is Schema.Number.UInt -> "UInt"
+    is Schema.Number.ULong -> "ULong"
+    is Schema.Number.UShort -> "UShort"
+    is Schema.OpenProduct -> objectInfo.fullName
+    is Schema.Product -> objectInfo.fullName
+    is Schema.String -> "String"
   }
 
 private fun <I, E, O> Endpoint<I, E, O>.extractPath(): String {

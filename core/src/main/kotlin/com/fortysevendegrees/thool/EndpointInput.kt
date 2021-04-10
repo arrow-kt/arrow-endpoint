@@ -44,7 +44,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
       i: EndpointIO.Info<B>
     ): Query<B> = Query(name, c, i)
 
-    override fun toString(): String = addValidatorShow("?$name", codec.validator())
+    override fun toString(): String = "?$name"
   }
 
   data class QueryParams<A>(
@@ -96,7 +96,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
     ): PathCapture<B> = PathCapture(name, c, i)
 
     fun name(n: String): PathCapture<A> = copy(name = n)
-    override fun toString(): String = addValidatorShow("/[${name ?: ""}]", codec.validator())
+    override fun toString(): String = "/[${name ?: ""}]"
   }
 
   data class PathsCapture<A>(
@@ -121,7 +121,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
       i: EndpointIO.Info<B>
     ): Cookie<B> = Cookie(name, c, i)
 
-    override fun toString(): String = addValidatorShow("{cookie $name}", codec.validator())
+    override fun toString(): String = "{cookie $name}"
   }
 
   data class MappedPair<A, B, C, D>(val input: Pair<A, B, C>, val mapping: Mapping<C, D>) : Single<D> {
@@ -153,7 +153,7 @@ fun <A, B> EndpointInput<A>.reduce(
   ifQuery: (EndpointInput.Query<Any?>) -> List<B> = { emptyList() },
   ifQueryParams: (EndpointInput.QueryParams<Any?>) -> List<B> = { emptyList() },
 ): List<B> =
-  when(this) {
+  when (this) {
     is EndpointIO.Body<*, *> -> ifBody(this as EndpointIO.Body<Any?, Any?>)
     is EndpointIO.Empty -> ifEmpty(this as EndpointIO.Empty<Any?>)
     is EndpointIO.Header -> ifHeader(this as EndpointIO.Header<Any?>)
@@ -167,17 +167,113 @@ fun <A, B> EndpointInput<A>.reduce(
     is EndpointInput.QueryParams -> ifQueryParams(this as EndpointInput.QueryParams<Any?>)
 
     is EndpointInput.Pair<*, *, *> ->
-      first.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifCookie, ifFixedMethod, ifFixedPath, ifPathCapture, ifPathsCapture, ifQuery, ifQueryParams) +
-        second.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifCookie, ifFixedMethod, ifFixedPath, ifPathCapture, ifPathsCapture, ifQuery, ifQueryParams)
+      first.reduce(
+        ifBody,
+        ifEmpty,
+        ifHeader,
+        ifStreamBody,
+        ifCookie,
+        ifFixedMethod,
+        ifFixedPath,
+        ifPathCapture,
+        ifPathsCapture,
+        ifQuery,
+        ifQueryParams
+      ) +
+        second.reduce(
+          ifBody,
+          ifEmpty,
+          ifHeader,
+          ifStreamBody,
+          ifCookie,
+          ifFixedMethod,
+          ifFixedPath,
+          ifPathCapture,
+          ifPathsCapture,
+          ifQuery,
+          ifQueryParams
+        )
     is EndpointIO.Pair<*, *, *> ->
-      first.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifCookie, ifFixedMethod, ifFixedPath, ifPathCapture, ifPathsCapture, ifQuery, ifQueryParams) +
-        second.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifCookie, ifFixedMethod, ifFixedPath, ifPathCapture, ifPathsCapture, ifQuery, ifQueryParams)
+      first.reduce(
+        ifBody,
+        ifEmpty,
+        ifHeader,
+        ifStreamBody,
+        ifCookie,
+        ifFixedMethod,
+        ifFixedPath,
+        ifPathCapture,
+        ifPathsCapture,
+        ifQuery,
+        ifQueryParams
+      ) +
+        second.reduce(
+          ifBody,
+          ifEmpty,
+          ifHeader,
+          ifStreamBody,
+          ifCookie,
+          ifFixedMethod,
+          ifFixedPath,
+          ifPathCapture,
+          ifPathsCapture,
+          ifQuery,
+          ifQueryParams
+        )
     is EndpointIO.MappedPair<*, *, *, *> ->
-      wrapped.first.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifCookie, ifFixedMethod, ifFixedPath, ifPathCapture, ifPathsCapture, ifQuery, ifQueryParams) +
-        wrapped.second.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifCookie, ifFixedMethod, ifFixedPath, ifPathCapture, ifPathsCapture, ifQuery, ifQueryParams)
+      wrapped.first.reduce(
+        ifBody,
+        ifEmpty,
+        ifHeader,
+        ifStreamBody,
+        ifCookie,
+        ifFixedMethod,
+        ifFixedPath,
+        ifPathCapture,
+        ifPathsCapture,
+        ifQuery,
+        ifQueryParams
+      ) +
+        wrapped.second.reduce(
+          ifBody,
+          ifEmpty,
+          ifHeader,
+          ifStreamBody,
+          ifCookie,
+          ifFixedMethod,
+          ifFixedPath,
+          ifPathCapture,
+          ifPathsCapture,
+          ifQuery,
+          ifQueryParams
+        )
     is EndpointInput.MappedPair<*, *, *, *> ->
-      input.first.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifCookie, ifFixedMethod, ifFixedPath, ifPathCapture, ifPathsCapture, ifQuery, ifQueryParams) +
-        input.second.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifCookie, ifFixedMethod, ifFixedPath, ifPathCapture, ifPathsCapture, ifQuery, ifQueryParams)
+      input.first.reduce(
+        ifBody,
+        ifEmpty,
+        ifHeader,
+        ifStreamBody,
+        ifCookie,
+        ifFixedMethod,
+        ifFixedPath,
+        ifPathCapture,
+        ifPathsCapture,
+        ifQuery,
+        ifQueryParams
+      ) +
+        input.second.reduce(
+          ifBody,
+          ifEmpty,
+          ifHeader,
+          ifStreamBody,
+          ifCookie,
+          ifFixedMethod,
+          ifFixedPath,
+          ifPathCapture,
+          ifPathsCapture,
+          ifQuery,
+          ifQueryParams
+        )
   }
 
 fun <A> EndpointInput<A>.toList(): List<EndpointInput<Any?>> =

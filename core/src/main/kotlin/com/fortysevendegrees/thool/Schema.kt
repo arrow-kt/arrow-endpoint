@@ -1,11 +1,10 @@
 package com.fortysevendegrees.thool
 
 import arrow.core.Option
-import arrow.core.tail
 import java.io.InputStream
 import java.math.BigDecimal
 import java.nio.ByteBuffer
-import java.time.Duration as JavaDuration
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -14,176 +13,481 @@ import java.time.OffsetDateTime
 import java.time.OffsetTime
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
-import java.util.Date
 import java.util.UUID
+import kotlin.reflect.KProperty1
 
-/**
- * Describes the type `T`: its low-level representation, meta-data and validation rules.
- * @param format The name of the format of the low-level representation of `T`.
- */
-data class Schema<T>(
-  val schemaType: SchemaType,
-  val isOptional: Boolean = false,
+data class SchemaInfo<A>(
   val description: String? = null,
-  // The default value together with the value encoded to a raw format, which will then be directly rendered as a
-  // string in documentation. This is needed as codecs for nested types aren't available. Similar to Validator.EncodeToRaw
-  val default: Pair<T, Any?>? = null,
+  /** The default value together with the value encoded to a raw format, which will then be directly rendered as a string in documentation */
+  val default: Pair<A, Any?>? = null,
   val format: String? = null,
   val encodedExample: Any? = null,
-  val deprecated: Boolean = false,
-  val validator: Validator<T> = Validator.pass()
+  val deprecatedMessage: String? = null
 ) {
+  val deprecated: Boolean = deprecatedMessage != null
+}
 
-  fun <TT> map(f: (T) -> TT?, g: (TT) -> T): Schema<TT> =
-    Schema(
-      schemaType, isOptional, description,
-      default?.let { (t, raw) ->
-        f(t)?.let { tt -> Pair(tt, raw) }
-      },
-      format,
-      encodedExample,
-      deprecated,
-      validator.contramap(g)
-    )
+sealed interface Schema<A> {
 
-  /** Returns an optional version of this schema, with `isOptional` set to true.
-   */
-  fun asOption(): Schema<Option<T>> =
-    Schema(schemaType, true, description, null, format, encodedExample, deprecated, validator.asOptionElement())
+  val info: SchemaInfo<A>
 
-  /** Returns an optional version of this schema, with `isOptional` set to true.
-   */
-  fun asNullable(): Schema<T?> =
-    Schema(schemaType, true, description, null, format, encodedExample, deprecated, validator.asNullableElement())
+  fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B>
 
-  /** Returns an array version of this schema, with the schema type wrapped in [[SArray]].
-   * Sets `isOptional` to true as the collection might be empty.
-   */
-  fun asArray(): Schema<Array<T>> =
-    Schema(
-      schemaType = SchemaType.SArray(this),
-      isOptional = true,
-      format = null,
-      deprecated = deprecated,
-      validator = validator.asArrayElements()
-    )
-
-  /** Returns a collection version of this schema, with the schema type wrapped in [[SArray]].
-   * Sets `isOptional` to true as the collection might be empty.
-   */
-  fun asList(): Schema<List<T>> =
-    Schema(
-      schemaType = SchemaType.SArray(this),
-      isOptional = true,
-      format = null,
-      deprecated = deprecated,
-      validator = validator.asListElements()
-    )
-
-  fun description(d: String): Schema<T> = copy(description = d)
-
-  fun encodedExample(e: Any): Schema<T> = copy(encodedExample = e)
-
-  fun default(t: T, raw: Any? = null): Schema<T> =
-    copy(default = Pair(t, raw), isOptional = true)
-
-  fun format(f: String): Schema<T> =
-    copy(format = f)
-
-  fun deprecated(d: Boolean): Schema<T> =
-    copy(deprecated = d)
-
-  fun show(): String =
-    "schema is $schemaType${if (isOptional) " (optional)" else ""}"
-
-  fun <U> modifyUnsafe(vararg fields: String, modify: (Schema<U>) -> Schema<U>): Schema<T> =
-    modifyAtPath(fields.toList(), modify)
-
-  private fun <U> modifyAtPath(fieldPath: List<String>, modify: (Schema<U>) -> Schema<U>): Schema<T> =
-    when {
-      fieldPath.isEmpty() -> modify(this as Schema<U>) as Schema<T> // we don't have type-polymorphic functions (????)
-      else -> {
-        val head = fieldPath.first()
-        val tail = fieldPath.tail()
-        val newSchemaType = when {
-          schemaType is SchemaType.SArray && head == ModifyCollectionElements -> SchemaType.SArray(
-            schemaType.element.modifyAtPath(
-              tail,
-              modify
-            )
-          )
-          schemaType is SchemaType.SObject.SProduct -> schemaType.copy(
-            fields = schemaType.fields.map { field ->
-              val (fieldName, fieldSchema) = field
-              if (fieldName.name == head) Pair(fieldName, fieldSchema.modifyAtPath(tail, modify)) else field
-            }
-          )
-          schemaType is SchemaType.SObject.SOpenProduct && head == ModifyCollectionElements ->
-            schemaType.copy(valueSchema = schemaType.valueSchema.modifyAtPath(tail, modify))
-          schemaType is SchemaType.SObject.SCoproduct ->
-            schemaType.copy(schemas = schemaType.schemas.map { it.modifyAtPath(fieldPath, modify) })
-          else -> schemaType
-        }
-
-        copy(schemaType = newSchemaType)
-      }
+  fun <B> map(f: (A) -> B?): Schema<B> =
+    transformInfo {
+      SchemaInfo(
+        it.description,
+        it.default?.let { (t, raw) ->
+          f(t)?.let { tt -> Pair(tt, raw) }
+        },
+        it.format,
+        it.encodedExample,
+        it.deprecatedMessage
+      )
     }
 
-  fun validate(v: Validator<T>): Schema<T> =
-    copy(validator = validator.and(v))
+  /**
+   * Returns an optional version of this schema, with `isOptional` set to true.
+   */
+  fun asOption(): Schema<Option<A>> =
+    Nullable(this, SchemaInfo(info.description, null, info.format, info.encodedExample, info.deprecatedMessage))
+
+  /**
+   * Returns an optional version of this schema, with `isOptional` set to true.
+   */
+  fun asNullable(): Schema<A?> =
+    Nullable(this, SchemaInfo(info.description, null, info.format, info.encodedExample, info.deprecatedMessage))
+
+  /**
+   * Returns an array version of this schema, with the schema type wrapped in [SchemaType.List].
+   * Sets `isOptional` to true as the collection might be empty.
+   */
+  fun asArray(): Schema<Array<A>> =
+    List(
+      this,
+      SchemaInfo(
+        format = null,
+        deprecatedMessage = info.deprecatedMessage
+      )
+    )
+
+  /** Returns a collection version of this schema, with the schema type wrapped in [SchemaType.List].
+   * Sets `isOptional` to true as the collection might be empty.
+   */
+  fun asList(): Schema<kotlin.collections.List<A>> =
+    List(
+      this,
+      SchemaInfo(
+        format = null,
+        deprecatedMessage = info.deprecatedMessage
+      )
+    )
+
+  fun default(t: A, raw: Any? = null): Schema<A> =
+    transformInfo { it.copy(default = Pair(t, raw)) }
+
+  fun description(d: kotlin.String): Schema<A> =
+    transformInfo { it.copy(description = d) }
+
+  fun encodedExample(e: Any): Schema<A> =
+    transformInfo { it.copy(encodedExample = e) }
+
+  fun format(f: kotlin.String): Schema<A> =
+    transformInfo { it.copy(format = f) }
+
+  fun deprecatedMessage(d: kotlin.String): Schema<A> =
+    transformInfo { it.copy(deprecatedMessage = d) }
+
+  /**
+   * Nullable & Collections are considered nullable. Collections because they can be empty.
+   **/
+  fun isOptional(): kotlin.Boolean =
+    this is Nullable || this is List
+
+  fun isNotOptional(): kotlin.Boolean = !isOptional()
+
+  data class String<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Schema<A> {
+    override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = String(transform(info))
+    override fun toString(): kotlin.String = "string"
+  }
+
+  sealed interface NumberModifier
+  object Signed : NumberModifier
+  object Unsigned : NumberModifier
+
+  sealed interface NumberSize
+  object _8 : NumberSize
+  object _16 : NumberSize
+  object _32 : NumberSize
+  object _64 : NumberSize
+
+  sealed interface Number<A> : Schema<A> {
+    val modifier: NumberModifier
+    val size: NumberSize
+
+    data class Byte<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
+      override val modifier: NumberModifier = Signed
+      override val size: NumberSize = _8
+      override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = Byte(transform(info))
+      override fun toString(): kotlin.String = "byte"
+    }
+
+    data class UByte<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
+      override val modifier: NumberModifier = Unsigned
+      override val size: NumberSize = _8
+      override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = UByte(transform(info))
+      override fun toString(): kotlin.String = "unsigned byte"
+    }
+
+    data class Short<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
+      override val modifier: NumberModifier = Signed
+      override val size: NumberSize = _16
+      override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = Short(transform(info))
+      override fun toString(): kotlin.String = "short"
+    }
+
+    data class UShort<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
+      override val modifier: NumberModifier = Unsigned
+      override val size: NumberSize = _16
+      override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = UShort(transform(info))
+      override fun toString(): kotlin.String = "unsigned short"
+    }
+
+    data class Int<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
+      override val modifier: NumberModifier = Signed
+      override val size: NumberSize = _32
+      override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = Int(transform(info))
+      override fun toString(): kotlin.String = "int32"
+    }
+
+    data class UInt<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
+      override val modifier: NumberModifier = Unsigned
+      override val size: NumberSize = _32
+      override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = UInt(transform(info))
+      override fun toString(): kotlin.String = "unsigned int32"
+    }
+
+    data class Long<A>(override val info: SchemaInfo<A> = SchemaInfo(format = "int64")) : Number<A> {
+      override val modifier: NumberModifier = Signed
+      override val size: NumberSize = _64
+      override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = Long(transform(info))
+      override fun toString(): kotlin.String = "int64"
+    }
+
+    data class ULong<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
+      override val modifier: NumberModifier = Unsigned
+      override val size: NumberSize = _64
+      override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = ULong(transform(info))
+      override fun toString(): kotlin.String = "unsigned int64"
+    }
+
+    data class Float<A>(override val info: SchemaInfo<A> = SchemaInfo(format = "float")) : Number<A> {
+      override val modifier: NumberModifier = Signed
+      override val size: NumberSize = _32
+      override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = Float(transform(info))
+      override fun toString(): kotlin.String = "float"
+    }
+
+    data class Double<A>(override val info: SchemaInfo<A> = SchemaInfo(format = "double")) : Number<A> {
+      override val modifier: NumberModifier = Signed
+      override val size: NumberSize = _64
+      override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = Double(transform(info))
+      override fun toString(): kotlin.String = "double"
+    }
+  }
+
+  data class Boolean<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Schema<A> {
+    override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = Boolean(transform(info))
+    override fun toString(): kotlin.String = "boolean"
+  }
+
+  data class List<A>(
+    val element: Schema<*>,
+    override val info: SchemaInfo<A> = SchemaInfo()
+  ) : Schema<A> {
+    override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> =
+      List(element, transform(info))
+
+    override fun toString(): kotlin.String = "[$element]"
+  }
+
+  data class Binary<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Schema<A> {
+    override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = Binary(transform(info))
+    override fun toString(): kotlin.String = "binary"
+  }
+
+  data class Date<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Schema<A> {
+    override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = Date(transform(info))
+    override fun toString(): kotlin.String = "date"
+  }
+
+  data class DateTime<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Schema<A> {
+    override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = DateTime(transform(info))
+    override fun toString(): kotlin.String = "date-time"
+  }
+
+  data class Nullable<A>(
+    val element: Schema<*>,
+    override val info: SchemaInfo<A> = SchemaInfo()
+  ) : Schema<A> {
+    override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> =
+      Nullable(element, transform(info))
+
+    override fun toString(): kotlin.String = "$element?"
+  }
+
+  data class Either<A>(
+    val left: Schema<*>,
+    val right: Schema<*>,
+    override val info: SchemaInfo<A> = SchemaInfo()
+  ) : Schema<A> {
+    override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> =
+      Either(left, right, transform(info))
+
+    override fun toString(): kotlin.String = "either<$left, $right>"
+  }
+
+  /**
+   * Represents an key-value set or Map<K, V>.
+   * A Map contains N-fields of the same type [valueSchema] which are held by a corresponding key [keySchema].
+   *
+   * Map<Int, DateTime> =>
+   *   Schema2.Map(
+   *     Schema2.ObjectInfo("Map", listOf("Int", "DateTime")),
+   *     Schema.int,
+   *     Schema.dateTime
+   *   )
+   */
+  data class Map<A>(
+    val objectInfo: ObjectInfo,
+    val keySchema: Schema<*>,
+    val valueSchema: Schema<*>,
+    override val info: SchemaInfo<A> = SchemaInfo()
+  ) : Schema<A> {
+    override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> =
+      Map(objectInfo, keySchema, valueSchema, transform(info))
+
+    override fun toString(): kotlin.String = "$keySchema->$valueSchema"
+  }
+
+  /**
+   * Represents an open-product or Map<String, V>.
+   * An open product contains N-fields, which are held by [String] keys.
+   *
+   * Map<String, Int> =>
+   *   Schema2.OpenProduct(
+   *     Schema2.ObjectInfo("Map", listOf("String", "Int")),
+   *     Schema.int
+   *   )
+   */
+  data class OpenProduct<A>(
+    val objectInfo: ObjectInfo,
+    val valueSchema: Schema<*>,
+    override val info: SchemaInfo<A> = SchemaInfo()
+  ) : Schema<A> {
+    override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> =
+      OpenProduct(objectInfo, valueSchema, transform(info))
+
+    override fun toString(): kotlin.String = "$String->$valueSchema"
+  }
+
+  /**
+   * Represents a product type.
+   * A product type has [ObjectInfo] & a fixed set of [fields]
+   *
+   * data class Person(val name: String, val age: Int)
+   *
+   * Person =>
+   *   Schema2.Product(
+   *     ObjectInfo("Person"),
+   *     listOf(
+   *       Pair(FieldName("name"), Schema.string),
+   *       Pair(FieldName("age"), Schema.int)
+   *     )
+   *   )
+   */
+  data class Product<A>(
+    val objectInfo: ObjectInfo,
+    val fields: kotlin.collections.List<Pair<FieldName, Schema<*>>>,
+    override val info: SchemaInfo<A> = SchemaInfo()
+  ) : Schema<A> {
+    fun required(): kotlin.collections.List<FieldName> =
+      fields.mapNotNull { (f, s) -> if (!s.isOptional()) f else null }
+
+    override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> =
+      Product(objectInfo, fields, transform(info))
+
+    override fun toString(): kotlin.String =
+      "${objectInfo.fullName}(${fields.joinToString(",") { (f, s) -> "$f=$s" }})"
+
+    companion object {
+      val Empty = Product<Unit>(ObjectInfo.unit, emptyList())
+    }
+  }
+
+  /**
+   * Represents a value in an enum class
+   * A product of [kotlin.Enum.name] and [kotlin.Enum.ordinal]
+   */
+  data class EnumValue(val name: kotlin.String, val ordinal: Int)
+
+  /**
+   * Represents an Enum
+   * Has [ObjectInfo], and list of its values.
+   *
+   * enum class Test { A, B, C; }
+   *
+   * Test =>
+   *   Schema2.Enum(
+   *     Schema2.ObjectInfo("Test"),
+   *     listOf(
+   *       Schema2.EnumValue("A", 0),
+   *       Schema2.EnumValue("B", 1),
+   *       Schema2.EnumValue("C", 2)
+   *     )
+   *   )
+   */
+  data class Enum<A>(
+    val objectInfo: ObjectInfo,
+    val values: kotlin.collections.List<EnumValue>,
+    override val info: SchemaInfo<A> = SchemaInfo()
+  ) : Schema<A> {
+    override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> =
+      Enum(objectInfo, values, transform(info))
+
+    override fun toString(): kotlin.String =
+      "${objectInfo.fullName}[${values.joinToString(separator = " | ")}]"
+  }
+
+  /**
+   * Represents a sum or coproduct type.
+   * Has [ObjectInfo], and NonEmptyList of subtypes schemas.
+   * These subtype schemas contain all details about the subtypes, since they'll all have Schema2 is Schema2.Object.
+   *
+   * Either<A, B> =>
+   *   Schema2.Coproduct(
+   *     Schema2.ObjectInfo("Either", listOf("A", "B")),
+   *     listOf(
+   *       Schema2.Product("Either.Left", listOf("value", schemeA)),
+   *       Schema2.Product("Either.Right", listOf("value", schemeA)),
+   *     )
+   *   )
+   */
+  data class Coproduct<A>(
+    val objectInfo: ObjectInfo,
+    val schemas: arrow.core.NonEmptyList<Schema<*>>,
+    override val info: SchemaInfo<A> = SchemaInfo()
+  ) : Schema<A> {
+    override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> =
+      Coproduct(objectInfo, schemas, transform(info))
+
+    override fun toString(): kotlin.String =
+      "${objectInfo.fullName}[${schemas.joinToString(separator = " | ")}]"
+  }
+
+  /**
+   * ObjectInfo contains the fullName of an object, and the type-param names.
+   *
+   * Either<A, B> => ObjectInfo("Either", listOf("A", "B"))
+   */
+  data class ObjectInfo(
+    val fullName: kotlin.String,
+    val typeParameterShortNames: kotlin.collections.List<kotlin.String> = emptyList()
+  ) {
+    companion object {
+      val unit: ObjectInfo = ObjectInfo(fullName = "Unit")
+    }
+  }
 
   companion object {
-    val ModifyCollectionElements = "each"
-
     /** Creates a schema for type `T`, where the low-level representation is a `String`. */
-    fun <T> string(): Schema<T> = Schema(SchemaType.SString)
+    fun <T> string(): Schema<T> = String()
 
     /** Creates a schema for type `T`, where the low-level representation is binary.*/
-    fun <T> binary(): Schema<T> = Schema(SchemaType.SBinary)
+    fun <T> binary(): Schema<T> = Binary()
 
-    val string: Schema<String> = Schema(SchemaType.SString)
+    val string: Schema<kotlin.String> = String()
 
-    val byte: Schema<Byte> = Schema(SchemaType.SInteger)
+    @ExperimentalUnsignedTypes
+    val ubyte: Schema<UByte> = Number.UByte()
 
-    val short: Schema<Short> = Schema(SchemaType.SInteger)
+    val byte: Schema<Byte> = Schema.Number.Byte()
 
-    val int: Schema<Int> = Schema(SchemaType.SInteger)
+    @ExperimentalUnsignedTypes
+    val ushort: Schema<UShort> = Number.UShort()
 
-    val long: Schema<Long> = Schema<Long>(SchemaType.SInteger).format("int64")
+    val short: Schema<Short> = Schema.Number.Short()
 
-    val float: Schema<Float> = Schema<Float>(SchemaType.SNumber).format("float")
+    @ExperimentalUnsignedTypes
+    val uint: Schema<UInt> = Number.UInt()
 
-    val double: Schema<Double> = Schema<Double>(SchemaType.SNumber).format("double")
+    val int: Schema<Int> = Schema.Number.Int()
 
-    val boolean: Schema<Boolean> = Schema(SchemaType.SBoolean)
+    @ExperimentalUnsignedTypes
+    val ulong: Schema<ULong> = Number.ULong()
 
-    val unit: Schema<Unit> = Schema(SchemaType.SObject.SProduct.Empty)
+    val long: Schema<Long> = Schema.Number.Long()
 
-//    val schemaForFile: Schema<TapirFile> = Schema(SchemaType.SBinary)
+    val float: Schema<Float> = Number.Float()
 
-    val byteArray: Schema<ByteArray> = Schema(SchemaType.SBinary)
+    val double: Schema<Double> = Number.Double()
+
+    val boolean: Schema<kotlin.Boolean> = Boolean()
+
+    val unit: Schema<Unit> = Schema.Product.Empty
+
+//    val schemaForFile: Schema<ThoolFile> = Schema(SchemaType.Binary)
+
+    val byteArray: Schema<ByteArray> = Schema.binary()
+
+    fun <A : kotlin.Enum<A>> enum(name: kotlin.String, enumValues: Array<out A>): Schema<A> =
+      Enum(
+        Schema.ObjectInfo(name),
+        enumValues.map { EnumValue(it.name, it.ordinal) }
+      )
+
+    inline fun <reified A : kotlin.Enum<A>> enum(): Schema<A> =
+      enum(
+        requireNotNull(A::class.simpleName) { "Enum name cannot be " },
+        enumValues()
+      )
 
     // JVM
     // Java NIO
-    val byteBuffer: Schema<ByteBuffer> = Schema(SchemaType.SBinary)
-    val inputStream: Schema<InputStream> = Schema(SchemaType.SBinary)
+    val byteBuffer: Schema<ByteBuffer> = Schema.binary()
+    val inputStream: Schema<InputStream> = Schema.binary()
 
     // Java Date
-    val instant: Schema<Instant> = Schema(SchemaType.SDateTime)
-    val zonedDateTime: Schema<ZonedDateTime> = Schema(SchemaType.SDateTime)
-    val offsetDateTime: Schema<OffsetDateTime> = Schema(SchemaType.SDateTime)
-    val date: Schema<Date> = Schema(SchemaType.SDateTime)
-    val localDateTime: Schema<LocalDateTime> = Schema(SchemaType.SString)
-    val localDate: Schema<LocalDate> = Schema(SchemaType.SDate)
-    val zoneOffset: Schema<ZoneOffset> = Schema(SchemaType.SString)
-    val javaDuration: Schema<JavaDuration> = Schema(SchemaType.SString)
-    val localTime: Schema<LocalTime> = Schema(SchemaType.SString)
-    val offsetTime: Schema<OffsetTime> = Schema(SchemaType.SString)
+    val instant: Schema<Instant> = Schema.DateTime()
+    val zonedDateTime: Schema<ZonedDateTime> = Schema.DateTime()
+    val offsetDateTime: Schema<OffsetDateTime> = Schema.DateTime()
+    val date: Schema<java.util.Date> = Schema.DateTime()
+
+    val localDateTime: Schema<LocalDateTime> = Schema.String()
+    val localDate: Schema<LocalDate> = Schema.String()
+    val zoneOffset: Schema<ZoneOffset> = Schema.String()
+    val javaDuration: Schema<Duration> = Schema.String()
+    val localTime: Schema<LocalTime> = Schema.String()
+    val offsetTime: Schema<OffsetTime> = Schema.String()
 
     // Java Util
-    val uuid: Schema<UUID> = Schema<UUID>(SchemaType.SString).format("uuid")
+    val uuid: Schema<UUID> = Schema.string<UUID>().format("uuid")
 
     // Java Math
-    val bigDecimal: Schema<BigDecimal> = Schema(SchemaType.SString)
+    val bigDecimal: Schema<BigDecimal> = Schema.string()
   }
 }
+
+inline fun <reified A> Schema<A>.asOpenProduct(): Schema<Map<String, A>> =
+  Schema.OpenProduct(
+    Schema.ObjectInfo("Map", listOf(A::class.simpleName!!)),
+    this
+  )
+
+inline fun <reified A> Schema.Companion.product(
+  vararg properties: Pair<KProperty1<A, *>, Schema<*>>
+): Schema<A> =
+  Schema.Product(
+    Schema.ObjectInfo(A::class.simpleName!!),
+    properties.map { (prop, schema) -> FieldName(prop.name) to schema }
+  )

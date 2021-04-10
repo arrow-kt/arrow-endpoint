@@ -51,7 +51,7 @@ sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
       i: Info<B>
     ): Header<B> = Header(name, c, i)
 
-    override fun toString(): String = addValidatorShow("{header $name}", codec.validator())
+    override fun toString(): String = "{header $name}"
   }
 
   data class Body<R, T>(
@@ -68,7 +68,7 @@ sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
         else -> ""
       }
       val format = codec.format.mediaType
-      return addValidatorShow("{body as $format$charset}", codec.validator())
+      return "{body as $format$charset}"
     }
   }
 
@@ -129,9 +129,6 @@ sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
     override fun toString(): String = "EndpointIO.Pair($first, $second)"
   }
 }
-
-fun addValidatorShow(s: String, v: Validator<*>): String =
-  v.show()?.let { "$s($it)" } ?: s
 
 // We need to support this Arity-22
 @JvmName("and")

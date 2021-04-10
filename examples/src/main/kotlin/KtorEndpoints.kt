@@ -8,11 +8,9 @@ import com.fortysevendegrees.thool.withOutput
 import com.fortysevendegrees.thool.server.ServerEndpoint
 import io.ktor.application.Application
 import com.fortysevendegrees.thool.DecodeResult
-import com.fortysevendegrees.thool.FieldName
 import com.fortysevendegrees.thool.Schema
-import com.fortysevendegrees.thool.SchemaType.SObject.SProduct
-import com.fortysevendegrees.thool.SchemaType.SObjectInfo
 import com.fortysevendegrees.thool.ktor.install
+import com.fortysevendegrees.thool.product
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -24,20 +22,9 @@ data class Project(
   val language: String = "kotlin"
 ) {
   companion object {
-    val schema: Schema<Project> = Schema(
-      SProduct(
-        SObjectInfo("Project"),
-        listOf(
-          Pair(
-            FieldName("name"),
-            Schema.string.description("The name of this project")
-          ),
-          Pair(
-            FieldName("language"),
-            Schema.string.description("The programming language used for this project").default("kotlin")
-          )
-        )
-      )
+    val schema: Schema<Project> = Schema.product(
+      Project::name to Schema.string,
+      Project::language to Schema.string.default("kotlin")
     )
 
     val jsonCodec = Codec.json(schema, { DecodeResult.Value(Json.decodeFromString(it)) }) { Json.encodeToString(it) }
