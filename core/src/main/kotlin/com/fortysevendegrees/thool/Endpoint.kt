@@ -3,6 +3,7 @@ package com.fortysevendegrees.thool
 import arrow.core.Tuple4
 import arrow.core.Tuple5
 import com.fortysevendegrees.thool.dsl.MethodSyntax
+import com.fortysevendegrees.thool.dsl.PathSyntax
 
 /**
  * @param I Input parameter types.
@@ -73,6 +74,9 @@ data class Endpoint<I, E, O>(
 
     fun <O> output(output: EndpointOutput<O>): Endpoint<Unit, Nothing, O> =
       Endpoint(EndpointInput.empty(), EndpointOutput.Void(), output, EndpointInfo.empty())
+
+    fun <I> path(path: PathSyntax.() -> EndpointInput<I>): EndpointInput<I> =
+      path(PathSyntax)
   }
 }
 
