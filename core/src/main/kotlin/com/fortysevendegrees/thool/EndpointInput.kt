@@ -44,7 +44,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
       i: EndpointIO.Info<B>
     ): Query<B> = Query(name, c, i)
 
-    override fun toString(): String = addValidatorShow("?$name", codec.validator())
+    override fun toString(): String = "?$name"
   }
 
   data class QueryParams<A>(
@@ -96,7 +96,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
     ): PathCapture<B> = PathCapture(name, c, i)
 
     fun name(n: String): PathCapture<A> = copy(name = n)
-    override fun toString(): String = addValidatorShow("/[${name ?: ""}]", codec.validator())
+    override fun toString(): String = "/[${name ?: ""}]"
   }
 
   data class PathsCapture<A>(
@@ -121,7 +121,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
       i: EndpointIO.Info<B>
     ): Cookie<B> = Cookie(name, c, i)
 
-    override fun toString(): String = addValidatorShow("{cookie $name}", codec.validator())
+    override fun toString(): String = "{cookie $name}"
   }
 
   data class MappedPair<A, B, C, D>(val input: Pair<A, B, C>, val mapping: Mapping<C, D>) : Single<D> {

@@ -30,7 +30,7 @@ interface Mapping<L, H> {
    * - catches any exceptions that might occur, converting them to decode failures
    * - validates the result
    */
-  fun decode(l: L): DecodeResult<H> = validate(tryRawDecode(l))
+  fun decode(l: L): DecodeResult<H> = tryRawDecode(l)
 
   private fun tryRawDecode(l: L): DecodeResult<H> =
     try {
@@ -40,18 +40,6 @@ interface Mapping<L, H> {
       DecodeResult.Failure.Error(l.toString(), error)
     }
 
-  private fun validate(r: DecodeResult<H>): DecodeResult<H> =
-    when (r) {
-      is DecodeResult.Value -> {
-        val validationErrors = validator().validate(r.value)
-        if (validationErrors.isEmpty()) DecodeResult.Value(r.value)
-        else DecodeResult.Failure.InvalidValue(validationErrors)
-      }
-      else -> r
-    }
-
-  fun validator(): Validator<H>
-
   fun <HH> map(codec: Mapping<H, HH>): Mapping<L, HH> =
     object : Mapping<L, HH> {
       override fun rawDecode(l: L): DecodeResult<HH> =
@@ -59,42 +47,19 @@ interface Mapping<L, H> {
 
       override fun encode(h: HH): L =
         this@Mapping.encode(codec.encode(h))
-
-      override fun validator(): Validator<HH> =
-        this@Mapping.validator()
-          .contramap(codec::encode)
-          .and(codec.validator())
     }
-
-  fun validate(v: Validator<H>): Mapping<L, H> =
-    object : Mapping<L, H> {
-      override fun rawDecode(l: L): DecodeResult<H> =
-        this@Mapping.decode(l)
-
-      override fun encode(h: H): L =
-        this@Mapping.encode(h)
-
-      override fun validator(): Validator<H> =
-        addEncodeToEnumValidator(v).and(this@Mapping.validator())
-    }
-
-  fun addEncodeToEnumValidator(v: Validator<H>): Validator<H> =
-    if (v is Validator.Single.Primitive.Enum) v.encode(this@Mapping::encode)
-    else v
 
   companion object {
     fun <L> id(): Mapping<L, L> =
       object : Mapping<L, L> {
         override fun rawDecode(l: L): DecodeResult<L> = DecodeResult.Value(l)
         override fun encode(h: L): L = h
-        override fun validator(): Validator<L> = Validator.pass()
       }
 
     fun <L, H> fromDecode(f: (L) -> DecodeResult<H>, g: (H) -> L): Mapping<L, H> =
       object : Mapping<L, H> {
         override fun rawDecode(l: L): DecodeResult<H> = f(l)
         override fun encode(h: H): L = g(h)
-        override fun validator(): Validator<H> = Validator.pass()
       }
 
     fun <L, H> from(f: (L) -> H, g: (H) -> L): Mapping<L, H> =
@@ -132,7 +97,6 @@ sealed class DecodeResult<out A> {
     object Missing : Failure()
     data class Multiple<A>(val values: List<A>) : Failure()
     data class Mismatch(val expected: String, val actual: String) : Failure()
-    data class InvalidValue(val errors: List<ValidationError<*>>) : Failure()
     data class Error(val original: String, val error: Throwable) : Failure() {
       companion object {
         data class JsonDecodeException(val errors: List<JsonError>, val underlying: Throwable) : Exception(
