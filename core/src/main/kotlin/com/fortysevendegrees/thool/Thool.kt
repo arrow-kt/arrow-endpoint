@@ -13,29 +13,6 @@ object Thool {
 
   operator fun <A> invoke(f: Thool.() -> A): A = f(Thool)
 
-  private val emptyInput: EndpointInput<Unit> =
-    EndpointIO.Empty(Codec.idPlain(), EndpointIO.Info.empty())
-
-  /** An empty output. Useful if one of `oneOf` branches should be mapped to the status code only. */
-  val emptyOutput: EndpointOutput<Unit> =
-    EndpointIO.Empty(Codec.idPlain(), EndpointIO.Info.empty())
-
-  val infallibleEndpoint: Endpoint<Unit, Nothing, Unit> =
-    Endpoint(
-      emptyInput,
-      EndpointOutput.Void(),
-      emptyOutput,
-      EndpointInfo(null, null, null, emptyList(), deprecated = false)
-    )
-
-  val endpoint: Endpoint<Unit, Unit, Unit> =
-    Endpoint(
-      emptyInput,
-      emptyOutput,
-      emptyOutput,
-      EndpointInfo(null, null, null, emptyList(), deprecated = false)
-    )
-
   @JvmName("queryList")
   fun <A> query(name: String, codec: Codec<List<String>, A, CodecFormat.TextPlain>): EndpointInput.Query<A> =
     EndpointInput.Query(name, codec, EndpointIO.Info.empty())
@@ -121,34 +98,4 @@ object Thool {
 
   fun method(m: Method): EndpointInput.FixedMethod<Unit> =
     EndpointInput.FixedMethod(m, Codec.idPlain(), EndpointIO.Info.empty())
-
-  fun <I, E, O> Endpoint<I, E, O>.get(): Endpoint<I, E, O> =
-    Endpoint(input.withMethod(method(Method.GET)), errorOutput, output, info)
-
-  fun <I, E, O> Endpoint<I, E, O>.post(): Endpoint<I, E, O> =
-    Endpoint(input.withMethod(method(Method.GET)), errorOutput, output, info)
-
-  fun <I, E, O> Endpoint<I, E, O>.head(): Endpoint<I, E, O> =
-    Endpoint(input.withMethod(method(Method.HEAD)), errorOutput, output, info)
-
-  fun <I, E, O> Endpoint<I, E, O>.put(): Endpoint<I, E, O> =
-    Endpoint(input.withMethod(method(Method.PUT)), errorOutput, output, info)
-
-  fun <I, E, O> Endpoint<I, E, O>.delete(): Endpoint<I, E, O> =
-    Endpoint(input.withMethod(method(Method.DELETE)), errorOutput, output, info)
-
-  fun <I, E, O> Endpoint<I, E, O>.options(): Endpoint<I, E, O> =
-    Endpoint(input.withMethod(method(Method.OPTIONS)), errorOutput, output, info)
-
-  fun <I, E, O> Endpoint<I, E, O>.patch(): Endpoint<I, E, O> =
-    Endpoint(input.withMethod(method(Method.PATCH)), errorOutput, output, info)
-
-  fun <I, E, O> Endpoint<I, E, O>.connect(): Endpoint<I, E, O> =
-    Endpoint(input.withMethod(method(Method.CONNECT)), errorOutput, output, info)
-
-  fun <I, E, O> Endpoint<I, E, O>.trace(): Endpoint<I, E, O> =
-    Endpoint(input.withMethod(method(Method.TRACE)), errorOutput, output, info)
-
-  private fun <A> EndpointInput<A>.withMethod(other: EndpointInput.FixedMethod<Unit>): EndpointInput<A> =
-    EndpointInput.Pair(this, other, { p1, _ -> p1 }, { p -> Pair(p, Params.Unit) })
 }

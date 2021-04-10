@@ -4,18 +4,18 @@ import arrow.core.Either
 import com.fortysevendegrees.thool.Codec
 import com.fortysevendegrees.thool.Endpoint
 import com.fortysevendegrees.thool.Thool
-import com.fortysevendegrees.thool.withInput
-import com.fortysevendegrees.thool.withOutput
+import com.fortysevendegrees.thool.input
+import com.fortysevendegrees.thool.output
 import com.fortysevendegrees.thool.server.ServerEndpoint
 import io.ktor.application.Application
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
 fun Application.module(testing: Boolean = false) = Thool {
-  val pong: Endpoint<Unit, Unit, String> = endpoint
-    .get()
-    .withInput(fixedPath("ping"))
-    .withOutput(stringBody())
+  val pong: Endpoint<Unit, Nothing, String> =
+    Endpoint
+      .get("ping")
+      .output(stringBody())
 
   install(
     ServerEndpoint(pong) {
@@ -23,13 +23,12 @@ fun Application.module(testing: Boolean = false) = Thool {
     }
   )
 
-  val helloWorld: Endpoint<Pair<String, String>, Unit, Project> =
-    endpoint
-      .get()
-      .withInput(fixedPath("hello"))
-      .withInput(query("project", Codec.string))
-      .withInput(query("language", Codec.string))
-      .withOutput(anyJsonBody(Project.jsonCodec))
+  val helloWorld: Endpoint<Pair<String, String>, Nothing, Project> =
+    Endpoint
+      .get("hello")
+      .input(query("project", Codec.string))
+      .input(query("language", Codec.string))
+      .output(anyJsonBody(Project.jsonCodec))
 
   println(helloWorld.renderPath()) // /hello?project={project}&language={language}
 
