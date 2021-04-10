@@ -449,7 +449,7 @@ sealed interface Schema<A> {
 
     inline fun <reified A : kotlin.Enum<A>> enum(): Schema<A> =
       enum(
-        requireNotNull(A::class.simpleName) { "Enum name cannot be " },
+        requireNotNull(A::class.qualifiedName) { "Enum name cannot be " },
         enumValues()
       )
 
