@@ -10,6 +10,10 @@ import java.nio.charset.Charset
 // Such as body, headers, etc
 sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
 
+  override fun <B> map(mapping: Mapping<A, B>): EndpointIO<B>
+  override fun <B> map(f: (A) -> B, g: (B) -> A): EndpointIO<B> = map(Mapping.from(f, g))
+  override fun <B> mapDecode(f: (A) -> DecodeResult<B>, g: (B) -> A): EndpointIO<B> = map(Mapping.fromDecode(f, g))
+
   sealed interface Single<A> : EndpointIO<A>, EndpointInput.Single<A>, EndpointOutput.Single<A>
 
   sealed interface Basic<L, A, CF : CodecFormat> :

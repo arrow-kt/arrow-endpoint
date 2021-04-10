@@ -9,29 +9,32 @@ import com.fortysevendegrees.thool.model.Method
 // Such as Query, PathCapture, Cookie, etc
 sealed interface EndpointInput<A> : EndpointTransput<A> {
 
+  override fun <B> map(mapping: Mapping<A, B>): EndpointInput<B>
+  override fun <B> map(f: (A) -> B, g: (B) -> A): EndpointInput<B> = map(Mapping.from(f, g))
+  override fun <B> mapDecode(f: (A) -> DecodeResult<B>, g: (B) -> A): EndpointInput<B> = map(Mapping.fromDecode(f, g))
+
   // Marker for EndpointInput with single output
   sealed interface Single<A> : EndpointInput<A>
   sealed interface Basic<L, A, CF : CodecFormat> : Single<A>, EndpointTransput.Basic<L, A, CF> {
 
     override fun <B> copyWith(c: Codec<L, B, CF>, i: EndpointIO.Info<B>): Basic<L, B, CF>
-
     override fun <B> map(mapping: Mapping<A, B>): Basic<L, B, CF> = copyWith(codec.map(mapping), info.map(mapping))
-    override fun schema(s: Schema<A>?): EndpointInput.Basic<L, A, CF> = copyWith(codec.schema(s), info)
-    override fun modifySchema(modify: (Schema<A>) -> Schema<A>): EndpointInput.Basic<L, A, CF> =
+    override fun schema(s: Schema<A>?): Basic<L, A, CF> = copyWith(codec.schema(s), info)
+    override fun modifySchema(modify: (Schema<A>) -> Schema<A>): Basic<L, A, CF> =
       copyWith(codec.modifySchema(modify), info)
 
-    override fun description(d: String): EndpointInput.Basic<L, A, CF> = copyWith(codec, info.description(d))
-    override fun default(d: A): EndpointInput.Basic<L, A, CF> =
+    override fun description(d: String): Basic<L, A, CF> = copyWith(codec, info.description(d))
+    override fun default(d: A): Basic<L, A, CF> =
       copyWith(codec.modifySchema { it.default(d, codec.encode(d)) }, info)
 
-    override fun example(t: A): EndpointInput.Basic<L, A, CF> = copyWith(codec, info.example(t))
-    override fun example(example: EndpointIO.Info.Example<A>): EndpointInput.Basic<L, A, CF> =
+    override fun example(t: A): Basic<L, A, CF> = copyWith(codec, info.example(t))
+    override fun example(example: EndpointIO.Info.Example<A>): Basic<L, A, CF> =
       copyWith(codec, info.example(example))
 
-    override fun examples(examples: List<EndpointIO.Info.Example<A>>): EndpointInput.Basic<L, A, CF> =
+    override fun examples(examples: List<EndpointIO.Info.Example<A>>): Basic<L, A, CF> =
       copyWith(codec, info.examples(examples))
 
-    override fun deprecated(): EndpointInput.Basic<L, A, CF> = copyWith(codec, info.deprecated(true))
+    override fun deprecated(): Basic<L, A, CF> = copyWith(codec, info.deprecated(true))
   }
 
   data class Query<A>(

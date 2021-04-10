@@ -7,6 +7,10 @@ import com.fortysevendegrees.thool.model.StatusCode as MStatusCode
 // Such as StatusCode, Void, etc
 sealed interface EndpointOutput<A> : EndpointTransput<A> {
 
+  override fun <B> map(mapping: Mapping<A, B>): EndpointOutput<B>
+  override fun <B> map(f: (A) -> B, g: (B) -> A): EndpointOutput<B> = map(Mapping.from(f, g))
+  override fun <B> mapDecode(f: (A) -> DecodeResult<B>, g: (B) -> A): EndpointOutput<B> = map(Mapping.fromDecode(f, g))
+
   sealed interface Single<A> : EndpointOutput<A>
 
   sealed interface Basic<L, A, CF : CodecFormat> : Single<A>, EndpointTransput.Basic<L, A, CF> {
@@ -62,8 +66,7 @@ sealed interface EndpointOutput<A> : EndpointTransput<A> {
   /**
    * Specifies that for `statusCode`, the given `output` should be used.
    * The `appliesTo` function should determine, whether a runtime value matches the type `O`.
-   * This check cannot be in general done by checking the run-time class of the value, due to type erasure (if `O` has
-   * type parameters).
+   * This check cannot be in general done by checking the run-time class of the value, due to type erasure (if `O` has type parameters).
    */
   data class StatusMapping<O> internal constructor(
     val statusCode: MStatusCode?,
@@ -73,15 +76,11 @@ sealed interface EndpointOutput<A> : EndpointTransput<A> {
 
   class Void<A> : EndpointOutput<A> {
     override fun <B> map(mapping: Mapping<A, B>): Void<B> = Void()
-
-    // This probably should be implemented as extension functions to overcome the `implicit concat: ParamConcat.Aux[T, U, TU]` (boilerplate heavy in Kotlin)
-//    override def and[U, TU](other: com.fortysevendegrees.thool.EndpointOutput[U])(implicit concat: ParamConcat.Aux[T, U, TU]): com.fortysevendegrees.thool.EndpointOutput[TU] =
-//    other.asInstanceOf[com.fortysevendegrees.thool.EndpointOutput[TU]]
     override fun toString(): String = "void"
   }
 
   data class MappedPair<A, B, C, D>(val output: Pair<A, B, C>, val mapping: Mapping<C, D>) : Single<D> {
-    override fun <E> map(m: Mapping<D, E>): EndpointTransput<E> = MappedPair(output, mapping.map(m))
+    override fun <E> map(m: Mapping<D, E>): EndpointOutput<E> = MappedPair(output, mapping.map(m))
     override fun toString(): String = output.toString()
   }
 
