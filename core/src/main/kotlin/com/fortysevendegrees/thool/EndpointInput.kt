@@ -138,42 +138,64 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
     override fun <D> map(mapping: Mapping<C, D>): EndpointInput<D> = MappedPair(this, mapping)
     override fun toString(): String = "EndpointInput.Pair($first, $second)"
   }
+}
 
-  fun <A> traverseInputs(isDefinedAt: (EndpointInput<*>) -> Boolean, handle: (EndpointInput<*>) -> List<A>): List<A> =
-    when {
-      isDefinedAt(this) -> handle(this)
-      this is Pair<*, *, *> -> first.traverseInputs(isDefinedAt, handle) + second.traverseInputs(isDefinedAt, handle)
-      this is EndpointInput.Pair<*, *, *> -> first.traverseInputs(isDefinedAt, handle) + second.traverseInputs(
-        isDefinedAt,
-        handle
-      )
-      this is EndpointIO.Pair<*, *, *> -> first.traverseInputs(isDefinedAt, handle) + second.traverseInputs(
-        isDefinedAt,
-        handle
-      )
-      this is EndpointInput.MappedPair<*, *, *, *> -> input.traverseInputs(isDefinedAt, handle)
-      this is EndpointIO.MappedPair<*, *, *, *> -> wrapped.traverseInputs(isDefinedAt, handle)
-      // is EndpointInput.Auth<*> -> input.traverseInputs(isDefinedAt, handle)
-      else -> emptyList()
-    }
+fun <A, B> EndpointInput<A>.reduce(
+  ifBody: (EndpointIO.Body<Any?, Any?>) -> List<B> = { emptyList() },
+  ifEmpty: (EndpointIO.Empty<Any?>) -> List<B> = { emptyList() },
+  ifHeader: (EndpointIO.Header<Any?>) -> List<B> = { emptyList() },
+  ifStreamBody: (EndpointIO.StreamBody<Any?>) -> List<B> = { emptyList() },
+  ifCookie: (EndpointInput.Cookie<Any?>) -> List<B> = { emptyList() },
+  ifFixedMethod: (EndpointInput.FixedMethod<Any?>) -> List<B> = { emptyList() },
+  ifFixedPath: (EndpointInput.FixedPath<Any?>) -> List<B> = { emptyList() },
+  ifPathCapture: (EndpointInput.PathCapture<Any?>) -> List<B> = { emptyList() },
+  ifPathsCapture: (EndpointInput.PathsCapture<Any?>) -> List<B> = { emptyList() },
+  ifQuery: (EndpointInput.Query<Any?>) -> List<B> = { emptyList() },
+  ifQueryParams: (EndpointInput.QueryParams<Any?>) -> List<B> = { emptyList() },
+): List<B> =
+  when(this) {
+    is EndpointIO.Body<*, *> -> ifBody(this as EndpointIO.Body<Any?, Any?>)
+    is EndpointIO.Empty -> ifEmpty(this as EndpointIO.Empty<Any?>)
+    is EndpointIO.Header -> ifHeader(this as EndpointIO.Header<Any?>)
+    is EndpointIO.StreamBody -> ifStreamBody(this as EndpointIO.StreamBody<Any?>)
+    is EndpointInput.Cookie -> ifCookie(this as EndpointInput.Cookie<Any?>)
+    is EndpointInput.FixedMethod -> ifFixedMethod(this as EndpointInput.FixedMethod<Any?>)
+    is EndpointInput.FixedPath -> ifFixedPath(this as EndpointInput.FixedPath<Any?>)
+    is EndpointInput.PathCapture -> ifPathCapture(this as EndpointInput.PathCapture<Any?>)
+    is EndpointInput.PathsCapture -> ifPathsCapture(this as EndpointInput.PathsCapture<Any?>)
+    is EndpointInput.Query -> ifQuery(this as EndpointInput.Query<Any?>)
+    is EndpointInput.QueryParams -> ifQueryParams(this as EndpointInput.QueryParams<Any?>)
 
-  fun asListOfBasicInputs(includeAuth: Boolean = true): List<Basic<*, *, *>> =
-    traverseInputs({ it is Basic<*, *, *> /* || it is EndpointInput.Auth */ }) {
-      when (it) {
-        is Basic<*, *, *> -> listOf(it)
-        // is EndpointInput.Auth<*>  -> if (includeAuth) it.input.asVectorOfBasicInputs(includeAuth) else emptyList()
-        else -> throw IllegalStateException("")
-      }
-    }
+    is EndpointInput.Pair<*, *, *> ->
+      first.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifCookie, ifFixedMethod, ifFixedPath, ifPathCapture, ifPathsCapture, ifQuery, ifQueryParams) +
+        second.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifCookie, ifFixedMethod, ifFixedPath, ifPathCapture, ifPathsCapture, ifQuery, ifQueryParams)
+    is EndpointIO.Pair<*, *, *> ->
+      first.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifCookie, ifFixedMethod, ifFixedPath, ifPathCapture, ifPathsCapture, ifQuery, ifQueryParams) +
+        second.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifCookie, ifFixedMethod, ifFixedPath, ifPathCapture, ifPathsCapture, ifQuery, ifQueryParams)
+    is EndpointIO.MappedPair<*, *, *, *> ->
+      wrapped.first.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifCookie, ifFixedMethod, ifFixedPath, ifPathCapture, ifPathsCapture, ifQuery, ifQueryParams) +
+        wrapped.second.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifCookie, ifFixedMethod, ifFixedPath, ifPathCapture, ifPathsCapture, ifQuery, ifQueryParams)
+    is EndpointInput.MappedPair<*, *, *, *> ->
+      input.first.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifCookie, ifFixedMethod, ifFixedPath, ifPathCapture, ifPathsCapture, ifQuery, ifQueryParams) +
+        input.second.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifCookie, ifFixedMethod, ifFixedPath, ifPathCapture, ifPathsCapture, ifQuery, ifQueryParams)
+  }
 
-  fun method(): Method? =
-    traverseInputs({ it is FixedMethod }) { listOf((it as FixedMethod).m) }
-      .firstOrNull()
+fun <A> EndpointInput<A>.toList(): List<EndpointInput<Any?>> =
+  reduce(::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf)
+
+fun <A> EndpointInput<A>.asListOfBasicInputs(includeAuth: Boolean = true): List<EndpointInput.Basic<*, *, *>> =
+  toList().mapNotNull {
+//      if(includeAuth) it as? Basic<*, *, *> ?: it as EndpointInput.Auth<*> else
+    it as? EndpointInput.Basic<*, *, *>
+  }
+
+fun <A> EndpointInput<A>.method(): Method? =
+  toList().mapNotNull { (it as? EndpointInput.FixedMethod<*>)?.m }
+    .firstOrNull()
 
 //  fun auth(): Method? =
-//    traverseInputs({ it is Auth }) { listOf((it as Auth).m) }
+//    toList().mapNotNull { (it as? EndpointInput.Auth<*>)?.m }
 //      .firstOrNull()
-}
 
 // We need to support this Arity-22
 @JvmName("and")

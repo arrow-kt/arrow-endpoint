@@ -2,16 +2,17 @@ package com.fortysevendegrees.thool
 
 import com.fortysevendegrees.thool.model.CodecFormat
 
-/** A transput is EITHER an input, or an output (see: https://ell.stackexchange.com/questions/21405/hypernym-for-input-and-output).
- * The transput traits contain common functionality, shared by all inputs and outputs.
- *
- * Note that implementations of `EndpointIO` can be used BOTH as inputs and outputs.
+/**
+ * A transput is either an input, or an output (see: https://ell.stackexchange.com/questions/21405/hypernym-for-input-and-output).
+ * The transput interface contain some common functionality, shared by all inputs and outputs.
  *
  * The hierarchy is as follows:
  *
- *                        /---> `EndpointInput`  >---\
- * `EndpointTransput` >---                            ---> `EndpointIO`
- *                        \---> `EndpointOutput` >---/
+ *       EndpointTransput
+ *           /     \
+ * EndpointInput  EndpointOutput
+ *           \     /
+ *         EndpointIO
  */
 sealed interface EndpointTransput<A> {
 

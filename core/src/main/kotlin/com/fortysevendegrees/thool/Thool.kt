@@ -5,6 +5,7 @@ import com.fortysevendegrees.thool.model.Cookie
 import com.fortysevendegrees.thool.model.HeaderNames
 import com.fortysevendegrees.thool.model.Method
 import com.fortysevendegrees.thool.model.QueryParams
+import com.fortysevendegrees.thool.model.StatusCode
 import kotlinx.coroutines.flow.Flow
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
@@ -126,7 +127,7 @@ object Thool {
     Endpoint(input.withMethod(method(Method.GET)), errorOutput, output, info)
 
   fun <I, E, O> Endpoint<I, E, O>.post(): Endpoint<I, E, O> =
-    Endpoint(input.withMethod(method(Method.GET)), errorOutput, output, info)
+    Endpoint(input.withMethod(method(Method.POST)), errorOutput, output, info)
 
   fun <I, E, O> Endpoint<I, E, O>.head(): Endpoint<I, E, O> =
     Endpoint(input.withMethod(method(Method.HEAD)), errorOutput, output, info)
@@ -151,4 +152,10 @@ object Thool {
 
   private fun <A> EndpointInput<A>.withMethod(other: EndpointInput.FixedMethod<Unit>): EndpointInput<A> =
     EndpointInput.Pair(this, other, { p1, _ -> p1 }, { p -> Pair(p, Params.Unit) })
+
+  fun statusCode(): EndpointOutput.StatusCode<StatusCode> =
+    EndpointOutput.StatusCode(emptyMap(), Codec.idPlain(), EndpointIO.Info.empty())
+
+  fun statusCode(statusCode: StatusCode): EndpointOutput.FixedStatusCode<Unit> =
+    EndpointOutput.FixedStatusCode(statusCode, Codec.idPlain(), EndpointIO.Info.empty())
 }

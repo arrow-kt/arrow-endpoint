@@ -99,40 +99,6 @@ data class Schema<T>(
   fun <U> modifyUnsafe(vararg fields: String, modify: (Schema<U>) -> Schema<U>): Schema<T> =
     modifyAtPath(fields.toList(), modify)
 
-  data class SCoproduct(
-    override val info: SObjectInfo,
-    val schemas: List<Schema<*>>,
-    val discriminator: SchemaType.Discriminator?
-  ) :
-    SchemaType.SObject() {
-
-    override fun show(): String = "oneOf:" + schemas.joinToString(",")
-
-    fun <D> addDiscriminatorField(
-      discriminatorName: FieldName,
-      discriminatorSchema: Schema<D> = Schema.string(),
-      discriminatorMappingOverride: Map<String, SRef> = emptyMap()
-    ): SCoproduct =
-      SCoproduct(
-        info,
-        schemas.map { s ->
-          when (s.schemaType) {
-            is SchemaType.SObject.SProduct ->
-              s.copy(
-                schemaType = s.schemaType.copy(
-                  fields = s.schemaType.fields.toList() + Pair(
-                    discriminatorName,
-                    discriminatorSchema
-                  )
-                )
-              )
-            else -> s
-          }
-        },
-        Discriminator(discriminatorName.encodedName, discriminatorMappingOverride)
-      )
-  }
-
   private fun <U> modifyAtPath(fieldPath: List<String>, modify: (Schema<U>) -> Schema<U>): Schema<T> =
     when {
       fieldPath.isEmpty() -> modify(this as Schema<U>) as Schema<T> // we don't have type-polymorphic functions (????)

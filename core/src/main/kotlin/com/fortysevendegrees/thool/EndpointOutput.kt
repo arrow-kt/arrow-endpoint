@@ -90,24 +90,46 @@ sealed interface EndpointOutput<A> : EndpointTransput<A> {
     override fun <D> map(mapping: Mapping<C, D>): EndpointOutput<D> = MappedPair(this, mapping)
     override fun toString(): String = "EndpointOutput.Pair($first, $second)"
   }
-
-  fun <A> traverseOutputs(isDefinedAt: (EndpointOutput<*>) -> Boolean, handle: (EndpointOutput<*>) -> List<A>): List<A> =
-    when {
-      isDefinedAt(this) -> handle(this)
-      this is EndpointOutput.Pair<*, *, *> -> first.traverseOutputs(isDefinedAt, handle) + second.traverseOutputs(
-        isDefinedAt,
-        handle
-      )
-      this is EndpointIO.Pair<*, *, *> -> first.traverseOutputs(isDefinedAt, handle) + second.traverseOutputs(
-        isDefinedAt,
-        handle
-      )
-      this is EndpointOutput.MappedPair<*, *, *, *> -> output.traverseOutputs(isDefinedAt, handle)
-      this is EndpointIO.MappedPair<*, *, *, *> -> wrapped.traverseOutputs(isDefinedAt, handle)
-//    this is EndpointOutput.OneOf<*, *> -> s.mappings.toList().flatMap { ut.output.traverseOutputs(handle) }
-      else -> emptyList()
-    }
 }
+
+fun <A, B> EndpointOutput<A>.reduce(
+  ifBody: (EndpointIO.Body<Any?, Any?>) -> List<B>,
+  ifEmpty: (EndpointIO.Empty<Any?>) -> List<B>,
+  ifHeader: (EndpointIO.Header<Any?>) -> List<B>,
+  ifStreamBody: (EndpointIO.StreamBody<Any?>) -> List<B>,
+  ifFixedStatuscode: (EndpointOutput.FixedStatusCode<Any?>) -> List<B>,
+  ifStatusCode: (EndpointOutput.StatusCode<Any?>) -> List<B>,
+  ifVoid: (EndpointOutput.Void<Any?>) -> List<B>
+): List<B> =
+  when (this) {
+    is EndpointIO.Body<*, *> -> ifBody(this as EndpointIO.Body<Any?, Any?>)
+    is EndpointIO.Empty -> ifEmpty(this as EndpointIO.Empty<Any?>)
+    is EndpointIO.Header -> ifHeader(this as EndpointIO.Header<Any?>)
+    is EndpointIO.StreamBody -> ifStreamBody(this as EndpointIO.StreamBody<Any?>)
+    is EndpointOutput.FixedStatusCode -> ifFixedStatuscode(this as EndpointOutput.FixedStatusCode<Any?>)
+    is EndpointOutput.StatusCode -> ifStatusCode(this as EndpointOutput.StatusCode<Any?>)
+    is EndpointOutput.Void -> ifVoid(this as EndpointOutput.Void<Any?>)
+
+    is EndpointOutput.Pair<*, *, *> ->
+      first.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifFixedStatuscode, ifStatusCode, ifVoid) +
+        second.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifFixedStatuscode, ifStatusCode, ifVoid)
+    is EndpointIO.Pair<*, *, *> ->
+      first.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifFixedStatuscode, ifStatusCode, ifVoid) +
+        second.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifFixedStatuscode, ifStatusCode, ifVoid)
+    is EndpointIO.MappedPair<*, *, *, *> ->
+      wrapped.first.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifFixedStatuscode, ifStatusCode, ifVoid) +
+        wrapped.second.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifFixedStatuscode, ifStatusCode, ifVoid)
+    is EndpointOutput.MappedPair<*, *, *, *> ->
+      output.first.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifFixedStatuscode, ifStatusCode, ifVoid) +
+        output.second.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifFixedStatuscode, ifStatusCode, ifVoid)
+  }
+
+fun EndpointOutput<*>.toList(): List<EndpointOutput<Any?>> =
+  reduce(::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf)
+
+fun EndpointOutput<*>.bodyType(): RawBodyType<*>? =
+  toList().mapNotNull { (it as? EndpointIO.Body<Any?, Any?>)?.bodyType }
+    .firstOrNull()
 
 // We need to support this Arity-22
 @JvmName("and")

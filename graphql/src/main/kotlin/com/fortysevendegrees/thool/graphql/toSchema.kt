@@ -5,7 +5,10 @@ import com.fortysevendegrees.thool.EndpointOutput
 import com.fortysevendegrees.thool.EndpointTransput
 import com.fortysevendegrees.thool.Schema
 import com.fortysevendegrees.thool.SchemaType
+import com.fortysevendegrees.thool.asListOfBasicInputs
+import com.fortysevendegrees.thool.method
 import com.fortysevendegrees.thool.model.Method
+import com.fortysevendegrees.thool.reduce
 import graphql.Scalars
 import graphql.schema.Coercing
 import graphql.schema.GraphQLArgument
@@ -27,13 +30,55 @@ import java.lang.IllegalStateException
  *   - fixed query paths are used to name GraphQL fields (e.g. an endpoint /book/add will give a GraphQL field named bookAdd)
  *   - query parameters, headers, cookies and request body are used as GraphQL arguments
  */
+fun List<Endpoint<*, Unit, *>>.toSchema(): GraphQLSchema {
+  val builder = GraphQLSchema.Builder()
+    .description(mapNotNull { it.info.description }.joinToString(prefix = "- ", separator = "\n- "))
+
+  forEach {
+    println(it.info.name)
+
+    // Not covering all methods here yet :scream:
+    when (it.input.method() ?: Method.GET) {
+      Method.PUT, Method.POST, Method.DELETE -> builder.mutation(
+        GraphQLObjectType.Builder()
+          .name("Mutation")
+          .description(it.info.description)
+          .field(it.generateFunction())
+          .build()
+      )
+      Method.GET -> builder.query(
+        GraphQLObjectType.Builder()
+          .name("Query")
+          .description(it.info.description)
+          .field(it.generateFunction())
+          .build()
+      )
+      else -> TODO("RIP")
+    }
+  }
+
+  return builder.build()
+}
+
+/**
+ * The conversion rules are the following:
+ *   - GET endpoints are turned into Queries
+ *   - PUT, POST and DELETE endpoints are turned into Mutations
+ *   - fixed query paths are used to name GraphQL fields (e.g. an endpoint /book/add will give a GraphQL field named bookAdd)
+ *   - query parameters, headers, cookies and request body are used as GraphQL arguments
+ */
 fun <I, E, O> Endpoint<I, E, O>.toSchema(): GraphQLSchema {
   val builder = GraphQLSchema.Builder()
     .description(info.description)
 
   // Not covering all methods here yet :scream:
   when (input.method() ?: Method.GET) {
-    Method.PUT, Method.POST, Method.DELETE -> TODO("Mutation")
+    Method.PUT, Method.POST, Method.DELETE ->
+      GraphQLObjectType.Builder()
+        .name("Mutation")
+        .description(info.description)
+        .field(generateFunction())
+        .build()
     Method.GET -> builder.query(
       GraphQLObjectType.Builder()
         .name("Query")
@@ -56,30 +101,62 @@ fun <I, E, O> Endpoint<I, E, O>.generateFunction(): GraphQLFieldDefinition =
     .build()
 
 fun <O> EndpointOutput<O>.getReturnType(): List<GraphQLOutputType> =
-  traverseOutputs<GraphQLOutputType>(
-    { it !is EndpointOutput.Pair<*, *, *> && it !is EndpointOutput.MappedPair<*, *, *, *> && it !is EndpointOutput.MappedPair<*, *, *, *> && it !is EndpointOutput.MappedPair<*, *, *, *> }
-  ) {
-    when (it) {
-      is EndpointIO.Body<*, *> -> listOf(
+  reduce(
+    ifBody = {
+      it.codec.schema().toScalarOrNull()?.let(::listOf) ?: listOf(
         GraphQLObjectType.Builder()
           .description(it.info.description)
-          .name(it.codec.schema().name() ?: "body")
+          .name("body: ${it.codec.schema().name() ?: ""}")
           .fields(it.codec.schema().toFields())
-//        .type(codec.schema().toType())
           .build()
       )
-      is EndpointIO.Header -> TODO()
-      is EndpointIO.StreamBody -> TODO()
-      is EndpointOutput.FixedStatusCode -> TODO()
-      is EndpointOutput.StatusCode -> TODO()
-      is EndpointOutput.Void -> emptyList()
-      is EndpointIO.Empty -> emptyList()
+    },
+    ifStatusCode = {
+      it.codec.schema().toScalarOrNull()?.let(::listOf) ?: listOf(
+        GraphQLObjectType.Builder()
+          .description(it.info.description)
+          .name(it.codec.schema().name() ?: "")
+          .fields(it.codec.schema().toFields())
+          .build()
+      )
+    },
+    ifFixedStatuscode = {
+      it.codec.schema().toScalarOrNull()?.let(::listOf) ?: listOf(
+        GraphQLObjectType.Builder()
+          .description(it.info.description)
+          .name(it.codec.schema().name() ?: "")
+          .fields(it.codec.schema().toFields())
+          .build()
+      )
+    },
+    ifVoid = { emptyList() },
+    ifEmpty = { emptyList() },
+    ifHeader = {
+      it.codec.schema().toScalarOrNull()?.let(::listOf) ?: listOf(
+        GraphQLObjectType.Builder()
+          .description(it.info.description)
+          .name(it.codec.schema().name() ?: "")
+          .fields(it.codec.schema().toFields())
+          .build()
+      )
+    },
+    ifStreamBody = { TODO("Subscription???") }
+  )
 
-      is EndpointIO.MappedPair<*, *, *, *> -> emptyList()
-      is EndpointOutput.Pair<*, *, *> -> emptyList()
-      is EndpointOutput.MappedPair<*, *, *, *> -> emptyList()
-      is EndpointIO.Pair<*, *, *> -> emptyList()
-    }
+fun Schema<*>.toScalarOrNull(): GraphQLScalarType? =
+  when (this.schemaType) {
+    SchemaType.SBoolean -> Scalars.GraphQLBoolean
+    SchemaType.SInteger -> Scalars.GraphQLInt
+    SchemaType.SNumber -> Scalars.GraphQLFloat
+    SchemaType.SString -> Scalars.GraphQLString
+    SchemaType.SDate -> Scalars.GraphQLString
+    SchemaType.SDateTime -> Scalars.GraphQLString
+    SchemaType.SBinary -> Scalars.GraphQLString
+    is SchemaType.SArray -> null
+    is SchemaType.SObject.SCoproduct -> null
+    is SchemaType.SObject.SOpenProduct -> null
+    is SchemaType.SObject.SProduct -> null
+    is SchemaType.SRef -> null
   }
 
 val unitScalar: GraphQLScalarType =
@@ -102,52 +179,47 @@ val voidScalar: GraphQLScalarType =
     }).build()
 
 fun <I> EndpointInput<I>.getArguments(): List<GraphQLArgument> =
-  traverseInputs(
-    { it !is EndpointTransput.Pair<*> && it !is EndpointInput.MappedPair<*, *, *, *> && it !is EndpointOutput.MappedPair<*, *, *, *> && it !is EndpointIO.MappedPair<*, *, *, *> }
-  ) {
-    when (it) {
-      is EndpointIO.Body<*, *> -> listOf(
+  reduce(
+    ifBody = {
+      listOf(
         GraphQLArgument.Builder()
           .description(it.info.description)
           .name(it.codec.schema().name() ?: "body")
           .type(it.codec.schema().toInputType())
           .build()
       )
-      is EndpointInput.Query -> listOf(
+    },
+    ifQuery = {
+      listOf(
         GraphQLArgument.Builder()
           .name(it.name)
           .description(it.info.description)
           .type(it.codec.schema().toInputType())
           .build()
       )
-
-      is EndpointInput.Cookie -> listOf(
+    },
+    ifCookie = {
+      listOf(
         GraphQLArgument.Builder()
           .name(it.name)
           .description(it.info.description)
           .type(it.codec.schema().toInputType())
           .build()
       )
-
-      is EndpointInput.PathCapture -> listOf(
+    },
+    ifPathCapture = {
+      listOf(
         GraphQLArgument.Builder()
           .name(it.name)
           .description(it.info.description)
           .type(it.codec.schema().toInputType())
           .build()
       )
-
-      is EndpointIO.Empty -> emptyList()
-      is EndpointInput.FixedMethod -> emptyList()
-      is EndpointInput.FixedPath -> emptyList()
-
-      is EndpointInput.PathsCapture -> TODO()
-      is EndpointIO.Header -> TODO()
-      is EndpointIO.StreamBody -> TODO()
-      is EndpointInput.QueryParams -> TODO()
-      else -> TODO("pair or mapped pair should be impossible: $it")
-    }
-  }
+    },
+    ifEmpty = { emptyList() },
+    ifFixedMethod = { emptyList() },
+    ifFixedPath = { emptyList() }
+  )
 
 fun <A> Schema<A>.toInputType(): GraphQLInputType =
   when (val type = this.schemaType) {
@@ -178,7 +250,6 @@ fun <A> Schema<A>.toInputType(): GraphQLInputType =
 
     is SchemaType.SObject.SOpenProduct -> TODO()
     is SchemaType.SObject.SCoproduct -> TODO("???")
-    is Schema.SCoproduct -> TODO("???")
     is SchemaType.SRef -> TODO()
   }
 
@@ -207,10 +278,9 @@ fun <A> Schema<A>.toOutputType(): GraphQLOutputType =
 //    .description()
         .build()
 
-    is SchemaType.SObject.SOpenProduct -> TODO()
-    is SchemaType.SObject.SCoproduct -> TODO("???")
-    is Schema.SCoproduct -> TODO("???")
-    is SchemaType.SRef -> TODO()
+    is SchemaType.SObject.SOpenProduct -> TODO("Map<String, schemaValue>")
+    is SchemaType.SObject.SCoproduct -> TODO("Union")
+    is SchemaType.SRef -> TODO("Ref???????")
   }
 
 fun <A> Schema<A>.toFields(): List<GraphQLFieldDefinition> =
@@ -222,6 +292,8 @@ fun <A> Schema<A>.toFields(): List<GraphQLFieldDefinition> =
     )
     SchemaType.SInteger -> listOf(
       GraphQLFieldDefinition.newFieldDefinition()
+
+        .name("IntOutput")
         .type(Scalars.GraphQLInt)
         .build()
     )
@@ -232,6 +304,8 @@ fun <A> Schema<A>.toFields(): List<GraphQLFieldDefinition> =
     )
     SchemaType.SString -> listOf(
       GraphQLFieldDefinition.newFieldDefinition()
+
+        .name("StringOutput")
         .type(Scalars.GraphQLString)
         .build()
     )
@@ -263,10 +337,9 @@ fun <A> Schema<A>.toFields(): List<GraphQLFieldDefinition> =
           .build()
       }
 
-    is SchemaType.SObject.SOpenProduct -> TODO()
-    is SchemaType.SObject.SCoproduct -> TODO("???")
-    is Schema.SCoproduct -> TODO("???")
-    is SchemaType.SRef -> TODO()
+    is SchemaType.SObject.SOpenProduct -> TODO("Map<String, valueSchema>")
+    is SchemaType.SObject.SCoproduct -> TODO("Union")
+    is SchemaType.SRef -> TODO("Ref????")
   }
 
 fun Schema<*>.name(): String? =
@@ -279,7 +352,6 @@ fun Schema<*>.name(): String? =
     SchemaType.SInteger -> "Integer"
     SchemaType.SNumber -> "Float"
     is SchemaType.SObject.SCoproduct -> type.info.fullName
-    is Schema.SCoproduct -> type.info.fullName
     is SchemaType.SObject.SOpenProduct -> type.info.fullName
     is SchemaType.SObject.SProduct -> type.info.fullName
     is SchemaType.SRef -> type.info.fullName
@@ -299,25 +371,3 @@ private fun <I, E, O> Endpoint<I, E, O>.extractPath(): String {
 
 private fun replaceIllegalChars(s: String): String =
   s.replace("\\W+", "_")
-
-private fun <I> extractArgNames(input: EndpointInput<I>): Map<String, Pair<String, String?>?> =
-  input.traverseInputs(::matches) { i ->
-    when {
-      i is EndpointInput.PathCapture && i.name != null -> listOf(Pair(i.name!!, i.info.description))
-      i is EndpointInput.Query -> listOf(Pair(i.name, i.info.description))
-      i is EndpointInput.Cookie -> listOf(Pair(i.name, i.info.description))
-      i is EndpointIO.Header -> listOf(Pair(i.name, i.info.description))
-      i is EndpointIO.Body<*, *> -> listOf(Pair("body", i.info.description))
-      i is EndpointInput.MappedPair<*, *, *, *> -> listOf(null)
-      i is EndpointIO.MappedPair<*, *, *, *> -> listOf(null)
-      else -> throw IllegalStateException("Called but didn't match. Internal error.")
-    }
-  }.mapIndexed { index, pair ->
-    Pair("_${index + 1}", pair?.let { (name, desc) -> Pair(name.replace("-", "_"), desc) })
-  }.toMap()
-
-private fun matches(input: EndpointInput<*>): Boolean =
-  input is EndpointInput.PathCapture && input.name != null || input is EndpointInput.Query ||
-    input is EndpointInput.Cookie || input is EndpointIO.Header ||
-    input is EndpointIO.Body<*, *> || input is EndpointInput.MappedPair<*, *, *, *> ||
-    input is EndpointIO.MappedPair<*, *, *, *>

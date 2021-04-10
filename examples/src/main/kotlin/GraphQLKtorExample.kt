@@ -7,8 +7,11 @@ import com.expediagroup.graphql.server.types.GraphQLServerRequest
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fortysevendegrees.thool.Codec
+import com.fortysevendegrees.thool.Schema
 import com.fortysevendegrees.thool.Thool
+import com.fortysevendegrees.thool.Thool.fixedPath
 import com.fortysevendegrees.thool.Thool.get
+import com.fortysevendegrees.thool.Thool.post
 import com.fortysevendegrees.thool.withInput
 import com.fortysevendegrees.thool.withOutput
 import graphql.GraphQL
@@ -35,9 +38,23 @@ val helloWorld =
     .withInput(Thool.query("project", Codec.string))
     .withInput(Thool.query("language", Codec.string))
     .withOutput(Thool.anyJsonBody(Project.jsonCodec))
-//      .withOutput(Thool.anyJsonBody(Codec.json(Schema.string, { DecodeResult.Value(it) }, { it })))
 
-val schema: GraphQLSchema = helloWorld.toSchema()
+val post =
+  Thool.endpoint
+    .post()
+    .withInput(Thool.fixedPath("test"))
+    .withInput(fixedPath("other"))
+    .withInput(Thool.query("project", Codec.string))
+    .withInput(Thool.query("language", Codec.string))
+    .withOutput(Thool.plainBody(Codec.stringCodec(
+      Schema.int
+    ) { 1 }))
+
+val schema: GraphQLSchema = listOf(
+  helloWorld,
+  post
+).toSchema()
+
 val ql: GraphQL = GraphQL.newGraphQL(schema).build()
 
 private val mapper = jacksonObjectMapper()
