@@ -14,8 +14,8 @@ import java.time.OffsetDateTime
 import java.time.OffsetTime
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
-import java.util.*
-
+import java.util.UUID
+import java.util.Date
 
 class SchemaKtTest : StringSpec({
 
@@ -60,7 +60,6 @@ class SchemaKtTest : StringSpec({
   "sealed class derivation" {
     Schema.reflect<Sum>() shouldBe Schema.sum()
   }
-
 })
 
 enum class Test { A, B, C; }
