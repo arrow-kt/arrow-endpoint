@@ -88,15 +88,12 @@ fun <I, E, O> Endpoint<I, E, O>.toSchema(): GraphQLSchema {
   return builder.build()
 }
 
-fun <I, E, O> Endpoint<I, E, O>.generateFunction(
-
-): GraphQLFieldDefinition =
+fun <I, E, O> Endpoint<I, E, O>.generateFunction(): GraphQLFieldDefinition =
   GraphQLFieldDefinition.Builder()
     .name(extractPath())
     .apply { if (info.deprecated) deprecate("This method is deprecated") }
     .arguments(input.getArguments())
     .type(output.getReturnType().firstOrNull() ?: unitScalar)
-
     .build()
 
 fun <O> EndpointOutput<O>.getReturnType(): List<GraphQLOutputType> =
