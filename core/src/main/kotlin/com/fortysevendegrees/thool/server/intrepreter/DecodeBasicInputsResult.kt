@@ -105,6 +105,7 @@ object DecodeBasicInputs {
 
     // we're using null as a placeholder for the future values. All except the body (which is determined by
     // interpreter-specific code), should be filled by the end of this method.
+    // TODO rewrite to functions without currying
     return compose(
       whenOthers(methodInputs),
       whenPath(pathInputs),

@@ -77,7 +77,9 @@ sealed interface EndpointOutput<A> : EndpointTransput<A> {
   }
 
   data class MappedPair<A, B, C, D>(val output: Pair<A, B, C>, val mapping: Mapping<C, D>) : Single<D> {
-    override fun <E> map(m: Mapping<D, E>): EndpointTransput<E> = MappedPair(output, mapping.map(m))
+    override fun <E> map(@Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE") m: Mapping<D, E>): EndpointTransput<E> =
+      MappedPair(output, mapping.map(m))
+
     override fun toString(): String = output.toString()
   }
 
@@ -90,8 +92,15 @@ sealed interface EndpointOutput<A> : EndpointTransput<A> {
     override fun <D> map(mapping: Mapping<C, D>): EndpointOutput<D> = MappedPair(this, mapping)
     override fun toString(): String = "EndpointOutput.Pair($first, $second)"
   }
+
+  companion object {
+    /** An empty output. Useful if one of `oneOf` branches should be mapped to the status code only. */
+    fun empty(): EndpointIO.Empty<Unit> =
+      EndpointIO.Empty(Codec.idPlain(), EndpointIO.Info.empty())
+  }
 }
 
+@Suppress("UNCHECKED_CAST")
 fun <A, B> EndpointOutput<A>.reduce(
   ifBody: (EndpointIO.Body<Any?, Any?>) -> List<B>,
   ifEmpty: (EndpointIO.Empty<Any?>) -> List<B>,
@@ -127,6 +136,7 @@ fun <A, B> EndpointOutput<A>.reduce(
 fun EndpointOutput<*>.toList(): List<EndpointOutput<Any?>> =
   reduce(::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf)
 
+@Suppress("UNCHECKED_CAST")
 fun EndpointOutput<*>.bodyType(): RawBodyType<*>? =
   toList().mapNotNull { (it as? EndpointIO.Body<Any?, Any?>)?.bodyType }
     .firstOrNull()
@@ -147,7 +157,10 @@ fun <A, B> EndpointOutput<A>.and(other: EndpointOutput<B>): EndpointOutput<Pair<
   )
 
 @JvmName("andLeftUnit")
-fun <A> EndpointOutput<Unit>.and(other: EndpointOutput<A>, dummy: Unit = Unit): EndpointOutput<A> =
+fun <A> EndpointOutput<Unit>.and(
+  other: EndpointOutput<A>,
+  @Suppress("UNUSED_PARAMETER") dummy: Unit = Unit
+): EndpointOutput<A> =
   EndpointOutput.Pair(
     this,
     other,

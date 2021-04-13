@@ -11,10 +11,8 @@ import com.fortysevendegrees.thool.Endpoint
 import com.fortysevendegrees.thool.Schema
 import com.fortysevendegrees.thool.Thool
 import com.fortysevendegrees.thool.Thool.fixedPath
-import com.fortysevendegrees.thool.Thool.get
-import com.fortysevendegrees.thool.Thool.post
-import com.fortysevendegrees.thool.withInput
-import com.fortysevendegrees.thool.withOutput
+import com.fortysevendegrees.thool.input
+import com.fortysevendegrees.thool.output
 import graphql.GraphQL
 import graphql.schema.GraphQLSchema
 import io.ktor.application.Application
@@ -30,24 +28,24 @@ import io.ktor.routing.post
 import io.ktor.routing.routing
 import java.io.IOException
 
-val helloWorld: Endpoint<Pair<String, String>, Unit, Project> =
-  Thool.endpoint
+val helloWorld: Endpoint<Pair<String, String>, Nothing, Project> =
+  Endpoint
     .get()
-    .withInput(Thool.fixedPath("hello"))
-    .withInput(Thool.fixedPath("world"))
-    .withInput(Thool.fixedPath("test"))
-    .withInput(Thool.query("project", Codec.string))
-    .withInput(Thool.query("language", Codec.string))
-    .withOutput(Thool.anyJsonBody(Project.jsonCodec))
+    .input(Thool.fixedPath("hello"))
+    .input(Thool.fixedPath("world"))
+    .input(Thool.fixedPath("test"))
+    .input(Thool.query("project", Codec.string))
+    .input(Thool.query("language", Codec.string))
+    .output(Thool.anyJsonBody(Project.jsonCodec))
 
-val post: Endpoint<Pair<String, String>, Unit, Int> =
-  Thool.endpoint
+val post: Endpoint<Pair<String, String>, Nothing, Int> =
+  Endpoint
     .post()
-    .withInput(Thool.fixedPath("test"))
-    .withInput(fixedPath("other"))
-    .withInput(Thool.query("project", Codec.string))
-    .withInput(Thool.query("language", Codec.string))
-    .withOutput(
+    .input(Thool.fixedPath("test"))
+    .input(fixedPath("other"))
+    .input(Thool.query("project", Codec.string))
+    .input(Thool.query("language", Codec.string))
+    .output(
       Thool.plainBody(
         Codec.stringCodec(
           Schema.int

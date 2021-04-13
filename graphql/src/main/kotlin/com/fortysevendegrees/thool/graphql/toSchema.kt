@@ -26,7 +26,7 @@ import graphql.schema.GraphQLSchema
  *   - fixed query paths are used to name GraphQL fields (e.g. an endpoint /book/add will give a GraphQL field named bookAdd)
  *   - query parameters, headers, cookies and request body are used as GraphQL arguments
  */
-fun List<Endpoint<*, Unit, *>>.toSchema(): GraphQLSchema {
+fun List<Endpoint<*, Nothing, *>>.toSchema(): GraphQLSchema {
   val builder = GraphQLSchema.Builder()
     .description(mapNotNull { it.info.description }.joinToString(prefix = "- ", separator = "\n- "))
 
@@ -88,12 +88,15 @@ fun <I, E, O> Endpoint<I, E, O>.toSchema(): GraphQLSchema {
   return builder.build()
 }
 
-fun <I, E, O> Endpoint<I, E, O>.generateFunction(): GraphQLFieldDefinition =
+fun <I, E, O> Endpoint<I, E, O>.generateFunction(
+
+): GraphQLFieldDefinition =
   GraphQLFieldDefinition.Builder()
     .name(extractPath())
     .apply { if (info.deprecated) deprecate("This method is deprecated") }
     .arguments(input.getArguments())
     .type(output.getReturnType().firstOrNull() ?: unitScalar)
+
     .build()
 
 fun <O> EndpointOutput<O>.getReturnType(): List<GraphQLOutputType> =

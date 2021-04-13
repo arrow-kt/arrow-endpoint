@@ -39,8 +39,8 @@ interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
       override fun rawDecode(l: L): DecodeResult<HH> =
         this@Codec.rawDecode(l).flatMap(codec::rawDecode)
 
-      override fun encode(hh: HH): L =
-        this@Codec.encode(codec.encode(hh))
+      override fun encode(h: HH): L =
+        this@Codec.encode(codec.encode(h))
 
       override val format: CF = this@Codec.format
 
@@ -61,7 +61,7 @@ interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
     mapDecode(f.andThen { DecodeResult.Value(it) }, g)
 
   fun schema(s2: Schema<H>?): Codec<L, H, CF> =
-    s2?.let { s2 ->
+    s2?.let {
       object : Codec<L, H, CF> {
         override fun rawDecode(l: L): DecodeResult<H> = this@Codec.decode(l)
         override fun encode(h: H): L = this@Codec.encode(h)
@@ -130,7 +130,6 @@ interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
         .schema(Schema.offsetDateTime)
 
     val zonedDateTime: Codec<String, ZonedDateTime, CodecFormat.TextPlain> =
-      // string.com.fortysevendegrees.thool.map(ZonedDateTime.parse(_))(DateTimeFormatter.ISO_ZONED_DATE_TIME.format).schema(com.fortysevendegrees.thool.Schema.schemaForZonedDateTime)
       string.map({ ZonedDateTime.parse(it) }, DateTimeFormatter.ISO_ZONED_DATE_TIME::format)
         .schema(Schema.zonedDateTime)
 

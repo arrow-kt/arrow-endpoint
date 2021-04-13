@@ -2,6 +2,7 @@ package com.fortysevendegrees.thool
 
 import arrow.core.Tuple4
 import arrow.core.Tuple5
+import arrow.core.Tuple6
 import com.fortysevendegrees.thool.model.CodecFormat
 import com.fortysevendegrees.thool.model.Method
 
@@ -137,6 +138,11 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
   ) : EndpointInput<C>, EndpointTransput.Pair<C> {
     override fun <D> map(mapping: Mapping<C, D>): EndpointInput<D> = MappedPair(this, mapping)
     override fun toString(): String = "EndpointInput.Pair($first, $second)"
+  }
+
+  companion object {
+    fun empty(): EndpointIO.Empty<Unit> =
+      EndpointIO.Empty(Codec.idPlain(), EndpointIO.Info.empty())
   }
 }
 
@@ -313,6 +319,24 @@ fun <A> EndpointInput<Unit>.and(other: EndpointInput<A>, dummy: Unit = Unit): En
     { p -> Pair(Params.Unit, p) }
   )
 
+@JvmName("andRightUnit")
+fun <A> EndpointInput<A>.and(other: EndpointInput<Unit>, dummy: Unit = Unit): EndpointInput<A> =
+  EndpointInput.Pair(
+    this,
+    other,
+    { p1, _ -> p1 },
+    { p -> Pair(p, Params.Unit) }
+  )
+
+@JvmName("andLeftRightUnit")
+fun EndpointInput<Unit>.and(other: EndpointInput<Unit>, dummy: Unit = Unit): EndpointInput<Unit> =
+  EndpointInput.Pair(
+    this,
+    other,
+    { p1, _ -> p1 },
+    { p -> Pair(p, Params.Unit) }
+  )
+
 @JvmName("and2")
 fun <A, B, C> EndpointInput<Pair<A, B>>.and(other: EndpointInput<C>): EndpointInput<Triple<A, B, C>> =
   EndpointInput.Pair(
@@ -370,7 +394,7 @@ fun <A, B, C, D> EndpointInput<Triple<A, B, C>>.and(other: EndpointInput<D>): En
   )
 
 @JvmName("and5")
-fun <A, B, C, D, E> EndpointInput<Tuple4<A, B, C, D>>.and(other: EndpointInput<D>): EndpointInput<Tuple5<A, B, C, D, E>> =
+fun <A, B, C, D, E> EndpointInput<Tuple4<A, B, C, D>>.and(other: EndpointInput<E>): EndpointInput<Tuple5<A, B, C, D, E>> =
   EndpointInput.Pair(
     this,
     other,
@@ -378,6 +402,20 @@ fun <A, B, C, D, E> EndpointInput<Tuple4<A, B, C, D>>.and(other: EndpointInput<D
     { p ->
       Pair(
         Params.ParamsAsList(p.asList.take(4)),
+        Params.ParamsAsAny(p.asList.takeLast(1))
+      )
+    }
+  )
+
+@JvmName("and6")
+fun <A, B, C, D, E, F> EndpointInput<Tuple5<A, B, C, D, E>>.and(other: EndpointInput<F>): EndpointInput<Tuple6<A, B, C, D, E, F>> =
+  EndpointInput.Pair(
+    this,
+    other,
+    { p1, p2 -> Params.ParamsAsList(p1.asList + p2.asAny) },
+    { p ->
+      Pair(
+        Params.ParamsAsList(p.asList.take(5)),
         Params.ParamsAsAny(p.asList.takeLast(1))
       )
     }
