@@ -289,10 +289,6 @@ fun <A> EndpointInput<A>.method(): Method? =
   toList().mapNotNull { (it as? EndpointInput.FixedMethod<*>)?.m }
     .firstOrNull()
 
-//  fun auth(): Method? =
-//    toList().mapNotNull { (it as? EndpointInput.Auth<*>)?.m }
-//      .firstOrNull()
-
 // We need to support this Arity-22
 @JvmName("and")
 fun <A, B> EndpointInput<A>.and(other: EndpointInput<B>): EndpointInput<Pair<A, B>> =
