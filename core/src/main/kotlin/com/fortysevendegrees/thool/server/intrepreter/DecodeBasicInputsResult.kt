@@ -8,6 +8,7 @@ import com.fortysevendegrees.thool.DecodeResult.Failure.Multiple
 import com.fortysevendegrees.thool.EndpointIO
 import com.fortysevendegrees.thool.EndpointInput
 import com.fortysevendegrees.thool.ServerRequest
+import com.fortysevendegrees.thool.asListOfBasicInputs
 import com.fortysevendegrees.thool.basicInputSortIndex
 import com.fortysevendegrees.thool.headAndTailOrNull
 import com.fortysevendegrees.thool.initAndLastOrNull
@@ -104,6 +105,7 @@ object DecodeBasicInputs {
 
     // we're using null as a placeholder for the future values. All except the body (which is determined by
     // interpreter-specific code), should be filled by the end of this method.
+    // TODO rewrite to functions without currying
     return compose(
       whenOthers(methodInputs),
       whenPath(pathInputs),
