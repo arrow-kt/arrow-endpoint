@@ -1,4 +1,4 @@
-package com.fortysevendegrees.thool.ktor
+package com.fortysevendegrees.thool.ktor.server
 
 import com.fortysevendegrees.thool.Codec
 import com.fortysevendegrees.thool.DecodeResult

@@ -1,4 +1,4 @@
-package com.fortysevendegrees.thool.ktor
+package com.fortysevendegrees.thool.ktor.server
 
 import arrow.core.Either
 import com.fortysevendegrees.thool.Codec
