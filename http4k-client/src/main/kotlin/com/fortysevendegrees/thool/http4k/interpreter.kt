@@ -25,6 +25,7 @@ import com.fortysevendegrees.thool.model.Method.Companion.CONNECT
 import com.fortysevendegrees.thool.model.Method.Companion.TRACE
 import com.fortysevendegrees.thool.model.StatusCode
 import org.http4k.core.Body
+import org.http4k.core.HttpHandler
 import org.http4k.core.MemoryBody
 import org.http4k.core.Method
 import org.http4k.core.Request
@@ -34,35 +35,33 @@ import org.http4k.core.cookie.cookies
 import java.io.InputStream
 import java.nio.ByteBuffer
 
-fun <I, E, O> Endpoint<I, E, O>.toRequest(
-  baseUrl: String
-) = { input: I ->
-
-  val request = Request.invoke(
-    requireNotNull(method()) { "Method not defined!" },
-    this@toRequest.input.buildUrl(
-      baseUrl,
-      Params.ParamsAsAny(input)
-    )
-  ).let {
-    this@toRequest.input
-      .setInputParams(it, Params.ParamsAsAny(input))
+fun <I, E, O> Endpoint<I, E, O>.toRequestAndParser(baseUrl: String): (I) -> Pair<Request, (Response) -> DecodeResult<Either<E, O>>> =
+  { input: I ->
+    val request = toRequest(baseUrl, input)
+    Pair(request, { response: Response -> parseResponse(request, response) })
   }
 
-  fun reponseParser(response: Response): DecodeResult<Either<E, O>> =
-    when (val res = parseResponse(response)) {
-      is DecodeResult.Failure.Error ->
-        DecodeResult.Failure.Error(
-          res.original,
-          IllegalArgumentException(
-            "Cannot decode from ${res.original} of request ${request.method} ${request.uri}",
-            res.error
-          )
-        )
-      else -> res
-    }
+operator fun <I, E, O> HttpHandler.invoke(
+  endpoint: Endpoint<I, E, O>,
+  baseUrl: String,
+  input: I
+): DecodeResult<Either<E, O>> {
+  val request = endpoint.toRequest(baseUrl, input)
+  val response = invoke(request)
+  return endpoint.parseResponse(request, response)
+}
 
-  Pair(request, ::reponseParser)
+fun <I, E, O> Endpoint<I, E, O>.toRequest(
+  baseUrl: String,
+  i: I
+): Request {
+  val params = Params.ParamsAsAny(i)
+  val request = Request(
+    requireNotNull(method()) { "Method not defined!" },
+    input.buildUrl(baseUrl, params)
+  )
+  input.setInputParams(request, params)
+  return request
 }
 
 fun EndpointInput<*>.buildUrl(
@@ -211,7 +210,10 @@ private fun handleMapped(
   )
 
 // Functionality on how to go from Http4k Response to our domain
-fun <I, E, O> Endpoint<I, E, O>.parseResponse(response: Response): DecodeResult<Either<E, O>> {
+fun <I, E, O> Endpoint<I, E, O>.parseResponse(
+  request: Request,
+  response: Response
+): DecodeResult<Either<E, O>> {
   val code = StatusCode(response.status.code)
   val output = if (code.isSuccess()) output else errorOutput
   val parser = responseFromOutput(output)
@@ -224,8 +226,20 @@ fun <I, E, O> Endpoint<I, E, O>.parseResponse(response: Response): DecodeResult<
   val params =
     output.getOutputParams(parser(response), headers, code, response.status.description)
 
-  return params.map { it.asAny }
+  val result = params.map { it.asAny }
     .map { p -> if (code.isSuccess()) Either.Right(p as O) else Either.Left(p as E) }
+
+  return when (result) {
+    is DecodeResult.Failure.Error ->
+      DecodeResult.Failure.Error(
+        result.original,
+        IllegalArgumentException(
+          "Cannot decode from ${result.original} of request ${request.method} ${request.uri}",
+          result.error
+        )
+      )
+    else -> result
+  }
 }
 
 fun List<org.http4k.core.cookie.Cookie>.asHeaders(): Map<String, List<String>> =
@@ -254,10 +268,6 @@ fun EndpointOutput<*>.getOutputParams(
         single.output.getOutputParams(body, headers, code, statusText).flatMap { p ->
           (single.mapping::decode as (Any?) -> DecodeResult<Any?>)(p.asAny)
         }
-
-//      is EndpointOutput.Void -> TODO("Not a subtype of Single !?")
-//      is EndpointIO.Pair<*, *, *> -> TODO("Not a subtype of Single !?")
-//      is EndpointOutput.Pair<*, *, *> -> TODO("Not a subtype of Single !?")
     }.map { Params.ParamsAsAny(it) }
 
     is EndpointIO.Pair<*, *, *> -> handleOutputPair(
