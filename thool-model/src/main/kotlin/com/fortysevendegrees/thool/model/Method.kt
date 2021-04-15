@@ -29,7 +29,7 @@ package com.fortysevendegrees.thool.model
     public val TRACE: Method = Method("TRACE")
 
     /**
-     * Parse HTTP com.fortysevendegrees.tapir.method by [method] string
+     * Parse HTTP method by [method] string
      */
     public operator fun invoke(method: String): Method {
       return when (method) {
@@ -40,6 +40,8 @@ package com.fortysevendegrees.thool.model
         DELETE.value -> DELETE
         HEAD.value -> HEAD
         OPTIONS.value -> OPTIONS
+        CONNECT.value -> CONNECT
+        TRACE.value -> TRACE
         else -> Method(method)
       }
     }
