@@ -9,6 +9,6 @@ jobs:
     timeout-minutes: 20
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@master
       - name: Build project
         run: ./gradlew ktlintCheck build
