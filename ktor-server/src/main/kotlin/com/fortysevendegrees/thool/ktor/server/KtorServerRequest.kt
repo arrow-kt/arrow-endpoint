@@ -1,4 +1,4 @@
-package com.fortysevendegrees.thool.ktor
+package com.fortysevendegrees.thool.ktor.server
 
 import com.fortysevendegrees.thool.ConnectionInfo
 import com.fortysevendegrees.thool.ServerRequest
