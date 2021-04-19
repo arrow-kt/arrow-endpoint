@@ -8,7 +8,7 @@ import io.ktor.application.Application
 import com.fortysevendegrees.thool.DecodeResult
 import com.fortysevendegrees.thool.Schema
 import com.fortysevendegrees.thool.input
-import com.fortysevendegrees.thool.ktor.install
+import com.fortysevendegrees.thool.ktor.server.install
 import com.fortysevendegrees.thool.output
 import com.fortysevendegrees.thool.product
 import kotlinx.serialization.Serializable

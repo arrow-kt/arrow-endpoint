@@ -1,3 +1,4 @@
+import arrow.core.right
 import com.expediagroup.graphql.generator.execution.GraphQLContext
 import com.expediagroup.graphql.server.execution.GraphQLContextFactory
 import com.expediagroup.graphql.server.execution.GraphQLRequestHandler
@@ -7,12 +8,16 @@ import com.expediagroup.graphql.server.types.GraphQLServerRequest
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fortysevendegrees.thool.Codec
+import com.fortysevendegrees.thool.Codec.Companion.stringCodec
 import com.fortysevendegrees.thool.Endpoint
 import com.fortysevendegrees.thool.Schema
-import com.fortysevendegrees.thool.Thool
+import com.fortysevendegrees.thool.Thool.anyJsonBody
 import com.fortysevendegrees.thool.Thool.fixedPath
+import com.fortysevendegrees.thool.Thool.plainBody
+import com.fortysevendegrees.thool.Thool.query
 import com.fortysevendegrees.thool.input
 import com.fortysevendegrees.thool.output
+import com.fortysevendegrees.thool.server.ServerEndpoint
 import graphql.GraphQL
 import graphql.schema.GraphQLSchema
 import io.ktor.application.Application
@@ -31,31 +36,24 @@ import java.io.IOException
 val helloWorld: Endpoint<Pair<String, String>, Nothing, Project> =
   Endpoint
     .get()
-    .input(Thool.fixedPath("hello"))
-    .input(Thool.fixedPath("world"))
-    .input(Thool.fixedPath("test"))
-    .input(Thool.query("project", Codec.string))
-    .input(Thool.query("language", Codec.string))
-    .output(Thool.anyJsonBody(Project.jsonCodec))
+    .input(fixedPath("hello"))
+    .input(fixedPath("world"))
+    .input(query("project", Codec.string))
+    .input(query("language", Codec.string))
+    .output(anyJsonBody(Project.jsonCodec))
 
 val post: Endpoint<Pair<String, String>, Nothing, Int> =
   Endpoint
     .post()
-    .input(Thool.fixedPath("test"))
+    .input(fixedPath("test"))
     .input(fixedPath("other"))
-    .input(Thool.query("project", Codec.string))
-    .input(Thool.query("language", Codec.string))
-    .output(
-      Thool.plainBody(
-        Codec.stringCodec(
-          Schema.int
-        ) { 1 }
-      )
-    )
+    .input(query("name", Codec.string))
+    .input(query("language", Codec.string))
+    .output(plainBody(stringCodec(Schema.int) { it.toInt() }))
 
 val schema: GraphQLSchema = listOf(
-  helloWorld,
-  post
+  ServerEndpoint(helloWorld) { (project, language) -> Project(project, language).right() },
+  ServerEndpoint(post) { (name, language) -> 1.right() }
 ).toSchema()
 
 val ql: GraphQL = GraphQL.newGraphQL(schema).build()
@@ -138,10 +136,8 @@ class KtorGraphQLServer(
 ) : GraphQLServer<ApplicationRequest>(requestParser, contextFactory, requestHandler)
 
 fun getGraphQLServer(ql: GraphQL, mapper: ObjectMapper): KtorGraphQLServer {
-//  val dataLoaderRegistryFactory = KtorDataLoaderRegistryFactory()
   val requestParser = KtorGraphQLRequestParser(mapper)
   val contextFactory = KtorGraphQLContextFactory()
-  val requestHandler = GraphQLRequestHandler(ql/*, dataLoaderRegistryFactory*/)
-
+  val requestHandler = GraphQLRequestHandler(ql)
   return KtorGraphQLServer(requestParser, contextFactory, requestHandler)
 }

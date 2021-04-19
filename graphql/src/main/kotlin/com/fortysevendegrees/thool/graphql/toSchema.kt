@@ -1,14 +1,24 @@
+import arrow.core.getOrHandle
+import com.fortysevendegrees.thool.CombineParams
+import com.fortysevendegrees.thool.DecodeResult
 import com.fortysevendegrees.thool.Endpoint
+import com.fortysevendegrees.thool.EndpointIO
 import com.fortysevendegrees.thool.EndpointInput
 import com.fortysevendegrees.thool.EndpointOutput
+import com.fortysevendegrees.thool.Mapping
+import com.fortysevendegrees.thool.Params
 import com.fortysevendegrees.thool.Schema
 import com.fortysevendegrees.thool.asListOfBasicInputs
 import com.fortysevendegrees.thool.method
 import com.fortysevendegrees.thool.model.Method
 import com.fortysevendegrees.thool.reduce
+import com.fortysevendegrees.thool.server.ServerEndpoint
 import graphql.Scalars
 import graphql.schema.Coercing
+import graphql.schema.DataFetcher
+import graphql.schema.DataFetchingEnvironment
 import graphql.schema.GraphQLArgument
+import graphql.schema.GraphQLEnumType
 import graphql.schema.GraphQLFieldDefinition
 import graphql.schema.GraphQLInputObjectField
 import graphql.schema.GraphQLInputObjectType
@@ -18,6 +28,7 @@ import graphql.schema.GraphQLObjectType
 import graphql.schema.GraphQLOutputType
 import graphql.schema.GraphQLScalarType
 import graphql.schema.GraphQLSchema
+import kotlinx.coroutines.runBlocking
 
 /**
  * The conversion rules are the following:
@@ -26,27 +37,35 @@ import graphql.schema.GraphQLSchema
  *   - fixed query paths are used to name GraphQL fields (e.g. an endpoint /book/add will give a GraphQL field named bookAdd)
  *   - query parameters, headers, cookies and request body are used as GraphQL arguments
  */
-fun List<Endpoint<*, Nothing, *>>.toSchema(): GraphQLSchema {
+fun List<ServerEndpoint<*, Nothing, *>>.toSchema(): GraphQLSchema {
+  this as List<ServerEndpoint<Any?, Nothing, Any?>>
   val builder = GraphQLSchema.Builder()
-    .description(mapNotNull { it.info.description }.joinToString(prefix = "- ", separator = "\n- "))
+    .description(mapNotNull { it.endpoint.info.description }.joinToString(prefix = "- ", separator = "\n- "))
 
-  forEach {
-    println(it.info.name)
+  forEach { server ->
+    val fetcher: DataFetcher<Any?> = DataFetcher {
+      when (val input = server.endpoint.input.toInput(it)) {
+        is DecodeResult.Value -> runBlocking {
+          server.logic(input.value.asAny).getOrHandle { it }
+        }
+        is DecodeResult.Failure -> TODO("Handle failures")
+      }
+    }
 
     // Not covering all methods here yet :scream:
-    when (it.input.method() ?: Method.GET) {
+    when (server.endpoint.input.method() ?: Method.GET) {
       Method.PUT, Method.POST, Method.DELETE -> builder.mutation(
         GraphQLObjectType.Builder()
           .name("Mutation")
-          .description(it.info.description)
-          .field(it.generateFunction())
+          .description(server.endpoint.info.description)
+          .field(server.endpoint.generateFunction(fetcher))
           .build()
       )
       Method.GET -> builder.query(
         GraphQLObjectType.Builder()
           .name("Query")
-          .description(it.info.description)
-          .field(it.generateFunction())
+          .description(server.endpoint.info.description)
+          .field(server.endpoint.generateFunction(fetcher))
           .build()
       )
       else -> TODO("RIP")
@@ -63,23 +82,30 @@ fun List<Endpoint<*, Nothing, *>>.toSchema(): GraphQLSchema {
  *   - fixed query paths are used to name GraphQL fields (e.g. an endpoint /book/add will give a GraphQL field named bookAdd)
  *   - query parameters, headers, cookies and request body are used as GraphQL arguments
  */
-fun <I, E, O> Endpoint<I, E, O>.toSchema(): GraphQLSchema {
+fun <I, O> ServerEndpoint<I, Nothing, O>.toSchema(): GraphQLSchema {
   val builder = GraphQLSchema.Builder()
-    .description(info.description)
+    .description(endpoint.info.description)
+
+  val fetcher: DataFetcher<O> = DataFetcher {
+    when (val input = endpoint.input.toInput(it)) {
+      is DecodeResult.Value -> runBlocking { logic(input.value.asAny as I).getOrHandle { it } }
+      is DecodeResult.Failure -> TODO("Handle failures")
+    }
+  }
 
   // Not covering all methods here yet :scream:
-  when (input.method() ?: Method.GET) {
+  when (endpoint.input.method() ?: Method.GET) {
     Method.PUT, Method.POST, Method.DELETE ->
       GraphQLObjectType.Builder()
         .name("Mutation")
-        .description(info.description)
-        .field(generateFunction())
+        .description(endpoint.info.description)
+        .field(endpoint.generateFunction(fetcher))
         .build()
     Method.GET -> builder.query(
       GraphQLObjectType.Builder()
         .name("Query")
-        .description(info.description)
-        .field(generateFunction())
+        .description(endpoint.info.description)
+        .field(endpoint.generateFunction(fetcher))
         .build()
     )
     else -> TODO("RIP")
@@ -88,12 +114,123 @@ fun <I, E, O> Endpoint<I, E, O>.toSchema(): GraphQLSchema {
   return builder.build()
 }
 
-fun <I, E, O> Endpoint<I, E, O>.generateFunction(): GraphQLFieldDefinition =
+fun <I> EndpointInput<I>.toInput(
+  dataFetchingEnvironment: DataFetchingEnvironment
+): DecodeResult<Params> =
+  when (this) {
+    is EndpointIO.Header ->
+      this.codec.decode(listOfNotNull(dataFetchingEnvironment.getArgumentOrDefault(this.name, null)))
+        .map { Params.ParamsAsAny(it) }
+    is EndpointInput.Cookie ->
+      this.codec.decode(dataFetchingEnvironment.getArgumentOrDefault(this.name, null))
+        .map { Params.ParamsAsAny(it) }
+    is EndpointInput.PathCapture ->
+      if (this.name == null) throw RuntimeException("path position params not allowed for GraphQL??")
+      else this.codec.decode(dataFetchingEnvironment.getArgument(this.name))
+        .map { Params.ParamsAsAny(it) }
+
+    is EndpointInput.Query ->
+      this.codec.decode(listOfNotNull(dataFetchingEnvironment.getArgumentOrDefault(this.name, null)))
+        .map { Params.ParamsAsAny(it) }
+
+    is EndpointInput.FixedMethod -> DecodeResult.Value(Params.Unit)
+    is EndpointInput.FixedPath -> DecodeResult.Value(Params.Unit)
+    is EndpointIO.Empty -> DecodeResult.Value(Params.Unit)
+
+    is EndpointIO.Body<*, *> -> TODO("Decode body")
+    is EndpointIO.StreamBody -> TODO("Decode body")
+
+    is EndpointInput.PathsCapture -> throw RuntimeException("remaining path positions params not allowed for GraphQL??")
+    is EndpointInput.QueryParams -> TODO("How to extract query params from GraphQLServerRequest ??")
+
+    is EndpointInput.MappedPair<*, *, *, *> -> handleMappedPair(
+      this.input.first, this.input.second,
+      this.mapping,
+      dataFetchingEnvironment,
+      this.input.combine
+    )
+    is EndpointIO.MappedPair<*, *, *, *> -> handleMappedPair(
+      this.wrapped.first, this.wrapped.second,
+      this.mapping,
+      dataFetchingEnvironment,
+      this.wrapped.combine
+    )
+    is EndpointIO.Pair<*, *, *> -> handleInputPair(first, second, dataFetchingEnvironment, combine)
+    is EndpointInput.Pair<*, *, *> -> handleInputPair(
+      first,
+      second,
+      dataFetchingEnvironment,
+      combine
+    )
+  }
+
+fun handleInputPair(
+  left: EndpointInput<*>,
+  right: EndpointInput<*>,
+  dataFetchingEnvironment: DataFetchingEnvironment,
+  combine: CombineParams,
+): DecodeResult<Params> =
+  left.toInput(dataFetchingEnvironment).flatMap { leftParams ->
+    right.toInput(dataFetchingEnvironment).map { rightParams ->
+      combine(leftParams, rightParams)
+    }
+  }
+
+fun handleMappedPair(
+  left: EndpointInput<*>,
+  right: EndpointInput<*>,
+  mapping: Mapping<*, *>,
+  dataFetchingEnvironment: DataFetchingEnvironment,
+  combine: CombineParams,
+): DecodeResult<Params> =
+  left.toInput(dataFetchingEnvironment).flatMap { leftParams ->
+    right.toInput(dataFetchingEnvironment).map { rightParams ->
+      (mapping::decode as (Any?) -> Any?).invoke(
+        combine(leftParams, rightParams).asAny
+      ).let { Params.ParamsAsAny(it) }
+    }
+  }
+
+fun <I, E, O> Endpoint<I, E, O>.toSchema(fetcher: DataFetcher<O>): GraphQLSchema {
+  val builder = GraphQLSchema.Builder()
+    .description(info.description)
+
+  val path = extractPath()
+  println(path)
+
+  // Not covering all methods here yet :scream:
+  when (input.method() ?: Method.GET) {
+    Method.PUT, Method.POST, Method.DELETE ->
+      GraphQLObjectType.Builder()
+        .name("Mutation")
+        .description(info.description)
+        .field(generateFunction(fetcher))
+        .build()
+    Method.GET -> builder.query(
+      GraphQLObjectType.Builder()
+        .name("Query")
+        .description(info.description)
+        .field(
+          generateFunction(fetcher)
+        )
+        .build()
+    )
+    else -> TODO("RIP")
+  }
+
+  return builder.build()
+}
+
+fun <I, E, O> Endpoint<I, E, O>.generateFunction(
+  fetcher: DataFetcher<O>
+): GraphQLFieldDefinition =
   GraphQLFieldDefinition.Builder()
     .name(extractPath())
     .apply { if (info.deprecated) deprecate("This method is deprecated") }
     .arguments(input.getArguments())
     .type(output.getReturnType().firstOrNull() ?: unitScalar)
+    // TODO deprecated replace with CodeRegistry
+    .dataFetcher(fetcher)
     .build()
 
 fun <O> EndpointOutput<O>.getReturnType(): List<GraphQLOutputType> =
@@ -197,7 +334,7 @@ fun <I> EndpointInput<I>.getArguments(): List<GraphQLArgument> =
       listOf(
         GraphQLArgument.Builder()
           .description(it.info.description)
-          .name(it.codec.schema().name() ?: "body")
+          .name(it.codec.schema().name())
           .type(it.codec.schema().toInputType())
           .build()
       )
@@ -271,8 +408,16 @@ fun <A> Schema<A>.toInputType(): GraphQLInputType =
 
     is Schema.Map -> TODO("Map<keySchema, schemaValue>")
     is Schema.OpenProduct -> TODO("Map<String, schemaValue>")
-    is Schema.Enum -> TODO("Union")
-    is Schema.Either -> TODO("Union")
+    is Schema.Enum ->
+      GraphQLEnumType.newEnum()
+        .name(this.objectInfo.fullName)
+        .description(this.info.description)
+        .apply {
+          this@toInputType.values.forEach { (name, _) ->
+            value(name)
+          }
+        }.build()
+    is Schema.Either -> TODO("")
     is Schema.Coproduct -> TODO("Union")
   }
 
