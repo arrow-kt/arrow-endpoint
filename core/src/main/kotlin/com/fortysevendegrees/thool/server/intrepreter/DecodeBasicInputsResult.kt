@@ -76,12 +76,12 @@ internal data class DecodeInputsContext(val request: ServerRequest, val pathSegm
 object DecodeBasicInputs {
   private data class IndexedBasicInput(val input: EndpointInput.Basic<*, *, *>, val index: Int)
 
-  /** Decodes values of all basic inputs defined by the given `input`, and returns a com.fortysevendegrees.thool.map from the input to the
-   * input's value.
+  /**
+   * Decodes values of all basic inputs defined by the given `input`, and returns a map from the input to the input's value.
    *
    * An exception is the body input, which is not decoded. This is because typically bodies can be only read once.
-   * That's why, all non-body inputs are used to decide if a request whenes the endpoint, or not. If a body input
-   * is present, it is also returned as part of the result.
+   * That's why, all non-body inputs are used to decide if a request matches the endpoint, or not.
+   * If a body input is present, it is also returned as part of the result.
    *
    * In any of the decoding fails, the failure is returned together , the failing input.
    */

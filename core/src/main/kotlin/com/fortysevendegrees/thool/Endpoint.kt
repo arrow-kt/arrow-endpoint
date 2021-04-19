@@ -126,6 +126,17 @@ fun <I, E, O> Endpoint<I, E, Unit>.output(i: EndpointOutput<O>, dummy: Unit = Un
 fun <I, E, O, O2, O3> Endpoint<I, E, Pair<O, O2>>.output(i: EndpointOutput<O3>): Endpoint<I, E, Triple<O, O2, O3>> =
   Endpoint(input, errorOutput, output.and(i), info)
 
+fun <I, E, E2, O> Endpoint<I, E, O>.withErrorOutput(i: EndpointOutput<E2>): Endpoint<I, Pair<E, E2>, O> =
+  Endpoint(input, errorOutput.and(i), output, info)
+
+@JvmName("withErrorOutputLeftUnit")
+fun <I, E, O> Endpoint<I, Unit, O>.withErrorOutput(i: EndpointOutput<E>, dummy: Unit = Unit): Endpoint<I, E, O> =
+  Endpoint(input, errorOutput.and(i), output, info)
+
+@JvmName("withErrorOutput3")
+fun <I, E, E2, E3, O> Endpoint<I, Pair<E, E2>, O>.withOutput(i: EndpointOutput<E3>): Endpoint<I, Triple<E, E2, E3>, O> =
+  Endpoint(input, errorOutput.and(i), output, info)
+
 data class EndpointInfo(
   val name: String?,
   val summary: String?,
