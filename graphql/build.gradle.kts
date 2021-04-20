@@ -3,16 +3,12 @@ plugins {
 }
 
 dependencies {
-  api(project(Libs.thoolModel))
+  implementation(project(Libs.core))
   implementation(Libs.kotlinxCoroutines)
-  implementation(Libs.arrowCore)
+  implementation(Libs.javaGraphQL)
+
   testImplementation(Libs.kotestRunner)
   testImplementation(Libs.kotestAssertions)
   testImplementation(Libs.kotestProperty)
-
   testImplementation(Libs.kotlinxSerializationJson)
-  testImplementation(project(Libs.ktor))
-  testImplementation(Libs.ktorTest)
-  testImplementation(Libs.ktorServerNetty)
-  testImplementation(Libs.http4kApache)
 }

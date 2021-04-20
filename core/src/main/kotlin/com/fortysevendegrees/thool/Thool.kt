@@ -5,6 +5,7 @@ import com.fortysevendegrees.thool.model.Cookie
 import com.fortysevendegrees.thool.model.HeaderNames
 import com.fortysevendegrees.thool.model.Method
 import com.fortysevendegrees.thool.model.QueryParams
+import com.fortysevendegrees.thool.model.StatusCode
 import kotlinx.coroutines.flow.Flow
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
@@ -98,4 +99,10 @@ object Thool {
 
   fun method(m: Method): EndpointInput.FixedMethod<Unit> =
     EndpointInput.FixedMethod(m, Codec.idPlain(), EndpointIO.Info.empty())
+
+  fun statusCode(): EndpointOutput.StatusCode<StatusCode> =
+    EndpointOutput.StatusCode(emptyMap(), Codec.idPlain(), EndpointIO.Info.empty())
+
+  fun statusCode(statusCode: StatusCode): EndpointOutput.FixedStatusCode<Unit> =
+    EndpointOutput.FixedStatusCode(statusCode, Codec.idPlain(), EndpointIO.Info.empty())
 }

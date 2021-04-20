@@ -132,7 +132,6 @@ sealed interface Schema<A> {
       override fun toString(): kotlin.String = "byte"
     }
 
-    @ExperimentalUnsignedTypes
     data class UByte<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
       override val modifier: NumberModifier = Unsigned
       override val size: NumberSize = _8
