@@ -56,7 +56,7 @@ fun <A : Any> KClass<A>.schema(): Schema<A> =
     isData -> Schema.Product(objectInfo(), properties())
     else -> (this as? KClass<Enum<*>>)?.let {
       Schema.Enum(
-        Schema.ObjectInfo(this.qualifiedName ?: "<anonymous>"),
+        objectInfo(),
         // MPP reflection??
         it.java.enumConstants?.toList()?.map { Schema.EnumValue(it.name, it.ordinal) } ?: emptyList()
       )
