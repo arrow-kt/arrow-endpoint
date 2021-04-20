@@ -1,24 +1,9 @@
-import arrow.core.right
 import com.fortysevendegrees.thool.Codec
 import com.fortysevendegrees.thool.Endpoint
 import com.fortysevendegrees.thool.Thool
 import com.fortysevendegrees.thool.and
 import com.fortysevendegrees.thool.input
-import com.fortysevendegrees.thool.ktor.server.install
-import com.fortysevendegrees.thool.output
-import com.fortysevendegrees.thool.server.ServerEndpoint
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.shouldBe
-import io.kotest.property.Arb
-import io.kotest.property.arbitrary.string
-import io.kotest.property.checkAll
-import io.ktor.server.engine.applicationEngineEnvironment
-import io.ktor.server.engine.connector
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
-import org.http4k.client.ApacheClient
-import org.http4k.core.Method
-import org.http4k.core.Request
 
 class EndpointTest : StringSpec({
   "endpoint should compose correctly" {
