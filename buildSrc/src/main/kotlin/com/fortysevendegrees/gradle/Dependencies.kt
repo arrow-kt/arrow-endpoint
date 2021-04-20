@@ -18,6 +18,7 @@ object Libs {
   const val graphQL: String = ":graphql"
   const val examples: String = ":examples"
   const val ktor: String = ":ktor-server"
+  const val test: String = ":test"
   const val kotlinStdlib: String = "org.jetbrains.kotlin:kotlin-stdlib:${Version.kotlin}"
 
   const val kotlinxCoroutines: String = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Version.kotlinx}"

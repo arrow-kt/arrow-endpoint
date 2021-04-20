@@ -21,9 +21,10 @@ fun <I, E, O> Application.install(ses: ServerEndpoint<I, E, O>): Routing =
 fun <I, E, O> Application.install(ses: List<ServerEndpoint<I, E, O>>): Routing =
   routing {
     ses.forEach { endpoint ->
-      route(endpoint.endpoint.input.path().also {
-        println(it)
-      }, endpoint.endpoint.input.toHttpMethod()) {
+      route(
+        endpoint.endpoint.input.path(),
+        endpoint.endpoint.input.toHttpMethod()
+      ) {
         handle {
           val serverRequest = KtorServerRequest(call)
           val interpreter = ServerInterpreter(
@@ -34,7 +35,6 @@ fun <I, E, O> Application.install(ses: List<ServerEndpoint<I, E, O>>): Routing =
           )
 
           interpreter.invoke(ses)?.let {
-            println(it)
             when (it.body) {
               null -> call.respond(HttpStatusCode.fromValue(it.code.code))
               else -> call.respond(HttpStatusCode.fromValue(it.code.code), it.body as KtorResponseBody)
