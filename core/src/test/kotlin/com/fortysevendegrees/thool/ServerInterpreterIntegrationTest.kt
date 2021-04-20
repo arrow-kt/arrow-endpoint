@@ -11,6 +11,7 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.netty.NettyApplicationEngine
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.http4k.client.ApacheClient
 import org.http4k.core.Method
@@ -64,13 +65,13 @@ class ServerInterpreterIntegrationTest : FreeSpec({
     "jsonBody" {
       val endpoint = Endpoint.get("jsonBody").output(Thool.anyJsonBody(Codec.person()))
       val request = Request(Method.GET, "http://localhost:8080/jsonBody")
-      val result = """{"name":"John", "age":31}"""
+      val result = Person("John", 31)
 
-      server?.application?.install(endpoint.logic { Json.decodeFromString<Person>(result).right() })
+      server?.application?.install(endpoint.logic { result.right() })
 
       assertSoftly(client(request)) {
         status shouldBe Status.OK
-        bodyString() shouldBe result
+        bodyString() shouldBe Json.encodeToString(result)
       }
     }
   }
