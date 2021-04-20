@@ -253,8 +253,13 @@ fun EndpointOutput<*>.getOutputParams(
 ): DecodeResult<Params> =
   when (val output = this) {
     is EndpointOutput.Single<*> -> when (val single = (output as EndpointOutput.Single<Any?>)) {
-      is EndpointIO.Body<*, *> -> (single.codec::decode as (Any?) -> DecodeResult<Any?>).invoke(body())
-      is EndpointIO.StreamBody -> TODO() // (output.codec::decode as (Any?) -> DecodeResult<Params>).invoke(body())
+      is EndpointIO.Body<*, *> -> {
+        single as EndpointIO.Body<Any?, Any?>
+        val body = body.invoke()
+        val decode: (Any?) -> DecodeResult<Any?> = (single.codec::decode)
+        decode(body)
+      }
+      is EndpointIO.StreamBody -> TODO("Support stream body")
       is EndpointIO.Empty -> single.codec.decode(Unit)
       is EndpointOutput.FixedStatusCode -> single.codec.decode(Unit)
       is EndpointOutput.StatusCode -> single.codec.decode(code)
