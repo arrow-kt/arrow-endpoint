@@ -9,6 +9,7 @@ object Version {
   const val kotest: String = "4.4.3"
   const val graphQL: String = "16.2"
   const val kotlinGraphQL: String = "4.0.0-alpha.17"
+  const val http4k: String = "4.7.0.2"
 }
 
 object Libs {
@@ -28,6 +29,8 @@ object Libs {
 
   const val javaGraphQL: String = "com.graphql-java:graphql-java:${Version.graphQL}"
   const val graphQlServer = "com.expediagroup:graphql-kotlin-server:${Version.kotlinGraphQL}"
+
+  const val http4kCore = "org.http4k:http4k-core:${Version.http4k}"
 
   const val ktorServerCore: String = "io.ktor:ktor-server-core:${Version.ktor}"
   const val ktorServerNetty: String = "io.ktor:ktor-server-netty:${Version.ktor}"
