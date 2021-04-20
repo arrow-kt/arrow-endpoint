@@ -12,6 +12,7 @@ object Version {
 object Libs {
   const val core: String = ":core"
   const val thoolModel: String = ":thool-model"
+  const val ktorServer: String = ":ktor-server"
   const val kotlinStdlib: String = "org.jetbrains.kotlin:kotlin-stdlib:${Version.kotlin}"
 
   const val kotlinxCoroutines: String = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Version.kotlinx}"
@@ -21,6 +22,7 @@ object Libs {
   const val arrowCore: String = "io.arrow-kt:arrow-core:${Version.arrow}"
   const val ktorServerCore: String = "io.ktor:ktor-server-core:${Version.ktor}"
   const val ktorServerNetty: String = "io.ktor:ktor-server-netty:${Version.ktor}"
+  const val ktorTest: String = "io.ktor:ktor-server-test-host:${Version.ktor}"
   const val logbackClassic: String = "ch.qos.logback:logback-classic:${Version.logbackClassic}"
   const val kotestRunner: String = "io.kotest:kotest-runner-junit5:${Version.kotest}"
   const val kotestAssertions: String = "io.kotest:kotest-assertions-core:${Version.kotest}"

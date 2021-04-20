@@ -1,9 +1,11 @@
 package com.fortysevendegrees.thool
 
+import arrow.core.Either
 import arrow.core.Tuple4
 import arrow.core.Tuple5
 import com.fortysevendegrees.thool.dsl.MethodSyntax
 import com.fortysevendegrees.thool.dsl.PathSyntax
+import com.fortysevendegrees.thool.server.ServerEndpoint
 
 /**
  * @param I Input parameter types.
@@ -16,6 +18,10 @@ data class Endpoint<I, E, O>(
   val output: EndpointOutput<O>,
   val info: EndpointInfo
 ) {
+
+  fun logic(f: suspend (I) -> Either<E, O>): ServerEndpoint<I, E, O> =
+    ServerEndpoint(this, f)
+
   /**
    * Renders endpoint path, by default all parametrised path and query components are replaced by {param_name} or {paramN}.
    *
