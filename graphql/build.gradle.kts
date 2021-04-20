@@ -1,8 +1,14 @@
+plugins {
+  id(Plugins.kotlinSerialization)
+}
+
 dependencies {
-  api(project(Libs.thoolModel))
+  implementation(project(Libs.core))
   implementation(Libs.kotlinxCoroutines)
-  implementation(Libs.arrowCore)
+  implementation(Libs.javaGraphQL)
+
   testImplementation(Libs.kotestRunner)
   testImplementation(Libs.kotestAssertions)
   testImplementation(Libs.kotestProperty)
+  testImplementation(Libs.kotlinxSerializationJson)
 }

@@ -3,7 +3,7 @@ package com.fortysevendegrees.thool.model
 /* inline */ class Method private constructor(val value: String) {
 
   /**
-   * An HTTP com.fortysevendegrees.tapir.method is idempotent if an identical request can be made once or several times in a row with the same
+   * An HTTP method is idempotent if an identical request can be made once or several times in a row with the same
    * effect while leaving the server in the same state.
    * @see https://developer.mozilla.org/en-US/docs/Glossary/Idempotent
    */
@@ -11,7 +11,7 @@ package com.fortysevendegrees.thool.model
     idempotent.contains(m)
 
   /**
-   * An HTTP com.fortysevendegrees.tapir.method is safe if it doesn't alter the state of the server.
+   * An HTTP method is safe if it doesn't alter the state of the server.
    * @see https://developer.mozilla.org/en-US/docs/Glossary/safe
    */
   fun isSafe(m: Method): Boolean =
