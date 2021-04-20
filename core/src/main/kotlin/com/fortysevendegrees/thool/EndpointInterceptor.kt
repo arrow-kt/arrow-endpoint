@@ -50,5 +50,5 @@ data class ValuedEndpointOutput<A>(val output: EndpointOutput<A>, val value: A)
 data class ServerResponse<B>(override val code: StatusCode, override val headers: List<Header>, val body: B?) :
   ResponseMetadata {
   override val statusText: String = ""
-  override fun toString(): String = "ServerResponse($code,${headers.toStringSafe()})"
+  override fun toString(): String = "ServerResponse($code,${headers.toStringSafe()}, $body)"
 }
