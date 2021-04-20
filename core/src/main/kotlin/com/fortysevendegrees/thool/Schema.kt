@@ -289,7 +289,7 @@ sealed interface Schema<A> {
     override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> =
       OpenProduct(objectInfo, valueSchema, transform(info))
 
-    override fun toString(): kotlin.String = "$String->$valueSchema"
+    override fun toString(): kotlin.String = "String->$valueSchema"
   }
 
   /**
@@ -449,7 +449,7 @@ sealed interface Schema<A> {
 
     inline fun <reified A : kotlin.Enum<A>> enum(): Schema<A> =
       enum(
-        requireNotNull(A::class.qualifiedName) { "Enum name cannot be " },
+        requireNotNull(A::class.qualifiedName) { "Enum name cannot be null" },
         enumValues()
       )
 
@@ -481,7 +481,7 @@ sealed interface Schema<A> {
 
 inline fun <reified A> Schema<A>.asOpenProduct(): Schema<Map<String, A>> =
   Schema.OpenProduct(
-    Schema.ObjectInfo("Map", listOf(A::class.simpleName!!)),
+    Schema.ObjectInfo("Map", listOf(A::class.qualifiedName!!)),
     this
   )
 
@@ -489,6 +489,6 @@ inline fun <reified A> Schema.Companion.product(
   vararg properties: Pair<KProperty1<A, *>, Schema<*>>
 ): Schema<A> =
   Schema.Product(
-    Schema.ObjectInfo(A::class.simpleName!!),
+    Schema.ObjectInfo(A::class.qualifiedName!!),
     properties.map { (prop, schema) -> FieldName(prop.name) to schema }
   )
