@@ -8,7 +8,7 @@ class SchemaTest : StringSpec({
   "enum schema" {
     Schema.enum<Test>() shouldBe
       Schema.Enum(
-        Schema.ObjectInfo("Test"),
+        Schema.ObjectInfo("com.fortysevendegrees.thool.Test"),
         listOf(
           Schema.EnumValue("A", 0),
           Schema.EnumValue("B", 1),
@@ -20,7 +20,7 @@ class SchemaTest : StringSpec({
   "map schema" {
     Schema.person().asOpenProduct() shouldBe
       Schema.OpenProduct(
-        Schema.ObjectInfo("Map", listOf("Person")),
+        Schema.ObjectInfo("Map", listOf("com.fortysevendegrees.thool.Person")),
         Schema.person()
       )
   }
