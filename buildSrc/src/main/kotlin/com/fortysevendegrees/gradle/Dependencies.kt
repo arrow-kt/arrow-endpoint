@@ -9,6 +9,7 @@ object Version {
   const val kotest: String = "4.4.3"
   const val graphQL: String = "16.2"
   const val kotlinGraphQL: String = "4.0.0-alpha.17"
+  const val http4k: String = "4.7.0.2"
   const val http4kApache = "4.7.0.2"
 }
 
@@ -18,6 +19,7 @@ object Libs {
   const val graphQL: String = ":graphql"
   const val examples: String = ":examples"
   const val ktor: String = ":ktor-server"
+  const val htt4kClient: String = ":http4k-client"
   const val test: String = ":test"
   const val kotlinStdlib: String = "org.jetbrains.kotlin:kotlin-stdlib:${Version.kotlin}"
 
@@ -31,6 +33,7 @@ object Libs {
   const val javaGraphQL: String = "com.graphql-java:graphql-java:${Version.graphQL}"
   const val graphQlServer = "com.expediagroup:graphql-kotlin-server:${Version.kotlinGraphQL}"
 
+  const val http4kCore = "org.http4k:http4k-core:${Version.http4k}"
   const val http4kApache = "org.http4k:http4k-client-apache:${Version.http4kApache}"
 
   const val ktorServerCore: String = "io.ktor:ktor-server-core:${Version.ktor}"
