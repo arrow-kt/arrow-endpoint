@@ -27,6 +27,9 @@ allprojects {
   dependencies {
     implementation(Libs.kotlinStdlib)
     implementation(Libs.arrowCore)
+    testImplementation(Libs.kotestRunner)
+    testImplementation(Libs.kotestAssertions)
+    testImplementation(Libs.kotestProperty)
   }
 
   tasks.withType<KotlinCompile> {

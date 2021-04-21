@@ -1,2 +1,8 @@
 rootProject.name = "thool"
-include("ktor-server", "thool-model", "core", "graphql", "examples", "schema-reflect", "http4k-client")
+include("thool-model", "core", "graphql", "examples", "schema-reflect")
+
+// clients
+include("clients", ":clients:ktor-client", ":clients:http4k-client")
+
+// servers
+include("ktor-server")

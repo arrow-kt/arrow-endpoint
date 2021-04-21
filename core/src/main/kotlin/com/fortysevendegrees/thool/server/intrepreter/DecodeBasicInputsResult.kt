@@ -8,7 +8,6 @@ import com.fortysevendegrees.thool.DecodeResult.Failure.Multiple
 import com.fortysevendegrees.thool.EndpointIO
 import com.fortysevendegrees.thool.EndpointInput
 import com.fortysevendegrees.thool.ServerRequest
-import com.fortysevendegrees.thool.asListOfBasicInputs
 import com.fortysevendegrees.thool.basicInputSortIndex
 import com.fortysevendegrees.thool.headAndTailOrNull
 import com.fortysevendegrees.thool.initAndLastOrNull

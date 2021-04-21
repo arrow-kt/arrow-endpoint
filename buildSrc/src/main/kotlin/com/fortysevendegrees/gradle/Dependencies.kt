@@ -34,6 +34,8 @@ object Libs {
 
   const val ktorServerCore: String = "io.ktor:ktor-server-core:${Version.ktor}"
   const val ktorServerNetty: String = "io.ktor:ktor-server-netty:${Version.ktor}"
+  const val ktorClientCore: String = "io.ktor:ktor-client-core:${Version.ktor}"
+  const val ktorClientCio: String = "io.ktor:ktor-client-cio:${Version.ktor}"
   const val logbackClassic: String = "ch.qos.logback:logback-classic:${Version.logbackClassic}"
 
   const val kotestRunner: String = "io.kotest:kotest-runner-junit5:${Version.kotest}"

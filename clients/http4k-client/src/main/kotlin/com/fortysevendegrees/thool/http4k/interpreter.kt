@@ -12,7 +12,6 @@ import com.fortysevendegrees.thool.PlainCodec
 import com.fortysevendegrees.thool.RawBodyType
 import com.fortysevendegrees.thool.SplitParams
 import com.fortysevendegrees.thool.bodyType
-import com.fortysevendegrees.thool.method
 import com.fortysevendegrees.thool.model.CodecFormat
 import com.fortysevendegrees.thool.model.Method.Companion.GET
 import com.fortysevendegrees.thool.model.Method.Companion.HEAD
