@@ -2,7 +2,6 @@ package com.fortysevendegrees.thool.ktor.server
 
 import com.fortysevendegrees.thool.EndpointIO
 import com.fortysevendegrees.thool.EndpointInput
-import com.fortysevendegrees.thool.method
 import com.fortysevendegrees.thool.model.Method
 import com.fortysevendegrees.thool.server.ServerEndpoint
 import com.fortysevendegrees.thool.server.intrepreter.ServerInterpreter

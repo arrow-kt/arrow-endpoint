@@ -19,7 +19,7 @@ object Libs {
   const val graphQL: String = ":graphql"
   const val examples: String = ":examples"
   const val ktor: String = ":ktor-server"
-  const val htt4kClient: String = ":http4k-client"
+  const val htt4kClient: String = ":clients:http4k-client"
   const val test: String = ":test"
   const val kotlinStdlib: String = "org.jetbrains.kotlin:kotlin-stdlib:${Version.kotlin}"
 
@@ -38,6 +38,8 @@ object Libs {
 
   const val ktorServerCore: String = "io.ktor:ktor-server-core:${Version.ktor}"
   const val ktorServerNetty: String = "io.ktor:ktor-server-netty:${Version.ktor}"
+  const val ktorClientCore: String = "io.ktor:ktor-client-core:${Version.ktor}"
+  const val ktorClientCio: String = "io.ktor:ktor-client-cio:${Version.ktor}"
   const val ktorTest: String = "io.ktor:ktor-server-test-host:${Version.ktor}"
   const val logbackClassic: String = "ch.qos.logback:logback-classic:${Version.logbackClassic}"
 

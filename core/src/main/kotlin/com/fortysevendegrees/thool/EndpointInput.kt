@@ -140,6 +140,18 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
     override fun toString(): String = "EndpointInput.Pair($first, $second)"
   }
 
+  fun toList(): List<EndpointInput<Any?>> =
+    reduce(::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf)
+
+  fun asListOfBasicInputs(includeAuth: Boolean = true): List<EndpointInput.Basic<*, *, *>> =
+    toList().mapNotNull {
+//      if(includeAuth) it as? Basic<*, *, *> ?: it as EndpointInput.Auth<*> else
+      it as? EndpointInput.Basic<*, *, *>
+    }
+
+  fun method(): Method? =
+    (this as? FixedMethod<*>)?.m
+
   companion object {
     fun empty(): EndpointIO.Empty<Unit> =
       EndpointIO.Empty(Codec.idPlain(), EndpointIO.Info.empty())
@@ -281,19 +293,6 @@ fun <A, B> EndpointInput<A>.reduce(
           ifQueryParams
         )
   }
-
-fun <A> EndpointInput<A>.toList(): List<EndpointInput<Any?>> =
-  reduce(::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf)
-
-fun <A> EndpointInput<A>.asListOfBasicInputs(includeAuth: Boolean = true): List<EndpointInput.Basic<*, *, *>> =
-  toList().mapNotNull {
-//      if(includeAuth) it as? Basic<*, *, *> ?: it as EndpointInput.Auth<*> else
-    it as? EndpointInput.Basic<*, *, *>
-  }
-
-fun <A> EndpointInput<A>.method(): Method? =
-  toList().mapNotNull { (it as? EndpointInput.FixedMethod<*>)?.m }
-    .firstOrNull()
 
 // We need to support this Arity-22
 @JvmName("and")

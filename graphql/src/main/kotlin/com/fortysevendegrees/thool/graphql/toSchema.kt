@@ -8,8 +8,6 @@ import com.fortysevendegrees.thool.EndpointOutput
 import com.fortysevendegrees.thool.Mapping
 import com.fortysevendegrees.thool.Params
 import com.fortysevendegrees.thool.Schema
-import com.fortysevendegrees.thool.asListOfBasicInputs
-import com.fortysevendegrees.thool.method
 import com.fortysevendegrees.thool.model.Method
 import com.fortysevendegrees.thool.reduce
 import com.fortysevendegrees.thool.server.ServerEndpoint

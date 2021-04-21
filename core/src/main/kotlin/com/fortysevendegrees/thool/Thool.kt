@@ -12,7 +12,7 @@ import java.nio.charset.StandardCharsets
 
 object Thool {
 
-  operator fun <A> invoke(f: Thool.() -> A): A = f(Thool)
+  inline operator fun <A> invoke(f: Thool.() -> A): A = f(Thool)
 
   @JvmName("queryList")
   fun <A> query(name: String, codec: Codec<List<String>, A, CodecFormat.TextPlain>): EndpointInput.Query<A> =
