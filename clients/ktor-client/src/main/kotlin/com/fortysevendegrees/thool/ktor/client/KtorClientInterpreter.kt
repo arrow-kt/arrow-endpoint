@@ -27,7 +27,6 @@ import io.ktor.client.statement.request
 import io.ktor.content.ByteArrayContent
 import io.ktor.http.Headers
 import io.ktor.http.Parameters
-import io.ktor.http.URLBuilder
 import io.ktor.http.parametersOf
 import io.ktor.http.plus
 import io.ktor.http.takeFrom
@@ -39,9 +38,11 @@ fun <I, E, O> Endpoint<I, E, O>.requestAndParse(
 ): suspend HttpClient.(I) -> DecodeResult<Either<E, O>> =
   { value: I ->
     val response = invoke(this@requestAndParse, baseUrl)(value)
-    println("######################### reponse = $response")
     this@requestAndParse.responseToDomain(response)
   }
+
+private fun String.trimSlash(): String =
+  if (this.lastOrNull() == '/') dropLast(1) else this
 
 operator fun <I, E, O> HttpClient.invoke(
   endpoint: Endpoint<I, E, O>,
@@ -49,9 +50,9 @@ operator fun <I, E, O> HttpClient.invoke(
 ): suspend (I) -> HttpResponse = { value ->
   val p = Params.ParamsAsAny(value)
   request {
-    url.takeFrom(endpoint.input.buildUrl(baseUrl, p))
-    setInputParams(endpoint.input, p)
     method = (endpoint.input.method() ?: Method.GET).toMethod()
+    url.takeFrom(endpoint.input.buildUrl(baseUrl.trimSlash(), p))
+    setInputParams(endpoint.input, p)
   }
 }
 

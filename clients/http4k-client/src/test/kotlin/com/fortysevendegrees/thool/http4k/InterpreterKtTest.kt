@@ -9,11 +9,8 @@ import org.http4k.core.HttpHandler
 
 class InterpreterKtTest : ClientInterpreterSuite() {
 
-
   val client: HttpHandler = ApacheClient()
 
-  override suspend fun <I, E, O> request(endpoint: Endpoint<I, E, O>, input: I): DecodeResult<Either<E, O>> =
-    client.invoke(endpoint, baseUrl, input).also {
-      println("################################################### Received $it")
-    }
+  override suspend fun <I, E, O> request(endpoint: Endpoint<I, E, O>, baseUrl: String, input: I): DecodeResult<Either<E, O>> =
+    client.invoke(endpoint, baseUrl, input)
 }

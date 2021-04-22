@@ -16,7 +16,7 @@ class CioTests : StringSpec({
 
     val getBlog =
       Endpoint
-        .get { "" / "blog" }
+        .get("blog")
         .output(Thool.stringBody())
 
     val f = getBlog.requestAndParse("https://www.47deg.com")

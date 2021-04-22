@@ -239,7 +239,7 @@ fun <I, E, O> Endpoint<I, E, O>.parseResponse(
         result.original,
         IllegalArgumentException(
           "Cannot decode from ${result.original} of request ${request.method} ${request.uri}",
-        result.error
+          result.error
         )
       )
     else -> result

@@ -30,8 +30,6 @@ import java.nio.charset.Charset
 fun <I, E, O> ServerEndpoint<I, E, O>.toDispatcher(): Dispatcher =
   object : Dispatcher() {
     override fun dispatch(request: RecordedRequest): MockResponse {
-      println("###################################################################Getting called with requestUrl: ${request.requestUrl}, path: ${request.path}")
-
       val serverRequest = ServerRequest(request)
       val interpreter = ServerInterpreter(
         serverRequest,
@@ -43,11 +41,11 @@ fun <I, E, O> ServerEndpoint<I, E, O>.toDispatcher(): Dispatcher =
       return runBlocking(Dispatchers.Default) {
         interpreter.invoke(this@toDispatcher)?.let {
           when (val body = it.body) {
-            null -> MockResponse().setStatus(it.code.toString())
-            else -> body.setStatus(it.code.toString())
+            null -> MockResponse().setResponseCode(it.code.code)
+            else -> body.setResponseCode(it.code.code)
           }
-        } ?: MockResponse().setStatus(StatusCode.NotFound.toString())
-      }.also { println("############################## returned value: $it") }
+        } ?: MockResponse().setResponseCode(StatusCode.NotFound.code)
+      }
     }
   }
 
