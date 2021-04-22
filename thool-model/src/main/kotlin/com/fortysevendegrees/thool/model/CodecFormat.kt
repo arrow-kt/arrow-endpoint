@@ -1,6 +1,6 @@
 package com.fortysevendegrees.thool.model
 
-sealed interface CodecFormat {
+public sealed interface CodecFormat {
   val mediaType: MediaType
 
   object Json : CodecFormat {

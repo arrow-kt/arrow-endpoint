@@ -13,7 +13,7 @@ import com.fortysevendegrees.thool.Thool
 import com.fortysevendegrees.thool.and
 import com.fortysevendegrees.thool.model.Method
 
-interface MethodSyntax {
+public interface MethodSyntax {
 
   fun get(path: String? = null): Endpoint<Unit, Nothing, Unit> =
     Endpoint(

@@ -88,12 +88,12 @@ private suspend fun buildPlaygroundHtml(graphQLEndpoint: String, subscriptionsEn
     ?.replace("\${subscriptionsEndpoint}", subscriptionsEndpoint)
     ?: throw IllegalStateException("graphql-playground.html cannot be found in the classpath")
 
-data class User(val email: String, val firstName: String, val lastName: String, val universityId: Int)
+public data class User(val email: String, val firstName: String, val lastName: String, val universityId: Int)
 
 /**
  * Example of a custom [GraphQLContext]
  */
-data class AuthorizedContext(
+public data class AuthorizedContext(
   val authorizedUser: User? = null,
   var guestUUID: String? = null,
   val customHeader: String? = null

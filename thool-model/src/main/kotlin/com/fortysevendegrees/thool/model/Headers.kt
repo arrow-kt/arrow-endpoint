@@ -2,7 +2,7 @@ package com.fortysevendegrees.thool.model
 
 import arrow.core.nonFatalOrThrow
 
-data class Headers(override val headers: List<Header>) : HasHeaders {
+public data class Headers(override val headers: List<Header>) : HasHeaders {
 
   override fun toString(): String =
     "Headers(${headers.toStringSafe()}})"
@@ -11,7 +11,7 @@ data class Headers(override val headers: List<Header>) : HasHeaders {
 fun List<Header>.toStringSafe(sensitiveHeaders: Set<String> = HeaderNames.SensitiveHeaders): List<String> =
   map { it.toStringSafe(sensitiveHeaders) }
 
-interface HasHeaders {
+public interface HasHeaders {
   val headers: List<Header>
 
   fun header(h: String): String? =

@@ -2,7 +2,7 @@ package com.fortysevendegrees.thool.model
 
 import java.nio.charset.Charset
 
-data class MediaType(val mainType: String, val subType: String, val charset: String? = null) {
+public data class MediaType(val mainType: String, val subType: String, val charset: String? = null) {
 
   // MPP ?
   fun charset(c: Charset): MediaType = charset(c.name())
@@ -15,7 +15,7 @@ data class MediaType(val mainType: String, val subType: String, val charset: Str
     "$mainType/$subType${charset?.let { c -> "; charset=$c" } ?: ""}"
 
   // https://www.iana.org/assignments/media-types/media-types.xhtml
-  companion object {
+  public companion object {
     val ApplicationGzip: MediaType = MediaType("application", "gzip")
     val ApplicationZip: MediaType = MediaType("application", "zip")
     val ApplicationJson: MediaType = MediaType("application", "json")

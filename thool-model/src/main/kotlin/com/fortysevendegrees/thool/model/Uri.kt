@@ -15,7 +15,7 @@ import java.net.URI
  * (using [[toString]]).
  *
  * Instances can be created using the uri interpolator: `uri"..."` (see [[UriInterpolator]]), or the factory methods
- * on the [[Uri]] companion object.
+ * on the [[Uri]] public companion object.
  *
  * The `apply`/`safeApply`/`unsafeApply` methods create absolute URIs and require a host.
  * The `relative` methods creates a relative URI, given path/query/fragment components.
@@ -27,7 +27,7 @@ import java.net.URI
  * required, they need to be added manually as part of the plain query
  * segment. Custom encoding logic can be provided when creating a segment.
  */
-data class Uri(
+public data class Uri(
   val scheme: String,
   val authority: Authority?,
   val pathSegments: PathSegments,
@@ -35,7 +35,7 @@ data class Uri(
   val fragmentSegment: FragmentSegment?
 ) {
 
-  companion object {
+  public companion object {
     private val schemePattern =
       Regex("^([a-zA-Z][a-zA-Z0-9+\\-.]*):")
 
@@ -370,17 +370,17 @@ data class Uri(
   }
 }
 
-sealed interface UriError {
-  data class UnexpectedScheme(val errorMessage: String) : UriError
-  data class CantParse(val errorMessage: String) : UriError
+public sealed interface UriError {
+  public data class UnexpectedScheme(val errorMessage: String) : UriError
+  public data class CantParse(val errorMessage: String) : UriError
   object InvalidHost : UriError
   object InvalidPort : UriError
-  data class IllegalArgument(val errorMessage: String) : UriError
+  public data class IllegalArgument(val errorMessage: String) : UriError
 }
 
-data class Authority(val userInfo: UserInfo?, val hostSegment: HostSegment, val port: Int?) {
+public data class Authority(val userInfo: UserInfo?, val hostSegment: HostSegment, val port: Int?) {
 
-  companion object {
+  public companion object {
 
     val Empty: Authority = Authority(null, HostSegment(""), null)
 
@@ -428,7 +428,7 @@ data class Authority(val userInfo: UserInfo?, val hostSegment: HostSegment, val 
   }
 }
 
-data class UserInfo(val username: String, val password: String?) {
+public data class UserInfo(val username: String, val password: String?) {
   override fun toString(): String =
     "${username.encode(Rfc3986.UserInfo)}${password?.let { ":${it.encode(Rfc3986.UserInfo)}" } ?: ""}"
 }
@@ -443,12 +443,12 @@ sealed class Segment(
   abstract fun encoding(e: Encoding): Segment
 }
 
-data class HostSegment(
+public data class HostSegment(
   override val v: String,
   override val encoding: Encoding = Standard
 ) : Segment(v, encoding) {
 
-  companion object {
+  public companion object {
     private val IpV6Pattern = "[0-9a-fA-F:]+".toRegex()
     val Standard: Encoding = { s ->
       when {
@@ -461,12 +461,12 @@ data class HostSegment(
   override fun encoding(e: Encoding): HostSegment = copy(encoding = e)
 }
 
-data class PathSegment(
+public data class PathSegment(
   override val v: String,
   override val encoding: Encoding = Standard
 ) : Segment(v, encoding) {
 
-  companion object {
+  public companion object {
     val Standard: Encoding = {
       it.encode(Rfc3986.PathSegment)
     }
@@ -475,11 +475,11 @@ data class PathSegment(
   override fun encoding(e: Encoding): PathSegment = copy(encoding = e)
 }
 
-sealed interface PathSegments {
+public sealed interface PathSegments {
 
   val segments: List<PathSegment>
 
-  companion object {
+  public companion object {
     fun absoluteOrEmptyS(segments: List<String>): PathSegments = absoluteOrEmpty(segments.map { PathSegment(it) })
 
     fun absoluteOrEmpty(segments: List<PathSegment>): PathSegments =
@@ -512,20 +512,20 @@ sealed interface PathSegments {
     override fun toString(): String = ""
   }
 
-  data class AbsolutePath(override val segments: List<PathSegment>) : PathSegments {
+  public data class AbsolutePath(override val segments: List<PathSegment>) : PathSegments {
     override fun withSegments(ss: List<PathSegment>): AbsolutePath = copy(segments = ss)
     override fun toString(): String = segments.joinToString(separator = "/", prefix = "/") { it.encoded() }
   }
 
-  data class RelativePath(override val segments: List<PathSegment>) : PathSegments {
+  public data class RelativePath(override val segments: List<PathSegment>) : PathSegments {
     override fun withSegments(ss: List<PathSegment>): RelativePath = copy(segments = ss)
     override fun toString(): String = segments.joinToString(separator = "/") { it.encoded() }
   }
 }
 
-sealed interface QuerySegment {
+public sealed interface QuerySegment {
 
-  companion object {
+  public companion object {
     /** Encodes all reserved characters using [[java.net.URLEncoder.encode()]]. */
     val All: Encoding = {
       UriCompatibility.encodeQuery(it, "UTF-8")
@@ -576,7 +576,7 @@ sealed interface QuerySegment {
    * @param keyEncoding See [[Plain.encoding]]
    * @param valueEncoding See [[Plain.encoding]]
    */
-  data class KeyValue(
+  public data class KeyValue(
     val k: String,
     val v: String,
     val keyEncoding: Encoding = Standard,
@@ -586,7 +586,7 @@ sealed interface QuerySegment {
   }
 
   /** A query fragment which contains only the value, without a key. */
-  data class Value(
+  public data class Value(
     val v: String,
     val encoding: Encoding = StandardValue
   ) : QuerySegment {
@@ -606,7 +606,7 @@ sealed interface QuerySegment {
    * [[https://stackoverflow.com/questions/2322764/what-characters-must-be-escaped-in-an-http-query-string]]
    * [[https://stackoverflow.com/questions/2366260/whats-valid-and-whats-not-in-a-uri-query]]
    */
-  data class Plain(
+  public data class Plain(
     val v: String,
     val encoding: Encoding = StandardValue
   ) : QuerySegment {
@@ -614,12 +614,12 @@ sealed interface QuerySegment {
   }
 }
 
-data class FragmentSegment(
+public data class FragmentSegment(
   override val v: String,
   override val encoding: Encoding = Standard
 ) : Segment(v, encoding) {
 
-  companion object {
+  public companion object {
     val Standard: Encoding = {
       it.encode(Rfc3986.Fragment)
     }

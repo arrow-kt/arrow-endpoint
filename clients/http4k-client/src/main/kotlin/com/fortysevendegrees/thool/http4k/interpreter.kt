@@ -36,7 +36,7 @@ import org.http4k.core.cookie.cookies
 import java.io.InputStream
 import java.nio.ByteBuffer
 
-fun <I, E, O> Endpoint<I, E, O>.toRequestAndParser(baseUrl: String): (I) -> Pair<Request, (Response) -> DecodeResult<Either<E, O>>> =
+public fun <I, E, O> Endpoint<I, E, O>.toRequestAndParser(baseUrl: String): (I) -> Pair<Request, (Response) -> DecodeResult<Either<E, O>>> =
   { input: I ->
     val request = toRequest(baseUrl, input)
     Pair(request, { response: Response -> parseResponse(request, response) })
@@ -45,7 +45,7 @@ fun <I, E, O> Endpoint<I, E, O>.toRequestAndParser(baseUrl: String): (I) -> Pair
 private fun String.trimLastSlash(): String =
   if (this.lastOrNull() == '/') dropLast(1) else this
 
-operator fun <I, E, O> HttpHandler.invoke(
+public operator fun <I, E, O> HttpHandler.invoke(
   endpoint: Endpoint<I, E, O>,
   baseUrl: String,
   input: I
@@ -55,7 +55,7 @@ operator fun <I, E, O> HttpHandler.invoke(
   return endpoint.parseResponse(request, response)
 }
 
-fun <I, E, O> Endpoint<I, E, O>.toRequest(
+public fun <I, E, O> Endpoint<I, E, O>.toRequest(
   baseUrl: String,
   i: I
 ): Request {
@@ -68,7 +68,7 @@ fun <I, E, O> Endpoint<I, E, O>.toRequest(
   return request
 }
 
-fun EndpointInput<*>.buildUrl(
+public fun EndpointInput<*>.buildUrl(
   baseUrl: String,
   params: Params
 ): String =
@@ -100,7 +100,7 @@ fun EndpointInput<*>.buildUrl(
     is EndpointInput.MappedPair<*, *, *, *> -> handleMapped(this, this.mapping, params, baseUrl)
   }
 
-fun handleInputPair(
+public fun handleInputPair(
   left: EndpointInput<*>,
   right: EndpointInput<*>,
   params: Params,
@@ -124,7 +124,7 @@ private fun handleMapped(
   )
 
 // Extract method, and use GET as default
-fun Endpoint<*, *, *>.method(): Method? =
+public fun Endpoint<*, *, *>.method(): Method? =
   when (input.method()?.value ?: GET.value) {
     GET.value -> Method.GET
     HEAD.value -> Method.HEAD
@@ -139,7 +139,7 @@ fun Endpoint<*, *, *>.method(): Method? =
     else -> null
   }
 
-fun <I> EndpointInput<I>.setInputParams(
+public fun <I> EndpointInput<I>.setInputParams(
   request: Request,
   params: Params
 ): Request = (params.asAny as I).let { value ->
@@ -182,7 +182,7 @@ fun <I> EndpointInput<I>.setInputParams(
   }
 }
 
-fun <I> Request.setBody(i: I, codec: Codec<*, *, CodecFormat>, rawBodyType: RawBodyType<*>): Request =
+private fun <I> Request.setBody(i: I, codec: Codec<*, *, CodecFormat>, rawBodyType: RawBodyType<*>): Request =
   when (rawBodyType) {
     RawBodyType.ByteArrayBody -> body(MemoryBody((codec::encode as (I) -> ByteArray)(i)))
     RawBodyType.ByteBufferBody -> body(Body((codec::encode as (I) -> ByteBuffer)(i)))
@@ -190,7 +190,7 @@ fun <I> Request.setBody(i: I, codec: Codec<*, *, CodecFormat>, rawBodyType: RawB
     is RawBodyType.StringBody -> body((codec::encode as (I) -> String)(i))
   }
 
-fun handleInputPair(
+private fun handleInputPair(
   left: EndpointInput<*>,
   right: EndpointInput<*>,
   params: Params,
@@ -214,7 +214,7 @@ private fun handleMapped(
   )
 
 // Functionality on how to go from Http4k Response to our domain
-fun <I, E, O> Endpoint<I, E, O>.parseResponse(
+public fun <I, E, O> Endpoint<I, E, O>.parseResponse(
   request: Request,
   response: Response
 ): DecodeResult<Either<E, O>> {

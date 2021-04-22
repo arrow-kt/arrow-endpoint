@@ -36,7 +36,7 @@ sealed class Params {
     override val asList: List<Any?> = emptyList()
   }
 
-  data class ParamsAsAny(override val asAny: Any?) : Params() {
+  public data class ParamsAsAny(override val asAny: Any?) : Params() {
     override val asList: List<Any?> by lazy { toParams(asAny) }
 
     private fun toParams(a: Any?): List<Any?> =
@@ -306,7 +306,7 @@ sealed class Params {
       }
   }
 
-  data class ParamsAsList(override val asList: List<Any?>) : Params() {
+  public data class ParamsAsList(override val asList: List<Any?>) : Params() {
     override val asAny: Any? by lazy { toParams(asList) }
 
     private fun <T> toParams(seq: List<T>): Any? =

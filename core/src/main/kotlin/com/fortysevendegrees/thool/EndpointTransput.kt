@@ -14,13 +14,13 @@ import com.fortysevendegrees.thool.model.CodecFormat
  *           \     /
  *         EndpointIO
  */
-sealed interface EndpointTransput<A> {
+public sealed interface EndpointTransput<A> {
 
   fun <B> map(mapping: Mapping<A, B>): EndpointTransput<B>
   fun <B> map(f: (A) -> B, g: (B) -> A): EndpointTransput<B> = map(Mapping.from(f, g))
   fun <B> mapDecode(f: (A) -> DecodeResult<B>, g: (B) -> A): EndpointTransput<B> = map(Mapping.fromDecode(f, g))
 
-  sealed interface Basic<L, A, CF : CodecFormat> : EndpointTransput<A> {
+  public sealed interface Basic<L, A, CF : CodecFormat> : EndpointTransput<A> {
     val codec: Codec<L, A, CF>
     val info: EndpointIO.Info<A>
 
@@ -37,7 +37,7 @@ sealed interface EndpointTransput<A> {
     fun deprecated(): Basic<L, A, CF> = copyWith(codec, info.deprecated(true))
   }
 
-  sealed interface Pair<A> : EndpointTransput<A> {
+  public sealed interface Pair<A> : EndpointTransput<A> {
     val first: EndpointTransput<*>
     val second: EndpointTransput<*>
 
