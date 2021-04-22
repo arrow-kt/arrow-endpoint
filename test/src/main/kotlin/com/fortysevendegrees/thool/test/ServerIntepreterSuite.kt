@@ -33,8 +33,7 @@ abstract class ServerIntepreterSuite : FreeSpec() {
         client(request).bodyString() shouldBe result
       }
       "post" {
-        val endpoint =
-          Endpoint.post().output(stringBody())
+        val endpoint = Endpoint.post().output(stringBody())
         val request = Request(Method.POST, "http://localhost:8080")
         val result = "TEST-POST"
         install(endpoint.logic { result.right() })

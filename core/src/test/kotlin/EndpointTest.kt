@@ -5,6 +5,7 @@ import com.fortysevendegrees.thool.and
 import com.fortysevendegrees.thool.input
 import io.kotest.core.spec.style.StringSpec
 
+@Suppress("UNUSED_VARIABLE")
 class EndpointTest : StringSpec({
   "endpoint should compose correctly" {
     Thool {

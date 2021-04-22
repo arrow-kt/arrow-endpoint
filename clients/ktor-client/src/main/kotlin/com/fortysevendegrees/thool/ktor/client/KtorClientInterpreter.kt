@@ -10,6 +10,7 @@ import com.fortysevendegrees.thool.EndpointInput
 import com.fortysevendegrees.thool.EndpointOutput
 import com.fortysevendegrees.thool.Mapping
 import com.fortysevendegrees.thool.Params
+import com.fortysevendegrees.thool.PlainCodec
 import com.fortysevendegrees.thool.RawBodyType
 import com.fortysevendegrees.thool.SplitParams
 import com.fortysevendegrees.thool.bodyType
@@ -32,7 +33,7 @@ import io.ktor.http.takeFrom
 import java.io.InputStream
 import java.nio.ByteBuffer
 
-inline fun <I, E, reified O> Endpoint<I, E, O>.requestAndParse(
+fun <I, E, O> Endpoint<I, E, O>.requestAndParse(
   baseUrl: String
 ): suspend HttpClient.(I) -> DecodeResult<Either<E, O>> =
   { value: I ->
@@ -40,15 +41,18 @@ inline fun <I, E, reified O> Endpoint<I, E, O>.requestAndParse(
     this@requestAndParse.responseToDomain(response)
   }
 
+private fun String.trimSlash(): String =
+  if (this.lastOrNull() == '/') dropLast(1) else this
+
 operator fun <I, E, O> HttpClient.invoke(
   endpoint: Endpoint<I, E, O>,
   baseUrl: String
 ): suspend (I) -> HttpResponse = { value ->
   val p = Params.ParamsAsAny(value)
   request {
-    url.takeFrom(baseUrl)
-    setInputParams(endpoint.input, p)
     method = (endpoint.input.method() ?: Method.GET).toMethod()
+    url.takeFrom(endpoint.input.buildUrl(baseUrl.trimSlash(), p))
+    setInputParams(endpoint.input, p)
   }
 }
 
@@ -202,3 +206,58 @@ fun <I> HttpRequestBuilder.setInputParams(input: EndpointInput<I>, params: Param
       is EndpointInput.PathsCapture -> Unit
     }
   }
+
+fun EndpointInput<*>.buildUrl(
+  baseUrl: String,
+  params: Params
+): String =
+  when (this) {
+    is EndpointInput.FixedPath -> "$baseUrl/${this.s}"
+    is EndpointInput.PathCapture -> {
+      val v = (codec as PlainCodec<Any?>).encode(params.asAny)
+      "$baseUrl/$v"
+    }
+    is EndpointInput.PathsCapture -> {
+      val ps = (codec as Codec<List<String>, Any?, CodecFormat.TextPlain>).encode(params.asAny)
+      baseUrl + ps.joinToString(prefix = "/", separator = "/")
+    }
+
+    // These don't influence baseUrl
+    is EndpointIO.Body<*, *> -> baseUrl
+    is EndpointIO.Empty -> baseUrl
+    is EndpointInput.FixedMethod -> baseUrl
+    is EndpointIO.Header -> baseUrl
+    is EndpointIO.StreamBody -> baseUrl
+    is EndpointInput.Query -> baseUrl
+    is EndpointInput.Cookie -> baseUrl
+    is EndpointInput.QueryParams -> baseUrl
+
+    // Recurse on composition of inputs.
+    is EndpointInput.Pair<*, *, *> -> handleInputPair(this.first, this.second, params, this.split, baseUrl)
+    is EndpointIO.Pair<*, *, *> -> handleInputPair(this.first, this.second, params, this.split, baseUrl)
+    is EndpointIO.MappedPair<*, *, *, *> -> handleMapped(this, this.mapping, params, baseUrl)
+    is EndpointInput.MappedPair<*, *, *, *> -> handleMapped(this, this.mapping, params, baseUrl)
+  }
+
+fun handleInputPair(
+  left: EndpointInput<*>,
+  right: EndpointInput<*>,
+  params: Params,
+  split: SplitParams,
+  baseUrl: String
+): String {
+  val (leftParams, rightParams) = split(params)
+  val baseUrl2 = (left as EndpointInput<Any?>).buildUrl(baseUrl, leftParams)
+  return (right as EndpointInput<Any?>).buildUrl(baseUrl2, rightParams)
+}
+
+private fun handleMapped(
+  tuple: EndpointInput<*>,
+  codec: Mapping<*, *>,
+  params: Params,
+  baseUrl: String
+): String =
+  (tuple as EndpointInput<Any?>).buildUrl(
+    baseUrl,
+    Params.ParamsAsAny((codec::encode as (Any?) -> Any?)(params.asAny))
+  )

@@ -1,3 +1,5 @@
+package com.fortysevendegrees.thool.http4k
+
 import arrow.core.Either
 import com.fortysevendegrees.thool.Codec
 import com.fortysevendegrees.thool.CombineParams
@@ -40,6 +42,9 @@ public fun <I, E, O> Endpoint<I, E, O>.toRequestAndParser(baseUrl: String): (I) 
     Pair(request, { response: Response -> parseResponse(request, response) })
   }
 
+private fun String.trimLastSlash(): String =
+  if (this.lastOrNull() == '/') dropLast(1) else this
+
 public operator fun <I, E, O> HttpHandler.invoke(
   endpoint: Endpoint<I, E, O>,
   baseUrl: String,
@@ -57,7 +62,7 @@ public fun <I, E, O> Endpoint<I, E, O>.toRequest(
   val params = Params.ParamsAsAny(i)
   val request = Request(
     requireNotNull(method()) { "Method not defined!" },
-    input.buildUrl(baseUrl, params)
+    input.buildUrl(baseUrl.trimLastSlash(), params)
   )
   input.setInputParams(request, params)
   return request

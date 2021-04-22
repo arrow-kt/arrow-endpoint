@@ -150,12 +150,18 @@ public sealed interface EndpointInput<A> : EndpointTransput<A> {
     }
 
   fun method(): Method? =
-    (this as? FixedMethod<*>)?.m
+    toList().firstNotNull { (it as? FixedMethod<*>)?.m }
 
   public companion object {
     fun empty(): EndpointIO.Empty<Unit> =
       EndpointIO.Empty(Codec.idPlain(), EndpointIO.Info.empty())
   }
+}
+
+// Small util function that exits-fast to find first value in Iterable
+private inline fun <A, B> Iterable<A>.firstNotNull(predicate: (A) -> B?): B? {
+  for (element in this) predicate(element)?.let { return@firstNotNull it }
+  return null
 }
 
 fun <A, B> EndpointInput<A>.reduce(
