@@ -81,6 +81,8 @@ fun handleInputPair(
 }
 
 fun createPath(left: String, right: String): String =
-  if (left.isBlank()) right
-  else if (right.isBlank()) left
-  else "$left/$right"
+  when {
+    left.isBlank() -> right
+    right.isBlank() -> left
+    else -> "$left/$right"
+  }

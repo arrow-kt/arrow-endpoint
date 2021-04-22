@@ -10,7 +10,6 @@ object Version {
   const val graphQL: String = "16.2"
   const val kotlinGraphQL: String = "4.0.0-alpha.17"
   const val http4k: String = "4.7.0.2"
-  const val http4kApache = "4.7.0.2"
 }
 
 object Libs {
@@ -34,7 +33,7 @@ object Libs {
   const val graphQlServer = "com.expediagroup:graphql-kotlin-server:${Version.kotlinGraphQL}"
 
   const val http4kCore = "org.http4k:http4k-core:${Version.http4k}"
-  const val http4kApache = "org.http4k:http4k-client-apache:${Version.http4kApache}"
+  const val http4kApache = "org.http4k:http4k-client-apache:${Version.http4k}"
 
   const val ktorServerCore: String = "io.ktor:ktor-server-core:${Version.ktor}"
   const val ktorServerNetty: String = "io.ktor:ktor-server-netty:${Version.ktor}"

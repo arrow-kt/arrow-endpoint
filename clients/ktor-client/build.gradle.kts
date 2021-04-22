@@ -4,5 +4,4 @@ dependencies {
 
   testImplementation(Libs.ktorClientCio)
   testImplementation(project(Libs.test))
-  testImplementation(Libs.http4kApache)
 }

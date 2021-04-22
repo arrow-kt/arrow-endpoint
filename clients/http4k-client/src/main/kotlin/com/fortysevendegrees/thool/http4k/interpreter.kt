@@ -261,8 +261,7 @@ fun EndpointOutput<*>.getOutputParams(
         single as EndpointIO.Body<Any?, Any?>
         val body = body.invoke()
         val decode: (Any?) -> DecodeResult<Any?> = (single.codec::decode)
-        val res = decode(body)
-        res
+        decode(body)
       }
       is EndpointIO.StreamBody -> TODO("Support stream body")
       is EndpointIO.Empty -> single.codec.decode(Unit)
