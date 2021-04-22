@@ -1,45 +1,44 @@
 package com.fortysevendegrees.thool.test
 
+import arrow.core.Either
 import arrow.core.right
 import com.fortysevendegrees.thool.DecodeResult
 import com.fortysevendegrees.thool.Endpoint
-import com.fortysevendegrees.thool.ktor.server.install
 import com.fortysevendegrees.thool.Thool
 import com.fortysevendegrees.thool.output
-import invoke
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
-import io.ktor.server.engine.applicationEngineEnvironment
-import io.ktor.server.engine.connector
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
-import io.ktor.server.netty.NettyApplicationEngine
-import org.http4k.client.ApacheClient
+import okhttp3.mockwebserver.MockWebServer
 
-class ClientInterpreterSuite : FreeSpec() {
-  var server: NettyApplicationEngine? = null
+abstract class ClientInterpreterSuite : FreeSpec() {
+//  var server: NettyApplicationEngine? = null
+  val server = MockWebServer()
+  var baseUrl: String = ""
 
-  val client = ApacheClient()
-
-  // abstract fun <I, E, O> request(endpoint: Endpoint<I, E, O>, input: I): DecodeResult<Either<E, O>>
+  abstract suspend fun <I, E, O> request(endpoint: Endpoint<I, E, O>, input: I): DecodeResult<Either<E, O>>
 
   init {
+//    beforeSpec {
+//      val env = applicationEngineEnvironment {
+//        connector {
+//          host = "127.0.0.1"
+//          port = 8080
+//        }
+//      }
+//      server = embeddedServer(Netty, env).start(false)
+//    }
+//
+//    afterSpec { server?.stop(1000, 1000) }
     beforeSpec {
-      val env = applicationEngineEnvironment {
-        connector {
-          host = "127.0.0.1"
-          port = 8080
-        }
-      }
-      server = embeddedServer(Netty, env).start(false)
+      server.start()
+      baseUrl = server.url("/").toString().also { println("#################################################### $it") }
     }
-
-    afterSpec { server?.stop(1000, 1000) }
+    afterSpec { server.close() }
 
     "test get" {
       val endpoint = Endpoint.get("ping").output(Thool.stringBody())
-      server?.application?.install(endpoint.logic { "Pong".right() })
-      client.invoke(endpoint, "http://localhost:8080", Unit) shouldBe DecodeResult.Value("Pong".right())
+      server.dispatcher = endpoint.logic { "Pong".right() }.toDispatcher()
+      request(endpoint, Unit) shouldBe DecodeResult.Value("Pong".right())
     }
   }
 }

@@ -12,7 +12,7 @@ data class MediaType(val mainType: String, val subType: String, val charset: Str
   fun noCharset(): MediaType = copy(charset = null)
 
   override fun toString(): String =
-    "$mainType/$subType${charset?.let { c -> "; charset=$c" }}"
+    "$mainType/$subType${charset?.let { c -> "; charset=$c" } ?: ""}"
 
   // https://www.iana.org/assignments/media-types/media-types.xhtml
   companion object {

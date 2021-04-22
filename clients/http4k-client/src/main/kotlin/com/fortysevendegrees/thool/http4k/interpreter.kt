@@ -1,3 +1,5 @@
+package com.fortysevendegrees.thool.http4k
+
 import arrow.core.Either
 import com.fortysevendegrees.thool.Codec
 import com.fortysevendegrees.thool.CombineParams
@@ -40,6 +42,9 @@ fun <I, E, O> Endpoint<I, E, O>.toRequestAndParser(baseUrl: String): (I) -> Pair
     Pair(request, { response: Response -> parseResponse(request, response) })
   }
 
+private fun String.trimLastSlash(): String =
+  if (this.lastOrNull() == '/') dropLast(1) else this
+
 operator fun <I, E, O> HttpHandler.invoke(
   endpoint: Endpoint<I, E, O>,
   baseUrl: String,
@@ -57,7 +62,7 @@ fun <I, E, O> Endpoint<I, E, O>.toRequest(
   val params = Params.ParamsAsAny(i)
   val request = Request(
     requireNotNull(method()) { "Method not defined!" },
-    input.buildUrl(baseUrl, params)
+    input.buildUrl(baseUrl.trimLastSlash(), params)
   )
   input.setInputParams(request, params)
   return request
@@ -234,7 +239,7 @@ fun <I, E, O> Endpoint<I, E, O>.parseResponse(
         result.original,
         IllegalArgumentException(
           "Cannot decode from ${result.original} of request ${request.method} ${request.uri}",
-          result.error
+        result.error
         )
       )
     else -> result
@@ -256,7 +261,8 @@ fun EndpointOutput<*>.getOutputParams(
         single as EndpointIO.Body<Any?, Any?>
         val body = body.invoke()
         val decode: (Any?) -> DecodeResult<Any?> = (single.codec::decode)
-        decode(body)
+        val res = decode(body)
+        res
       }
       is EndpointIO.StreamBody -> TODO("Support stream body")
       is EndpointIO.Empty -> single.codec.decode(Unit)
