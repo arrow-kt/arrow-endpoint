@@ -112,14 +112,14 @@ object DecodeBasicInputs {
     ).invoke(DecodeBasicInputsResult.Values(List(basicInputs.size) { null }, null), ctx).first
   }
 
-  /** We're decoding paths differently than other inputs. We firstmap all path segments to their decoding results
-   * (not checking if this is a successful or failed decoding at this stage). This is collected as the
-   * `decodedPathInputs` value.
+  /**
+   * We're decoding paths differently than other inputs.
+   * We first map all path segments to their decoding results (not checking if this is a successful or failed decoding at this stage).
+   * This is collected as the `decodedPathInputs` value.
    *
-   * Once this is done, we check if there are remaining path segments. If yes - the decoding fails , a `Miswhen`.
+   * Once this is done, we check if there are remaining path segments. If yes - the decoding fails , a `Mismatch`.
    *
-   * Hence, a failure due to a miswhen in the number of segments takes **priority** over any potential failures in
-   * decoding the segments.
+   * Hence, a failure due to a mismatch in the number of segments takes **priority** over any potential failures in decoding the segments.
    */
   private fun whenPath(pathInputs: List<IndexedBasicInput>): (DecodeBasicInputsResult.Values, DecodeInputsContext) -> Pair<DecodeBasicInputsResult, DecodeInputsContext> =
     { decodeValues, ctx ->
