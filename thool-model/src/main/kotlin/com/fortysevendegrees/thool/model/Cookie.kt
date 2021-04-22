@@ -11,13 +11,13 @@ import arrow.core.sequenceEither
  * The `name` and `value` should be already encoded (if necessary), as when serialised, they end up unmodified in
  * the header.
  */
-data class Cookie(val name: String, val value: String) {
+public data class Cookie(val name: String, val value: String) {
 
   /** @return Representation of the cookie as in a header value, in the format: `[name]=[value]`.
    */
   override fun toString(): String = "$name=$value"
 
-  companion object {
+  public companion object {
     // see: https://stackoverflow.com/questions/1969232/allowed-characters-in-cookies/1969339
     private val AllowedValueCharacters = "[^${Rfc2616.CTL}]*".toRegex()
 

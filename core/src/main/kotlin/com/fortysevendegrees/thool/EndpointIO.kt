@@ -8,11 +8,11 @@ import java.nio.charset.Charset
 
 // Elements that can occur in both input and output
 // Such as body, headers, etc
-sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
+public sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
 
-  sealed interface Single<A> : EndpointIO<A>, EndpointInput.Single<A>, EndpointOutput.Single<A>
+  public sealed interface Single<A> : EndpointIO<A>, EndpointInput.Single<A>, EndpointOutput.Single<A>
 
-  sealed interface Basic<L, A, CF : CodecFormat> :
+  public sealed interface Basic<L, A, CF : CodecFormat> :
     Single<A>,
     EndpointInput.Basic<L, A, CF>,
     EndpointOutput.Basic<L, A, CF> {
@@ -31,7 +31,7 @@ sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
     override fun deprecated(): Basic<L, A, CF> = copyWith(codec, info.deprecated(true))
   }
 
-  data class Empty<A>(override val codec: Codec<Unit, A, CodecFormat.TextPlain>, override val info: Info<A>) :
+  public data class Empty<A>(override val codec: Codec<Unit, A, CodecFormat.TextPlain>, override val info: Info<A>) :
     Basic<Unit, A, CodecFormat.TextPlain> {
     override fun <B> copyWith(
       c: Codec<Unit, B, CodecFormat.TextPlain>,
@@ -41,7 +41,7 @@ sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
     override fun toString(): String = "-"
   }
 
-  data class Header<A>(
+  public data class Header<A>(
     val name: String,
     override val codec: Codec<List<String>, A, CodecFormat.TextPlain>,
     override val info: Info<A>
@@ -54,7 +54,7 @@ sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
     override fun toString(): String = "{header $name}"
   }
 
-  data class Body<R, T>(
+  public data class Body<R, T>(
     val bodyType: RawBodyType<R>,
     override val codec: Codec<R, T, CodecFormat>,
     override val info: Info<T>
@@ -72,7 +72,7 @@ sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
     }
   }
 
-  data class StreamBody<A>(
+  public data class StreamBody<A>(
     override val codec: Codec<Flow<Byte>, A, CodecFormat>,
     override val info: Info<A>,
     val charset: Charset?
@@ -85,7 +85,7 @@ sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
     override fun toString(): String = "{body as stream}"
   }
 
-  data class Info<T>(val description: String?, val examples: List<Example<T>>, val deprecated: Boolean) {
+  public data class Info<T>(val description: String?, val examples: List<Example<T>>, val deprecated: Boolean) {
     fun description(d: String): Info<T> = copy(description = d)
     fun example(): T? = examples.firstOrNull()?.value
     fun example(t: T): Info<T> = example(Example(t))
@@ -104,22 +104,22 @@ sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
         deprecated
       )
 
-    data class Example<out A>(val value: A, val name: String? = null, val summary: String? = null) {
+    public data class Example<out A>(val value: A, val name: String? = null, val summary: String? = null) {
       fun <B> map(transform: (A) -> B): Example<B> =
         Example(transform(value), name, summary)
     }
 
-    companion object {
+    public companion object {
       fun <A> empty(): Info<A> = Info(null, emptyList(), deprecated = false)
     }
   }
 
-  data class MappedPair<A, B, C, D>(val wrapped: Pair<A, B, C>, val mapping: Mapping<C, D>) : Single<D> {
+  public data class MappedPair<A, B, C, D>(val wrapped: Pair<A, B, C>, val mapping: Mapping<C, D>) : Single<D> {
     override fun <E> map(m: Mapping<D, E>): MappedPair<A, B, C, E> = MappedPair(wrapped, mapping.map(m))
     override fun toString(): String = wrapped.toString()
   }
 
-  data class Pair<A, B, C>(
+  public data class Pair<A, B, C>(
     override val first: EndpointIO<A>,
     override val second: EndpointIO<B>,
     override val combine: CombineParams,

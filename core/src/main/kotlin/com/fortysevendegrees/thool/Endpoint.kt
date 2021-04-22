@@ -12,7 +12,7 @@ import com.fortysevendegrees.thool.server.ServerEndpoint
  * @param E Error output parameter types.
  * @param O Output parameter types.
  */
-data class Endpoint<I, E, O>(
+public data class Endpoint<I, E, O>(
   val input: EndpointInput<I>,
   val errorOutput: EndpointOutput<E>,
   val output: EndpointOutput<O>,
@@ -70,7 +70,7 @@ data class Endpoint<I, E, O>(
     }
   }.first
 
-  companion object : MethodSyntax {
+  public companion object : MethodSyntax {
 
     fun <I> input(input: EndpointInput<I>): Endpoint<I, Nothing, Unit> =
       Endpoint(input, EndpointOutput.Void(), EndpointOutput.empty(), EndpointInfo.empty())
@@ -143,7 +143,7 @@ fun <I, E, O> Endpoint<I, Unit, O>.withErrorOutput(i: EndpointOutput<E>, dummy: 
 fun <I, E, E2, E3, O> Endpoint<I, Pair<E, E2>, O>.withOutput(i: EndpointOutput<E3>): Endpoint<I, Triple<E, E2, E3>, O> =
   Endpoint(input, errorOutput.and(i), output, info)
 
-data class EndpointInfo(
+public data class EndpointInfo(
   val name: String?,
   val summary: String?,
   val description: String?,
@@ -157,7 +157,7 @@ data class EndpointInfo(
   fun tag(t: String): EndpointInfo = copy(tags = tags + t)
   fun deprecated(d: Boolean): EndpointInfo = copy(deprecated = d)
 
-  companion object {
+  public companion object {
     fun empty(): EndpointInfo =
       EndpointInfo(null, null, null, emptyList(), deprecated = false)
   }

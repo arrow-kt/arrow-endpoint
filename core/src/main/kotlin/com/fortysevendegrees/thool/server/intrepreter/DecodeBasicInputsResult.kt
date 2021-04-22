@@ -15,10 +15,10 @@ import com.fortysevendegrees.thool.updated
 import com.fortysevendegrees.thool.model.Method
 import com.fortysevendegrees.thool.model.QueryParams
 
-sealed interface DecodeBasicInputsResult {
+public sealed interface DecodeBasicInputsResult {
 
   /** @param basicInputsValues Values of basic inputs, in order as they are defined in the endpoint. */
-  data class Values(
+  public data class Values(
     val basicInputsValues: List<Any?>,
     val bodyInputWithIndex: Pair<Either<EndpointIO.Body<*, *>, EndpointIO.StreamBody<*>>, Int>?
   ) : DecodeBasicInputsResult {
@@ -47,7 +47,7 @@ sealed interface DecodeBasicInputsResult {
       copy(basicInputsValues = basicInputsValues.updated(i, v))
   }
 
-  data class Failure(val input: EndpointInput.Basic<*, *, *>, val failure: DecodeResult.Failure) :
+  public data class Failure(val input: EndpointInput.Basic<*, *, *>, val failure: DecodeResult.Failure) :
     DecodeBasicInputsResult
 }
 

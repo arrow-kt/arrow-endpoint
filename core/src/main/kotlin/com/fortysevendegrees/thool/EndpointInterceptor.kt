@@ -10,7 +10,7 @@ import com.fortysevendegrees.thool.model.toStringSafe
  * decoded successfully, or when decoding has failed.
  * @tparam B The interpreter-specific, low-level type of body.
  */
-interface EndpointInterceptor<B> {
+public interface EndpointInterceptor<B> {
 
   /** Called when the the given `request` has been successfully decoded into inputs `i`, as described by
    * `endpoint.input`.
@@ -45,9 +45,9 @@ interface EndpointInterceptor<B> {
   ): ServerResponse<B>? = next(null)
 }
 
-data class ValuedEndpointOutput<A>(val output: EndpointOutput<A>, val value: A)
+public data class ValuedEndpointOutput<A>(val output: EndpointOutput<A>, val value: A)
 
-data class ServerResponse<B>(override val code: StatusCode, override val headers: List<Header>, val body: B?) :
+public data class ServerResponse<B>(override val code: StatusCode, override val headers: List<Header>, val body: B?) :
   ResponseMetadata {
   override val statusText: String = ""
   override fun toString(): String = "ServerResponse($code,${headers.toStringSafe()}, $body)"

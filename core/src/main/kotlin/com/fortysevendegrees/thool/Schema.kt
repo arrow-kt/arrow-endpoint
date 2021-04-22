@@ -16,7 +16,7 @@ import java.time.ZonedDateTime
 import java.util.UUID
 import kotlin.reflect.KProperty1
 
-data class SchemaInfo<A>(
+public data class SchemaInfo<A>(
   val description: String? = null,
   /** The default value together with the value encoded to a raw format, which will then be directly rendered as a string in documentation */
   val default: Pair<A, Any?>? = null,
@@ -27,7 +27,7 @@ data class SchemaInfo<A>(
   val deprecated: Boolean = deprecatedMessage != null
 }
 
-sealed interface Schema<A> {
+public sealed interface Schema<A> {
 
   val info: SchemaInfo<A>
 
@@ -106,89 +106,89 @@ sealed interface Schema<A> {
 
   fun isNotOptional(): kotlin.Boolean = !isOptional()
 
-  data class String<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Schema<A> {
+  public data class String<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Schema<A> {
     override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = String(transform(info))
     override fun toString(): kotlin.String = "string"
   }
 
-  sealed interface NumberModifier
+  public sealed interface NumberModifier
   object Signed : NumberModifier
   object Unsigned : NumberModifier
 
-  sealed interface NumberSize
+  public sealed interface NumberSize
   object _8 : NumberSize
   object _16 : NumberSize
   object _32 : NumberSize
   object _64 : NumberSize
 
-  sealed interface Number<A> : Schema<A> {
+  public sealed interface Number<A> : Schema<A> {
     val modifier: NumberModifier
     val size: NumberSize
 
-    data class Byte<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
+    public data class Byte<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
       override val modifier: NumberModifier = Signed
       override val size: NumberSize = _8
       override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = Byte(transform(info))
       override fun toString(): kotlin.String = "byte"
     }
 
-    data class UByte<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
+    public data class UByte<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
       override val modifier: NumberModifier = Unsigned
       override val size: NumberSize = _8
       override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = UByte(transform(info))
       override fun toString(): kotlin.String = "unsigned byte"
     }
 
-    data class Short<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
+    public data class Short<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
       override val modifier: NumberModifier = Signed
       override val size: NumberSize = _16
       override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = Short(transform(info))
       override fun toString(): kotlin.String = "short"
     }
 
-    data class UShort<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
+    public data class UShort<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
       override val modifier: NumberModifier = Unsigned
       override val size: NumberSize = _16
       override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = UShort(transform(info))
       override fun toString(): kotlin.String = "unsigned short"
     }
 
-    data class Int<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
+    public data class Int<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
       override val modifier: NumberModifier = Signed
       override val size: NumberSize = _32
       override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = Int(transform(info))
       override fun toString(): kotlin.String = "int32"
     }
 
-    data class UInt<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
+    public data class UInt<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
       override val modifier: NumberModifier = Unsigned
       override val size: NumberSize = _32
       override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = UInt(transform(info))
       override fun toString(): kotlin.String = "unsigned int32"
     }
 
-    data class Long<A>(override val info: SchemaInfo<A> = SchemaInfo(format = "int64")) : Number<A> {
+    public data class Long<A>(override val info: SchemaInfo<A> = SchemaInfo(format = "int64")) : Number<A> {
       override val modifier: NumberModifier = Signed
       override val size: NumberSize = _64
       override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = Long(transform(info))
       override fun toString(): kotlin.String = "int64"
     }
 
-    data class ULong<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
+    public data class ULong<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
       override val modifier: NumberModifier = Unsigned
       override val size: NumberSize = _64
       override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = ULong(transform(info))
       override fun toString(): kotlin.String = "unsigned int64"
     }
 
-    data class Float<A>(override val info: SchemaInfo<A> = SchemaInfo(format = "float")) : Number<A> {
+    public data class Float<A>(override val info: SchemaInfo<A> = SchemaInfo(format = "float")) : Number<A> {
       override val modifier: NumberModifier = Signed
       override val size: NumberSize = _32
       override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = Float(transform(info))
       override fun toString(): kotlin.String = "float"
     }
 
-    data class Double<A>(override val info: SchemaInfo<A> = SchemaInfo(format = "double")) : Number<A> {
+    public data class Double<A>(override val info: SchemaInfo<A> = SchemaInfo(format = "double")) : Number<A> {
       override val modifier: NumberModifier = Signed
       override val size: NumberSize = _64
       override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = Double(transform(info))
@@ -196,12 +196,12 @@ sealed interface Schema<A> {
     }
   }
 
-  data class Boolean<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Schema<A> {
+  public data class Boolean<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Schema<A> {
     override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = Boolean(transform(info))
     override fun toString(): kotlin.String = "boolean"
   }
 
-  data class List<A>(
+  public data class List<A>(
     val element: Schema<*>,
     override val info: SchemaInfo<A> = SchemaInfo()
   ) : Schema<A> {
@@ -211,22 +211,22 @@ sealed interface Schema<A> {
     override fun toString(): kotlin.String = "[$element]"
   }
 
-  data class Binary<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Schema<A> {
+  public data class Binary<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Schema<A> {
     override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = Binary(transform(info))
     override fun toString(): kotlin.String = "binary"
   }
 
-  data class Date<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Schema<A> {
+  public data class Date<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Schema<A> {
     override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = Date(transform(info))
     override fun toString(): kotlin.String = "date"
   }
 
-  data class DateTime<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Schema<A> {
+  public data class DateTime<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Schema<A> {
     override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = DateTime(transform(info))
     override fun toString(): kotlin.String = "date-time"
   }
 
-  data class Nullable<A>(
+  public data class Nullable<A>(
     val element: Schema<*>,
     override val info: SchemaInfo<A> = SchemaInfo()
   ) : Schema<A> {
@@ -236,7 +236,7 @@ sealed interface Schema<A> {
     override fun toString(): kotlin.String = "$element?"
   }
 
-  data class Either<A>(
+  public data class Either<A>(
     val left: Schema<*>,
     val right: Schema<*>,
     override val info: SchemaInfo<A> = SchemaInfo()
@@ -258,7 +258,7 @@ sealed interface Schema<A> {
    *     Schema.dateTime
    *   )
    */
-  data class Map<A>(
+  public data class Map<A>(
     val objectInfo: ObjectInfo,
     val keySchema: Schema<*>,
     val valueSchema: Schema<*>,
@@ -280,7 +280,7 @@ sealed interface Schema<A> {
    *     Schema.int
    *   )
    */
-  data class OpenProduct<A>(
+  public data class OpenProduct<A>(
     val objectInfo: ObjectInfo,
     val valueSchema: Schema<*>,
     override val info: SchemaInfo<A> = SchemaInfo()
@@ -295,7 +295,7 @@ sealed interface Schema<A> {
    * Represents a product type.
    * A product type has [ObjectInfo] & a fixed set of [fields]
    *
-   * data class Person(val name: String, val age: Int)
+   * public data class Person(val name: String, val age: Int)
    *
    * Person =>
    *   Schema2.Product(
@@ -306,7 +306,7 @@ sealed interface Schema<A> {
    *     )
    *   )
    */
-  data class Product<A>(
+  public data class Product<A>(
     val objectInfo: ObjectInfo,
     val fields: kotlin.collections.List<Pair<FieldName, Schema<*>>>,
     override val info: SchemaInfo<A> = SchemaInfo()
@@ -320,7 +320,7 @@ sealed interface Schema<A> {
     override fun toString(): kotlin.String =
       "${objectInfo.fullName}(${fields.joinToString(",") { (f, s) -> "$f=$s" }})"
 
-    companion object {
+    public companion object {
       val Empty = Product<Unit>(ObjectInfo.unit, emptyList())
     }
   }
@@ -329,7 +329,7 @@ sealed interface Schema<A> {
    * Represents a value in an enum class
    * A product of [kotlin.Enum.name] and [kotlin.Enum.ordinal]
    */
-  data class EnumValue(val name: kotlin.String, val ordinal: Int)
+  public data class EnumValue(val name: kotlin.String, val ordinal: Int)
 
   /**
    * Represents an Enum
@@ -347,7 +347,7 @@ sealed interface Schema<A> {
    *     )
    *   )
    */
-  data class Enum<A>(
+  public data class Enum<A>(
     val objectInfo: ObjectInfo,
     val values: kotlin.collections.List<EnumValue>,
     override val info: SchemaInfo<A> = SchemaInfo()
@@ -373,7 +373,7 @@ sealed interface Schema<A> {
    *     )
    *   )
    */
-  data class Coproduct<A>(
+  public data class Coproduct<A>(
     val objectInfo: ObjectInfo,
     val schemas: arrow.core.NonEmptyList<Schema<*>>,
     override val info: SchemaInfo<A> = SchemaInfo()
@@ -390,16 +390,16 @@ sealed interface Schema<A> {
    *
    * Either<A, B> => ObjectInfo("Either", listOf("A", "B"))
    */
-  data class ObjectInfo(
+  public data class ObjectInfo(
     val fullName: kotlin.String,
     val typeParameterShortNames: kotlin.collections.List<kotlin.String> = emptyList()
   ) {
-    companion object {
+    public companion object {
       val unit: ObjectInfo = ObjectInfo(fullName = "Unit")
     }
   }
 
-  companion object {
+  public companion object {
     /** Creates a schema for type `T`, where the low-level representation is a `String`. */
     fun <T> string(): Schema<T> = String()
 

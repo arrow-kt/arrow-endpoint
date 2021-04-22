@@ -15,7 +15,7 @@ import com.fortysevendegrees.thool.model.StatusCode
 import kotlinx.coroutines.flow.Flow
 import java.nio.charset.Charset
 
-data class OutputValues<B>(
+public data class OutputValues<B>(
   val body: ((HasHeaders) -> B)?,
   val baseHeaders: List<Header>,
   val headerTransformations: List<(List<Header>) -> List<Header>>,
@@ -47,7 +47,7 @@ data class OutputValues<B>(
   fun headers(): List<Header> =
     headerTransformations.fold(baseHeaders) { hs, t -> t(hs) }
 
-  companion object {
+  public companion object {
     fun <B> empty(): OutputValues<B> =
       OutputValues(null, emptyList(), emptyList(), null)
 

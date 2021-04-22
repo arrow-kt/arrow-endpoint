@@ -30,7 +30,7 @@ typealias PlainCodec<A> = Codec<String, A, CodecFormat.TextPlain>
 typealias JsonCodec<A> = Codec<String, A, CodecFormat.Json>
 typealias XmlCodec<A> = Codec<String, A, CodecFormat.Xml>
 
-interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
+public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
   fun schema(): Schema<H>
   val format: CF
 
@@ -91,7 +91,7 @@ interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
     }
   }
 
-  companion object {
+  public companion object {
     fun <L, CF : CodecFormat> id(f: CF, s: Schema<L>): Codec<L, L, CF> =
       object : Codec<L, L, CF> {
         override fun rawDecode(l: L): DecodeResult<L> = DecodeResult.Value(l)
@@ -305,20 +305,20 @@ interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
 /**
  * The raw format of the body: what do we need to know, to read it and pass to a codec for further decoding.
  */
-sealed interface RawBodyType<R> {
+public sealed interface RawBodyType<R> {
 
-  data class StringBody(val charset: Charset) : RawBodyType<String>
+  public data class StringBody(val charset: Charset) : RawBodyType<String>
 
-  sealed interface Binary<R> : RawBodyType<R>
+  public sealed interface Binary<R> : RawBodyType<R>
 
   object ByteArrayBody : Binary<ByteArray>
   object ByteBufferBody : Binary<ByteBuffer>
   object InputStreamBody : Binary<InputStream>
 //  object FileBody : Binary<TapirFile>
 
-//  data class MultipartBody(val partTypes: Map<String, com.fortysevendegrees.thool.RawBodyType<Any?>>, val defaultType: com.fortysevendegrees.thool.RawBodyType<Any?>?) : com.fortysevendegrees.thool.RawBodyType<List<RawPart>> {
+//  public data class MultipartBody(val partTypes: Map<String, com.fortysevendegrees.thool.RawBodyType<Any?>>, val defaultType: com.fortysevendegrees.thool.RawBodyType<Any?>?) : com.fortysevendegrees.thool.RawBodyType<List<RawPart>> {
 //    fun partType(name: String): com.fortysevendegrees.thool.RawBodyType<Any?>? = partTypes[name] ?: defaultType
 //  }
 
-  companion object
+  public companion object
 }

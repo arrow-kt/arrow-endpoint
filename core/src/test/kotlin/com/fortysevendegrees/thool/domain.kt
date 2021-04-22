@@ -2,7 +2,7 @@ package com.fortysevendegrees.thool
 
 enum class Test { A, B, C; }
 
-data class Person(val name: String, val age: Int)
+public data class Person(val name: String, val age: Int)
 
 fun Schema.Companion.person(): Schema<Person> =
   Schema.Product(

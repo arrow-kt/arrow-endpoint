@@ -8,11 +8,11 @@ import com.fortysevendegrees.thool.model.Method
 
 // Elements that can occur as Input
 // Such as Query, PathCapture, Cookie, etc
-sealed interface EndpointInput<A> : EndpointTransput<A> {
+public sealed interface EndpointInput<A> : EndpointTransput<A> {
 
   // Marker for EndpointInput with single output
-  sealed interface Single<A> : EndpointInput<A>
-  sealed interface Basic<L, A, CF : CodecFormat> : Single<A>, EndpointTransput.Basic<L, A, CF> {
+  public sealed interface Single<A> : EndpointInput<A>
+  public sealed interface Basic<L, A, CF : CodecFormat> : Single<A>, EndpointTransput.Basic<L, A, CF> {
 
     override fun <B> copyWith(c: Codec<L, B, CF>, i: EndpointIO.Info<B>): Basic<L, B, CF>
 
@@ -35,7 +35,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
     override fun deprecated(): EndpointInput.Basic<L, A, CF> = copyWith(codec, info.deprecated(true))
   }
 
-  data class Query<A>(
+  public data class Query<A>(
     val name: String,
     override val codec: Codec<List<String>, A, CodecFormat.TextPlain>,
     override val info: EndpointIO.Info<A>
@@ -48,7 +48,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
     override fun toString(): String = "?$name"
   }
 
-  data class QueryParams<A>(
+  public data class QueryParams<A>(
     override val codec: Codec<com.fortysevendegrees.thool.model.QueryParams, A, CodecFormat.TextPlain>,
     override val info: EndpointIO.Info<A>
   ) : Basic<com.fortysevendegrees.thool.model.QueryParams, A, CodecFormat.TextPlain> {
@@ -60,7 +60,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
     override fun toString(): String = "?..."
   }
 
-  data class FixedMethod<A> /* always Unit */(
+  public data class FixedMethod<A> /* always Unit */(
     val m: Method,
     override val codec: Codec<Unit, A, CodecFormat.TextPlain>,
     override val info: EndpointIO.Info<A>
@@ -73,7 +73,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
     override fun toString(): String = m.value
   }
 
-  data class FixedPath<A> /* always Unit */(
+  public data class FixedPath<A> /* always Unit */(
     val s: String,
     override val codec: Codec<Unit, A, CodecFormat.TextPlain>,
     override val info: EndpointIO.Info<A>
@@ -86,7 +86,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
     override fun toString(): String = "/$s"
   }
 
-  data class PathCapture<A>(
+  public data class PathCapture<A>(
     val name: String?,
     override val codec: PlainCodec<A>,
     override val info: EndpointIO.Info<A>
@@ -100,7 +100,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
     override fun toString(): String = "/[${name ?: ""}]"
   }
 
-  data class PathsCapture<A>(
+  public data class PathsCapture<A>(
     override val codec: Codec<List<String>, A, CodecFormat.TextPlain>,
     override val info: EndpointIO.Info<A>
   ) : Basic<List<String>, A, CodecFormat.TextPlain> {
@@ -112,7 +112,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
     override fun toString(): String = "/..."
   }
 
-  data class Cookie<A>(
+  public data class Cookie<A>(
     val name: String,
     override val codec: Codec<String?, A, CodecFormat.TextPlain>,
     override val info: EndpointIO.Info<A>
@@ -125,12 +125,12 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
     override fun toString(): String = "{cookie $name}"
   }
 
-  data class MappedPair<A, B, C, D>(val input: Pair<A, B, C>, val mapping: Mapping<C, D>) : Single<D> {
+  public data class MappedPair<A, B, C, D>(val input: Pair<A, B, C>, val mapping: Mapping<C, D>) : Single<D> {
     override fun <E> map(m: Mapping<D, E>): MappedPair<A, B, C, E> = MappedPair(input, mapping.map(m))
     override fun toString(): String = input.toString()
   }
 
-  data class Pair<A, B, C>(
+  public data class Pair<A, B, C>(
     override val first: EndpointInput<A>,
     override val second: EndpointInput<B>,
     override val combine: CombineParams,
@@ -152,7 +152,7 @@ sealed interface EndpointInput<A> : EndpointTransput<A> {
   fun method(): Method? =
     (this as? FixedMethod<*>)?.m
 
-  companion object {
+  public companion object {
     fun empty(): EndpointIO.Empty<Unit> =
       EndpointIO.Empty(Codec.idPlain(), EndpointIO.Info.empty())
   }

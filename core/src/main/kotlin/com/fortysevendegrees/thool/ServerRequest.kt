@@ -4,7 +4,7 @@ import com.fortysevendegrees.thool.model.QueryParams
 import com.fortysevendegrees.thool.model.RequestMetadata
 import java.net.InetSocketAddress
 
-interface ServerRequest : RequestMetadata {
+public interface ServerRequest : RequestMetadata {
   val protocol: String
   val connectionInfo: ConnectionInfo
   val underlying: Any
@@ -14,4 +14,4 @@ interface ServerRequest : RequestMetadata {
   fun queryParameters(): QueryParams
 }
 
-data class ConnectionInfo(val local: InetSocketAddress?, val remote: InetSocketAddress?, val secure: Boolean?)
+public data class ConnectionInfo(val local: InetSocketAddress?, val remote: InetSocketAddress?, val secure: Boolean?)

@@ -1,6 +1,6 @@
 package com.fortysevendegrees.thool.model
 
-data class QueryParams(val ps: List<Pair<String, List<String>>>) {
+public data class QueryParams(val ps: List<Pair<String, List<String>>>) {
 
   fun toMap(): Map<String, String> = toList().toMap()
   fun toMultiMap(): Map<String, List<String>> = ps.toMap()

@@ -8,4 +8,4 @@ import arrow.core.Either
  * @tparam O Output parameter types.
  * @tparam R The capabilities that are required by this endpoint's inputs/outputs. `Any`, if no requirements.
  */
-data class ServerEndpoint<I, E, O>(val endpoint: Endpoint<I, E, O>, val logic: suspend (I) -> Either<E, O>)
+public data class ServerEndpoint<I, E, O>(val endpoint: Endpoint<I, E, O>, val logic: suspend (I) -> Either<E, O>)

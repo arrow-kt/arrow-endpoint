@@ -1,6 +1,6 @@
 package com.fortysevendegrees.thool.model
 
-interface ResponseMetadata : HasHeaders {
+public interface ResponseMetadata : HasHeaders {
   val code: StatusCode
   val statusText: String
 
@@ -19,7 +19,7 @@ interface ResponseMetadata : HasHeaders {
   val isServerError: Boolean
     get() = code.isServerError()
 
-  companion object {
+  public companion object {
     operator fun invoke(statusCode: StatusCode, _statusText: String, _headers: List<Header>): ResponseMetadata =
       object : ResponseMetadata {
         override val headers: List<Header> = _headers

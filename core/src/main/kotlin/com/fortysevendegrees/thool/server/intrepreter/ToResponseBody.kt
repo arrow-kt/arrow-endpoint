@@ -6,7 +6,7 @@ import com.fortysevendegrees.thool.model.CodecFormat
 import com.fortysevendegrees.thool.model.HasHeaders
 import java.nio.charset.Charset
 
-interface ToResponseBody<B> {
+public interface ToResponseBody<B> {
 
   fun <R> fromRawValue(
     v: R,

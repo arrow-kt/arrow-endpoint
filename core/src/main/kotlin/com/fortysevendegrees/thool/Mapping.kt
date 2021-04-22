@@ -19,7 +19,7 @@ import arrow.core.nonFatalOrThrow
  * @param L The type of the low-level value.
  * @param H The type of the high-level value.
  */
-interface Mapping<L, H> {
+public interface Mapping<L, H> {
 
   fun rawDecode(l: L): DecodeResult<H>
 
@@ -49,7 +49,7 @@ interface Mapping<L, H> {
         this@Mapping.encode(codec.encode(h))
     }
 
-  companion object {
+  public companion object {
     fun <L> id(): Mapping<L, L> =
       object : Mapping<L, L> {
         override fun rawDecode(l: L): DecodeResult<L> = DecodeResult.Value(l)
@@ -85,7 +85,7 @@ sealed class DecodeResult<out A> {
   abstract fun <B> map(transform: (A) -> B): DecodeResult<B>
   abstract fun <B> flatMap(transform: (A) -> DecodeResult<B>): DecodeResult<B>
 
-  data class Value<A>(val value: A) : DecodeResult<A>() {
+  public data class Value<A>(val value: A) : DecodeResult<A>() {
     override fun <B> map(transform: (A) -> B): DecodeResult<B> = Value(transform(value))
     override fun <B> flatMap(transform: (A) -> DecodeResult<B>): DecodeResult<B> = transform(value)
   }
@@ -95,16 +95,16 @@ sealed class DecodeResult<out A> {
     override fun <B> flatMap(transform: (Nothing) -> DecodeResult<B>): DecodeResult<B> = this
 
     object Missing : Failure()
-    data class Multiple<A>(val values: List<A>) : Failure()
-    data class Mismatch(val expected: String, val actual: String) : Failure()
-    data class Error(val original: String, val error: Throwable) : Failure() {
-      companion object {
-        data class JsonDecodeException(val errors: List<JsonError>, val underlying: Throwable) : Exception(
+    public data class Multiple<A>(val values: List<A>) : Failure()
+    public data class Mismatch(val expected: String, val actual: String) : Failure()
+    public data class Error(val original: String, val error: Throwable) : Failure() {
+      public companion object {
+        public data class JsonDecodeException(val errors: List<JsonError>, val underlying: Throwable) : Exception(
           if (errors.isEmpty()) underlying.message else errors.joinToString(transform = JsonError::message),
           underlying
         )
 
-        data class JsonError(val msg: String, val path: List<FieldName>) {
+        public data class JsonError(val msg: String, val path: List<FieldName>) {
           fun message(): String {
             val at = if (path.isNotEmpty()) " at '${path.joinToString(separator = ".") { it.encodedName }}'" else ""
             return msg + at

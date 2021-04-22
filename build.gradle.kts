@@ -49,4 +49,8 @@ allprojects {
       exclude("build.gradle.kts") // TODO: fix doesnt inspect kts file with correct indent correctly
     }
   }
+
+  kotlin {
+    explicitApiWarning()
+  }
 }

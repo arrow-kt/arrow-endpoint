@@ -53,7 +53,7 @@ class SchemaKtTest : StringSpec({
     Schema.reflect<Test>() shouldBe Schema.enum()
   }
 
-  "data class derivation" {
+  "public data class derivation" {
     Schema.reflect<Person>() shouldBe Schema.person()
   }
 
@@ -64,7 +64,7 @@ class SchemaKtTest : StringSpec({
 
 enum class Test { A, B, C; }
 
-data class Person(val name: String, val age: Int)
+public data class Person(val name: String, val age: Int)
 
 fun Schema.Companion.person(): Schema<Person> =
   Schema.Product(
@@ -76,8 +76,8 @@ fun Schema.Companion.person(): Schema<Person> =
   )
 
 sealed class Sum
-data class SumA(val test: Test, val person: Person) : Sum()
-data class SumB(val age: Int, val name: String, val person: Person) : Sum()
+public data class SumA(val test: Test, val person: Person) : Sum()
+public data class SumB(val age: Int, val name: String, val person: Person) : Sum()
 
 fun Schema.Companion.sumA(): Schema<SumA> =
   Schema.Product(

@@ -17,11 +17,11 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 @Serializable
-data class Project(
+public data class Project(
   val name: String,
   val language: String = "kotlin"
 ) {
-  companion object {
+  public companion object {
     val schema: Schema<Project> = Schema.product(
       Project::name to Schema.string,
       Project::language to Schema.string.default("kotlin")

@@ -5,11 +5,11 @@ import com.fortysevendegrees.thool.model.StatusCode as MStatusCode
 
 // Elements that can occur as Output
 // Such as StatusCode, Void, etc
-sealed interface EndpointOutput<A> : EndpointTransput<A> {
+public sealed interface EndpointOutput<A> : EndpointTransput<A> {
 
-  sealed interface Single<A> : EndpointOutput<A>
+  public sealed interface Single<A> : EndpointOutput<A>
 
-  sealed interface Basic<L, A, CF : CodecFormat> : Single<A>, EndpointTransput.Basic<L, A, CF> {
+  public sealed interface Basic<L, A, CF : CodecFormat> : Single<A>, EndpointTransput.Basic<L, A, CF> {
     override fun <B> copyWith(c: Codec<L, B, CF>, i: EndpointIO.Info<B>): Basic<L, B, CF>
 
     override fun <B> map(mapping: Mapping<A, B>): Basic<L, B, CF> = copyWith(codec.map(mapping), info.map(mapping))
@@ -27,7 +27,7 @@ sealed interface EndpointOutput<A> : EndpointTransput<A> {
     override fun deprecated(): Basic<L, A, CF> = copyWith(codec, info.deprecated(true))
   }
 
-  data class StatusCode<A>(
+  public data class StatusCode<A>(
     val documentedCodes: Map<MStatusCode, EndpointIO.Info<Unit>>,
     override val codec: Codec<MStatusCode, A, CodecFormat.TextPlain>,
     override val info: EndpointIO.Info<A>
@@ -45,7 +45,7 @@ sealed interface EndpointOutput<A> : EndpointTransput<A> {
     }
   }
 
-  data class FixedStatusCode<A>(
+  public data class FixedStatusCode<A>(
     val statusCode: MStatusCode,
     override val codec: Codec<Unit, A, CodecFormat.TextPlain>,
     override val info: EndpointIO.Info<A>
@@ -65,7 +65,7 @@ sealed interface EndpointOutput<A> : EndpointTransput<A> {
    * This check cannot be in general done by checking the run-time class of the value, due to type erasure (if `O` has
    * type parameters).
    */
-  data class StatusMapping<O> internal constructor(
+  public data class StatusMapping<O> internal constructor(
     val statusCode: MStatusCode?,
     val output: EndpointOutput<O>,
     val appliesTo: (Any?) -> Boolean
@@ -76,14 +76,14 @@ sealed interface EndpointOutput<A> : EndpointTransput<A> {
     override fun toString(): String = "void"
   }
 
-  data class MappedPair<A, B, C, D>(val output: Pair<A, B, C>, val mapping: Mapping<C, D>) : Single<D> {
+  public data class MappedPair<A, B, C, D>(val output: Pair<A, B, C>, val mapping: Mapping<C, D>) : Single<D> {
     override fun <E> map(@Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE") m: Mapping<D, E>): EndpointTransput<E> =
       MappedPair(output, mapping.map(m))
 
     override fun toString(): String = output.toString()
   }
 
-  data class Pair<A, B, C>(
+  public data class Pair<A, B, C>(
     override val first: EndpointOutput<A>,
     override val second: EndpointOutput<B>,
     override val combine: CombineParams,
@@ -93,7 +93,7 @@ sealed interface EndpointOutput<A> : EndpointTransput<A> {
     override fun toString(): String = "EndpointOutput.Pair($first, $second)"
   }
 
-  companion object {
+  public companion object {
     /** An empty output. Useful if one of `oneOf` branches should be mapped to the status code only. */
     fun empty(): EndpointIO.Empty<Unit> =
       EndpointIO.Empty(Codec.idPlain(), EndpointIO.Info.empty())

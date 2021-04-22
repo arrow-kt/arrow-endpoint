@@ -14,7 +14,7 @@ import java.lang.IllegalStateException
  * The [[name]] and [[value]] should be already encoded (if necessary), as when serialised, they end up unmodified in
  * the header.
  */
-data class Header(val name: String, val value: String) {
+public data class Header(val name: String, val value: String) {
 
   /**
    * Check if the name of this header is the same as the given one. The names are compared in a case-insensitive way.
@@ -32,7 +32,7 @@ data class Header(val name: String, val value: String) {
   fun toStringSafe(sensitiveHeaders: Set<String> = SensitiveHeaders): String =
     "$name: ${if (HeaderNames.isSensitive(name, sensitiveHeaders)) "***" else value}"
 
-  companion object {
+  public companion object {
     /** @throws IllegalArgumentException If the header name contains illegal characters. */
     fun unsafe(name: String, value: String): Header =
       Rfc2616.validateToken("Header name", name)

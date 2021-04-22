@@ -8,11 +8,11 @@ import com.fortysevendegrees.thool.Mapping
 import com.fortysevendegrees.thool.Params
 import com.fortysevendegrees.thool.headAndTailOrNull
 
-sealed interface InputValueResult {
-  data class Value(val params: Params, val remainingBasicValues: List<Any?>) : InputValueResult
-  data class Failure(val input: EndpointInput<*>, val failure: DecodeResult.Failure) : InputValueResult
+public sealed interface InputValueResult {
+  public data class Value(val params: Params, val remainingBasicValues: List<Any?>) : InputValueResult
+  public data class Failure(val input: EndpointInput<*>, val failure: DecodeResult.Failure) : InputValueResult
 
-  companion object {
+  public companion object {
 
     /**
      * Returns the value of the input, tupled and mapped as described by the data structure. Values of basic inputs
