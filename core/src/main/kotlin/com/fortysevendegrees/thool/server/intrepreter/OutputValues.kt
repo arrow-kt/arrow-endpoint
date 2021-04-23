@@ -80,6 +80,14 @@ public data class OutputValues<B>(
         is EndpointOutput.Void -> throw IllegalArgumentException("Cannot encode a void output!")
       }
 
+    private fun <B> OutputValues<B>.withBody(
+      body: Body,
+      rawToResponseBody: ToResponseBody<B>,
+      output: EndpointIO.Body<*, *>
+    ): OutputValues<B> =
+      withBody { headers -> rawToResponseBody.fromRawValue(body, headers, output.codec.format) }
+        .withDefaultContentType(output.codec.format, charset(output.codec.format.mediaType, output))
+
     private fun <B> applySingle(
       rawToResponseBody: ToResponseBody<B>,
       output: EndpointOutput.Single<*>,
@@ -115,45 +123,20 @@ public data class OutputValues<B>(
         }
         is EndpointIO.ByteArrayBody -> {
           val mapping = output.codec as Mapping<ByteArray, Any?>
-          ov.withBody { headers ->
-            rawToResponseBody.fromRawValue(
-              ByteArrayBody(mapping.encode(value.asAny)),
-              headers,
-              output.codec.format
-            )
-          }.withDefaultContentType(output.codec.format, charset(output.codec.format.mediaType, output))
+          ov.withBody(ByteArrayBody(mapping.encode(value.asAny)), rawToResponseBody, output)
         }
         is EndpointIO.ByteBufferBody -> {
           val mapping = output.codec as Mapping<ByteBuffer, Any?>
-          ov.withBody { headers ->
-            rawToResponseBody.fromRawValue(
-              ByteBufferBody(mapping.encode(value.asAny)),
-              headers,
-              output.codec.format
-            )
-          }.withDefaultContentType(output.codec.format, charset(output.codec.format.mediaType, output))
+          ov.withBody(ByteBufferBody(mapping.encode(value.asAny)), rawToResponseBody, output)
         }
         is EndpointIO.InputStreamBody -> {
           val mapping = output.codec as Mapping<InputStream, Any?>
-          ov.withBody { headers ->
-            rawToResponseBody.fromRawValue(
-              InputStreamBody(mapping.encode(value.asAny)),
-              headers,
-              output.codec.format
-            )
-          }.withDefaultContentType(output.codec.format, charset(output.codec.format.mediaType, output))
+          ov.withBody(InputStreamBody(mapping.encode(value.asAny)), rawToResponseBody, output)
         }
         is EndpointIO.StringBody -> {
           val mapping = output.codec as Mapping<String, Any?>
-          ov.withBody { headers ->
-            rawToResponseBody.fromRawValue(
-              StringBody(output.charset, mapping.encode(value.asAny)),
-              headers,
-              output.codec.format
-            )
-          }.withDefaultContentType(output.codec.format, charset(output.codec.format.mediaType, output))
+          ov.withBody(StringBody(output.charset, mapping.encode(value.asAny)), rawToResponseBody, output)
         }
-
         is EndpointIO.MappedPair<*, *, *, *> -> {
           val mapping = output.mapping as Mapping<Any?, Any?>
           of(rawToResponseBody, output.wrapped, Params.ParamsAsAny(mapping.encode(value.asAny)), ov)

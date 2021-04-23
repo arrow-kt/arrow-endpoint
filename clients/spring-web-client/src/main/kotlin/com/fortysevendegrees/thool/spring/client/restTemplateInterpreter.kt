@@ -21,7 +21,6 @@ import org.springframework.http.client.ClientHttpRequest
 import org.springframework.http.client.ClientHttpRequestFactory
 import org.springframework.http.client.ClientHttpResponse
 import org.springframework.web.client.RestTemplate
-import java.io.InputStream
 import java.net.URI
 import java.nio.ByteBuffer
 
@@ -127,7 +126,10 @@ private fun <I> EndpointInput<I>.setInputParams(
       is EndpointIO.Header -> input.codec.encode(value)
         .fold(request) { req, v -> req.apply { headers.add(input.name, v) } }
 
-      is EndpointIO.Body<*, *> -> request.setBody(value, input.codec, input)
+      is EndpointIO.ByteArrayBody -> request.apply { body.write((input.codec::encode)(value)) }
+      is EndpointIO.ByteBufferBody -> request.apply { body.write((input.codec::encode)(value).array()) }
+      is EndpointIO.InputStreamBody -> request.apply { body.write((input.codec::encode)(value).readBytes()) }
+      is EndpointIO.StringBody -> request.apply { body.write((input.codec::encode)(value).toByteArray()) }
       is EndpointInput.Cookie -> input.codec.encode(value)
         ?.let { v: String -> request.apply { headers.add(HttpHeaders.COOKIE, v) } }
         ?: request
@@ -148,18 +150,6 @@ private fun <I> EndpointInput<I>.setInputParams(
       is EndpointIO.MappedPair<*, *, *, *> -> handleMapped(input, input.mapping, params, request)
       is EndpointInput.MappedPair<*, *, *, *> -> handleMapped(input, input.mapping, params, request)
     }
-  }
-
-private fun <I> ClientHttpRequest.setBody(
-  i: I,
-  codec: Codec<*, *, CodecFormat>,
-  input: EndpointIO.Body<*, *>
-): ClientHttpRequest =
-  when (input) {
-    is EndpointIO.ByteArrayBody -> apply { body.write((codec::encode as (I) -> ByteArray)(i)) }
-    is EndpointIO.ByteBufferBody -> apply { body.write((codec::encode as (I) -> ByteBuffer)(i).array()) }
-    is EndpointIO.InputStreamBody -> apply { body.write((codec::encode as (I) -> InputStream)(i).readBytes()) }
-    is EndpointIO.StringBody -> apply { body.write((codec::encode as (I) -> String)(i).toByteArray()) }
   }
 
 private fun handleInputPair(

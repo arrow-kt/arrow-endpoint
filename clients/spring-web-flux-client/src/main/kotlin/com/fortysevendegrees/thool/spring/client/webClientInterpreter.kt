@@ -129,8 +129,10 @@ private fun <I> EndpointInput<I>.setInputParams(
     when (val input = this) {
       is EndpointIO.Empty -> request
       is EndpointIO.Header -> input.codec.encode(value).fold(request) { req, v -> req.apply { header(input.name, v) } }
-
-      is EndpointIO.Body<*, *> -> request.setBody(value, input.codec, input)
+      is EndpointIO.ByteArrayBody -> request.apply { body((input.codec::encode)(value), ByteArray::class.java) }
+      is EndpointIO.ByteBufferBody -> request.apply { body((input.codec::encode)(value), ByteBuffer::class.java) }
+      is EndpointIO.InputStreamBody -> request.apply { body((input.codec::encode)(value), InputStream::class.java) }
+      is EndpointIO.StringBody -> request.apply { body((input.codec::encode)(value), String::class.java) }
       is EndpointInput.Cookie -> input.codec.encode(value)?.let { v: String -> request.apply { cookie(input.name, v) } }
         ?: request
 
@@ -150,18 +152,6 @@ private fun <I> EndpointInput<I>.setInputParams(
       is EndpointIO.MappedPair<*, *, *, *> -> handleMapped(input, input.mapping, params, request)
       is EndpointInput.MappedPair<*, *, *, *> -> handleMapped(input, input.mapping, params, request)
     }
-  }
-
-private fun <I> WebClient.RequestBodyUriSpec.setBody(
-  i: I,
-  codec: Codec<*, *, CodecFormat>,
-  input: EndpointIO.Body<*, *>
-): WebClient.RequestBodyUriSpec =
-  when (input) {
-    is EndpointIO.ByteArrayBody -> apply { body((codec::encode as (I) -> ByteArray)(i), ByteArray::class.java) }
-    is EndpointIO.ByteBufferBody -> apply { body((codec::encode as (I) -> ByteBuffer)(i), ByteBuffer::class.java) }
-    is EndpointIO.InputStreamBody -> apply { body((codec::encode as (I) -> InputStream)(i), InputStream::class.java) }
-    is EndpointIO.StringBody -> apply { body((codec::encode as (I) -> String)(i), String::class.java) }
   }
 
 private fun handleInputPair(
