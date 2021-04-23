@@ -94,7 +94,7 @@ class ServerInterpreter<B>(
           else -> {
             when (val bodyOrStream = result.bodyInputWithIndex.first) {
               is Either.Left -> {
-                val raw = requestBody.toRaw(bodyOrStream.value.bodyType)
+                val raw = requestBody.toRaw(bodyOrStream.value)
                 val codec = bodyOrStream.value.codec as Codec<Any?, Any, CodecFormat>
                 when (val res = codec.decode(raw)) {
                   is DecodeResult.Value -> result.setBodyInputValue(res.value)

@@ -11,9 +11,7 @@ import com.fortysevendegrees.thool.EndpointOutput
 import com.fortysevendegrees.thool.Mapping
 import com.fortysevendegrees.thool.Params
 import com.fortysevendegrees.thool.PlainCodec
-import com.fortysevendegrees.thool.RawBodyType
 import com.fortysevendegrees.thool.SplitParams
-import com.fortysevendegrees.thool.bodyType
 import com.fortysevendegrees.thool.model.CodecFormat
 import com.fortysevendegrees.thool.model.Method.Companion.GET
 import com.fortysevendegrees.thool.model.Method.Companion.HEAD
@@ -25,7 +23,6 @@ import com.fortysevendegrees.thool.model.Method.Companion.PATCH
 import com.fortysevendegrees.thool.model.Method.Companion.CONNECT
 import com.fortysevendegrees.thool.model.Method.Companion.TRACE
 import com.fortysevendegrees.thool.model.StatusCode
-import org.http4k.core.Body
 import org.http4k.core.HttpHandler
 import org.http4k.core.MemoryBody
 import org.http4k.core.Method
@@ -33,8 +30,6 @@ import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.cookie.cookie
 import org.http4k.core.cookie.cookies
-import java.io.InputStream
-import java.nio.ByteBuffer
 
 public fun <I, E, O> Endpoint<I, E, O>.toRequestAndParser(baseUrl: String): (I) -> Pair<Request, (Response) -> DecodeResult<Either<E, O>>> =
   { input: I ->
@@ -149,7 +144,11 @@ public fun <I> EndpointInput<I>.setInputParams(
       input.codec.encode(value)
         .fold(request) { req, v -> req.header(input.name, v) }
 
-    is EndpointIO.Body<*, *> -> request.setBody(value, input.codec, input.bodyType)
+    is EndpointIO.ByteArrayBody -> request.body(MemoryBody(input.codec.encode(value)))
+    is EndpointIO.ByteBufferBody -> request.body(MemoryBody(input.codec.encode(value)))
+    is EndpointIO.InputStreamBody -> request.body(input.codec.encode(value))
+    is EndpointIO.StringBody -> request.body(input.codec.encode(value))
+
     is EndpointInput.Cookie -> input.codec.encode(value)?.let { v ->
       request.cookie(input.name, v)
     } ?: request
@@ -182,14 +181,6 @@ public fun <I> EndpointInput<I>.setInputParams(
   }
 }
 
-private fun <I> Request.setBody(i: I, codec: Codec<*, *, CodecFormat>, rawBodyType: RawBodyType<*>): Request =
-  when (rawBodyType) {
-    RawBodyType.ByteArrayBody -> body(MemoryBody((codec::encode as (I) -> ByteArray)(i)))
-    RawBodyType.ByteBufferBody -> body(Body((codec::encode as (I) -> ByteBuffer)(i)))
-    RawBodyType.InputStreamBody -> body((codec::encode as (I) -> InputStream)(i))
-    is RawBodyType.StringBody -> body((codec::encode as (I) -> String)(i))
-  }
-
 private fun handleInputPair(
   left: EndpointInput<*>,
   right: EndpointInput<*>,
@@ -220,7 +211,6 @@ public fun <I, E, O> Endpoint<I, E, O>.parseResponse(
 ): DecodeResult<Either<E, O>> {
   val code = StatusCode(response.status.code)
   val output = if (code.isSuccess()) output else errorOutput
-  val parser = responseFromOutput(output)
 
   val responseHeaders = response.headers
     .mapNotNull { if (it.second == null) null else it as Pair<String, String> }
@@ -228,7 +218,7 @@ public fun <I, E, O> Endpoint<I, E, O>.parseResponse(
 
   val headers = response.cookies().asHeaders() + responseHeaders
   val params =
-    output.getOutputParams(parser(response), headers, code, response.status.description)
+    output.getOutputParams(response, headers, code, response.status.description)
 
   val result = params.map { it.asAny }
     .map { p -> if (code.isSuccess()) Either.Right(p as O) else Either.Left(p as E) }
@@ -250,19 +240,18 @@ fun List<org.http4k.core.cookie.Cookie>.asHeaders(): Map<String, List<String>> =
   mapOf("Set-Cookie" to map { c -> "${c.name}=${c.value}" })
 
 fun EndpointOutput<*>.getOutputParams(
-  body: () -> Any?,
+  response: Response,
   headers: Map<String, List<String>>,
   code: StatusCode,
   statusText: String
 ): DecodeResult<Params> =
   when (val output = this) {
     is EndpointOutput.Single<*> -> when (val single = (output as EndpointOutput.Single<Any?>)) {
-      is EndpointIO.Body<*, *> -> {
-        single as EndpointIO.Body<Any?, Any?>
-        val body = body.invoke()
-        val decode: (Any?) -> DecodeResult<Any?> = (single.codec::decode)
-        decode(body)
-      }
+      is EndpointIO.ByteArrayBody -> single.codec.decode(response.body.payload.array())
+      is EndpointIO.ByteBufferBody -> single.codec.decode(response.body.payload)
+      is EndpointIO.InputStreamBody -> single.codec.decode(response.body.stream)
+      is EndpointIO.StringBody -> single.codec.decode(response.body.toString())
+
       is EndpointIO.StreamBody -> TODO("Support stream body")
       is EndpointIO.Empty -> single.codec.decode(Unit)
       is EndpointOutput.FixedStatusCode -> single.codec.decode(Unit)
@@ -270,11 +259,11 @@ fun EndpointOutput<*>.getOutputParams(
       is EndpointIO.Header -> single.codec.decode(headers[single.name].orEmpty())
 
       is EndpointIO.MappedPair<*, *, *, *> ->
-        single.wrapped.getOutputParams(body, headers, code, statusText).flatMap { p ->
+        single.wrapped.getOutputParams(response, headers, code, statusText).flatMap { p ->
           (single.mapping::decode as (Any?) -> DecodeResult<Any?>)(p.asAny)
         }
       is EndpointOutput.MappedPair<*, *, *, *> ->
-        single.output.getOutputParams(body, headers, code, statusText).flatMap { p ->
+        single.output.getOutputParams(response, headers, code, statusText).flatMap { p ->
           (single.mapping::decode as (Any?) -> DecodeResult<Any?>)(p.asAny)
         }
     }.map { Params.ParamsAsAny(it) }
@@ -283,7 +272,7 @@ fun EndpointOutput<*>.getOutputParams(
       output.first,
       output.second,
       output.combine,
-      body,
+      response,
       headers,
       code,
       statusText
@@ -292,7 +281,7 @@ fun EndpointOutput<*>.getOutputParams(
       output.first,
       output.second,
       output.combine,
-      body,
+      response,
       headers,
       code,
       statusText
@@ -307,25 +296,12 @@ private fun handleOutputPair(
   left: EndpointOutput<*>,
   right: EndpointOutput<*>,
   combine: CombineParams,
-  body: () -> Any?,
+  response: Response,
   headers: Map<String, List<String>>,
   code: StatusCode,
   statusText: String
 ): DecodeResult<Params> {
-  val l = left.getOutputParams(body, headers, code, statusText)
-  val r = right.getOutputParams(body, headers, code, statusText)
+  val l = left.getOutputParams(response, headers, code, statusText)
+  val r = right.getOutputParams(response, headers, code, statusText)
   return l.flatMap { leftParams -> r.map { rightParams -> combine(leftParams, rightParams) } }
-}
-
-private fun responseFromOutput(output: EndpointOutput<*>): (Response) -> () -> Any = { response: Response ->
-  {
-    // TODO check if StreamBody
-    when (output.bodyType()) {
-      RawBodyType.ByteArrayBody -> response.body.payload.array()
-      RawBodyType.ByteBufferBody -> response.body.payload
-      RawBodyType.InputStreamBody -> response.body.stream
-      is RawBodyType.StringBody -> response.body.toString()
-      null -> Unit
-    }
-  }
 }

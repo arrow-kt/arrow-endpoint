@@ -50,15 +50,15 @@ object Thool {
   fun fixedPath(s: String): EndpointInput.FixedPath<Unit> =
     EndpointInput.FixedPath(s, Codec.idPlain(), EndpointIO.Info.empty())
 
-  fun stringBody(charset: String): EndpointIO.Body<String, String> =
+  fun stringBody(charset: String): EndpointIO.StringBody<String> =
     stringBody(Charset.forName(charset))
 
-  fun stringBody(charset: Charset = StandardCharsets.UTF_8): EndpointIO.Body<String, String> =
-    EndpointIO.Body(RawBodyType.StringBody(charset), Codec.string, EndpointIO.Info.empty())
+  fun stringBody(charset: Charset = StandardCharsets.UTF_8): EndpointIO.StringBody<String> =
+    EndpointIO.StringBody(charset, Codec.string, EndpointIO.Info.empty())
 
-  val htmlBodyUtf8: EndpointIO.Body<String, String> =
-    EndpointIO.Body(
-      RawBodyType.StringBody(StandardCharsets.UTF_8),
+  val htmlBodyUtf8: EndpointIO.StringBody<String> =
+    EndpointIO.StringBody(
+      StandardCharsets.UTF_8,
       Codec.string.format(CodecFormat.TextHtml),
       EndpointIO.Info.empty()
     )
@@ -66,15 +66,15 @@ object Thool {
   fun <A> plainBody(
     codec: PlainCodec<A>,
     charset: Charset = StandardCharsets.UTF_8
-  ): EndpointIO.Body<String, A> =
-    EndpointIO.Body(RawBodyType.StringBody(charset), codec, EndpointIO.Info.empty())
+  ): EndpointIO.StringBody<A> =
+    EndpointIO.StringBody(charset, codec, EndpointIO.Info.empty())
 
   /** A body in any format, read using the given `codec`, from a raw string read using `charset`.*/
   fun <A, CF : CodecFormat> anyFromStringBody(
     codec: Codec<String, A, CF>,
     charset: Charset = StandardCharsets.UTF_8
-  ): EndpointIO.Body<String, A> =
-    EndpointIO.Body(RawBodyType.StringBody(charset), codec, EndpointIO.Info.empty())
+  ): EndpointIO.StringBody<A> =
+    EndpointIO.StringBody(charset, codec, EndpointIO.Info.empty())
 
   /**
    * Json codecs are usually derived from json-library-specific implicits. That's why integrations with
@@ -82,12 +82,12 @@ object Thool {
    *
    * If you have a custom json codec, you should use this method instead.
    */
-  fun <A> anyJsonBody(codec: JsonCodec<A>): EndpointIO.Body<String, A> =
+  fun <A> anyJsonBody(codec: JsonCodec<A>): EndpointIO.StringBody<A> =
     anyFromStringBody(codec)
 
   /** Implement your own xml codec using `Codec.xml()` before using this method.
    */
-  fun <A> xmlBody(codec: XmlCodec<A>): EndpointIO.Body<String, A> =
+  fun <A> xmlBody(codec: XmlCodec<A>): EndpointIO.StringBody<A> =
     anyFromStringBody(codec)
 
   /**

@@ -1,11 +1,9 @@
 package com.fortysevendegrees.thool.server.intrepreter
 
-import com.fortysevendegrees.thool.RawBodyType
+import com.fortysevendegrees.thool.EndpointIO
 import kotlinx.coroutines.flow.Flow
 
 public interface RequestBody {
-  //  val streams: Streams[S]
-  suspend fun <R> toRaw(bodyType: RawBodyType<R>): R
+  suspend fun <R> toRaw(bodyType: EndpointIO.Body<R, *>): R
   fun toFlow(): Flow<Byte>
-//  def toStream(): streams.BinaryStream
 }

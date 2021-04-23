@@ -1,18 +1,24 @@
 package com.fortysevendegrees.thool.server.intrepreter
 
-import com.fortysevendegrees.thool.RawBodyType
 import kotlinx.coroutines.flow.Flow
 import com.fortysevendegrees.thool.model.CodecFormat
 import com.fortysevendegrees.thool.model.HasHeaders
+import java.io.InputStream
+import java.nio.ByteBuffer
 import java.nio.charset.Charset
+
+public sealed interface Body
+public data class StringBody(public val charset: Charset, public val string: String) : Body
+public inline class ByteArrayBody(public val byteArray: ByteArray) : Body
+public inline class ByteBufferBody(public val byteBuffer: ByteBuffer) : Body
+public inline class InputStreamBody(public val inputStream: InputStream) : Body
 
 public interface ToResponseBody<B> {
 
-  fun <R> fromRawValue(
-    v: R,
+  fun fromRawValue(
+    v: Body,
     headers: HasHeaders,
-    format: CodecFormat,
-    bodyType: RawBodyType<R>
+    format: CodecFormat
   ): B // TODO: remove headers?
 
   fun fromStreamValue(v: Flow<Byte>, headers: HasHeaders, format: CodecFormat, charset: Charset?): B

@@ -4,7 +4,6 @@ import com.fortysevendegrees.thool.EndpointIO
 import com.fortysevendegrees.thool.EndpointOutput
 import com.fortysevendegrees.thool.Mapping
 import com.fortysevendegrees.thool.Params
-import com.fortysevendegrees.thool.RawBodyType
 import com.fortysevendegrees.thool.SplitParams
 import com.fortysevendegrees.thool.model.CodecFormat
 import com.fortysevendegrees.thool.model.HasHeaders
@@ -13,6 +12,8 @@ import com.fortysevendegrees.thool.model.HeaderNames
 import com.fortysevendegrees.thool.model.MediaType
 import com.fortysevendegrees.thool.model.StatusCode
 import kotlinx.coroutines.flow.Flow
+import java.io.InputStream
+import java.nio.ByteBuffer
 import java.nio.charset.Charset
 
 public data class OutputValues<B>(
@@ -88,17 +89,6 @@ public data class OutputValues<B>(
       when (output) {
         is EndpointIO.Empty -> ov
         is EndpointOutput.FixedStatusCode -> ov.withStatusCode(output.statusCode)
-        is EndpointIO.Body<*, *> -> {
-          val mapping = output.codec as Mapping<Any?, Any?>
-          ov.withBody { headers ->
-            rawToResponseBody.fromRawValue(
-              mapping.encode(value.asAny),
-              headers,
-              output.codec.format,
-              output.bodyType as RawBodyType<Any?>
-            )
-          }.withDefaultContentType(output.codec.format, charset(output.codec.format.mediaType, output.bodyType))
-        }
         is EndpointIO.StreamBody<*> -> {
           val mapping = output.codec as Mapping<List<String>, Any?>
           ov.withBody { headers ->
@@ -123,6 +113,47 @@ public data class OutputValues<B>(
             ovv.withHeader(output.name, headerValue)
           }
         }
+        is EndpointIO.ByteArrayBody -> {
+          val mapping = output.codec as Mapping<ByteArray, Any?>
+          ov.withBody { headers ->
+            rawToResponseBody.fromRawValue(
+              ByteArrayBody(mapping.encode(value.asAny)),
+              headers,
+              output.codec.format
+            )
+          }.withDefaultContentType(output.codec.format, charset(output.codec.format.mediaType, output))
+        }
+        is EndpointIO.ByteBufferBody -> {
+          val mapping = output.codec as Mapping<ByteBuffer, Any?>
+          ov.withBody { headers ->
+            rawToResponseBody.fromRawValue(
+              ByteBufferBody(mapping.encode(value.asAny)),
+              headers,
+              output.codec.format
+            )
+          }.withDefaultContentType(output.codec.format, charset(output.codec.format.mediaType, output))
+        }
+        is EndpointIO.InputStreamBody -> {
+          val mapping = output.codec as Mapping<InputStream, Any?>
+          ov.withBody { headers ->
+            rawToResponseBody.fromRawValue(
+              InputStreamBody(mapping.encode(value.asAny)),
+              headers,
+              output.codec.format
+            )
+          }.withDefaultContentType(output.codec.format, charset(output.codec.format.mediaType, output))
+        }
+        is EndpointIO.StringBody -> {
+          val mapping = output.codec as Mapping<String, Any?>
+          ov.withBody { headers ->
+            rawToResponseBody.fromRawValue(
+              StringBody(output.charset, mapping.encode(value.asAny)),
+              headers,
+              output.codec.format
+            )
+          }.withDefaultContentType(output.codec.format, charset(output.codec.format.mediaType, output))
+        }
+
         is EndpointIO.MappedPair<*, *, *, *> -> {
           val mapping = output.mapping as Mapping<Any?, Any?>
           of(rawToResponseBody, output.wrapped, Params.ParamsAsAny(mapping.encode(value.asAny)), ov)
@@ -149,14 +180,14 @@ public data class OutputValues<B>(
       return of(rawToResponseBody, right, rightParams, of(rawToResponseBody, left, leftParams, ov))
     }
 
-    private fun <R> charset(mediaType: MediaType, bodyType: RawBodyType<R>): Charset? =
-      when (bodyType) {
+    private fun charset(mediaType: MediaType, body: EndpointIO.Body<*, *>): Charset? =
+      when (body) {
         // TODO: add to MediaType - setting optional charset if text
-        is RawBodyType.StringBody -> if (mediaType.mainType.equals(
+        is EndpointIO.StringBody -> if (mediaType.mainType.equals(
             "text",
             ignoreCase = true
           )
-        ) bodyType.charset else null
+        ) body.charset else null
         else -> null
       }
   }

@@ -301,24 +301,3 @@ public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
       }
   }
 }
-
-/**
- * The raw format of the body: what do we need to know, to read it and pass to a codec for further decoding.
- */
-public sealed interface RawBodyType<R> {
-
-  public data class StringBody(val charset: Charset) : RawBodyType<String>
-
-  public sealed interface Binary<R> : RawBodyType<R>
-
-  object ByteArrayBody : Binary<ByteArray>
-  object ByteBufferBody : Binary<ByteBuffer>
-  object InputStreamBody : Binary<InputStream>
-//  object FileBody : Binary<TapirFile>
-
-//  public data class MultipartBody(val partTypes: Map<String, com.fortysevendegrees.thool.RawBodyType<Any?>>, val defaultType: com.fortysevendegrees.thool.RawBodyType<Any?>?) : com.fortysevendegrees.thool.RawBodyType<List<RawPart>> {
-//    fun partType(name: String): com.fortysevendegrees.thool.RawBodyType<Any?>? = partTypes[name] ?: defaultType
-//  }
-
-  public companion object
-}
