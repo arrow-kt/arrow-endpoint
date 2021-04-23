@@ -6,10 +6,12 @@ object Version {
   const val ktlint: String = "10.0.0"
   const val ktor: String = "1.5.3"
   const val logbackClassic: String = "1.2.3"
+  const val spring: String = "2.4.5"
   const val kotest: String = "4.4.3"
   const val graphQL: String = "16.2"
   const val kotlinGraphQL: String = "4.0.0-alpha.17"
   const val http4k: String = "4.7.0.2"
+  const val nettyTransport = "4.1.63.Final"
   const val http3: String = "4.9.1"
 }
 
@@ -20,10 +22,14 @@ object Libs {
   const val examples: String = ":examples"
   const val ktor: String = ":servers:ktor-server"
   const val htt4kClient: String = ":clients:http4k-client"
+  const val springClientWeb: String = ":clients:spring-web-client"
+  const val springClientWebFlux: String = ":clients:spring-web-flux-client"
   const val test: String = ":test"
   const val kotlinStdlib: String = "org.jetbrains.kotlin:kotlin-stdlib:${Version.kotlin}"
 
   const val kotlinxCoroutines: String = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Version.kotlinx}"
+  const val kotlinxCoroutinesReactive: String = "org.jetbrains.kotlinx:kotlinx-coroutines-reactive:${Version.kotlinx}"
+  const val kotlinxCoroutinesReactor: String = "org.jetbrains.kotlinx:kotlinx-coroutines-reactor:${Version.kotlinx}"
   const val kotlinxSerializationJson: String =
     "org.jetbrains.kotlinx:kotlinx-serialization-json:${Version.kotlinxSerializationJson}"
   const val kotlinxCoroutinesJdk8: String = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:${Version.kotlinx}"
@@ -44,6 +50,10 @@ object Libs {
   const val ktorClientCio: String = "io.ktor:ktor-client-cio:${Version.ktor}"
   const val ktorTest: String = "io.ktor:ktor-server-test-host:${Version.ktor}"
   const val logbackClassic: String = "ch.qos.logback:logback-classic:${Version.logbackClassic}"
+
+  const val springBootStarterWeb = "org.springframework.boot:spring-boot-starter-web:${Version.spring}"
+  const val springBootStarterWebflux = "org.springframework.boot:spring-boot-starter-webflux:${Version.spring}"
+  const val nettyTransportNativeKqueue = "io.netty:netty-transport-native-kqueue:${Version.nettyTransport}"
 
   const val kotestRunner: String = "io.kotest:kotest-runner-junit5:${Version.kotest}"
   const val kotestAssertions: String = "io.kotest:kotest-assertions-core:${Version.kotest}"
