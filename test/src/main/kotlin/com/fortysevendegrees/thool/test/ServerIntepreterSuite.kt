@@ -17,8 +17,8 @@ import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Status
 
-abstract class ServerIntepreterSuite : FreeSpec() {
-  abstract fun <I, E, O> install(endpoint: ServerEndpoint<I, E, O>): Unit
+public abstract class ServerIntepreterSuite : FreeSpec() {
+  public abstract fun <I, E, O> install(endpoint: ServerEndpoint<I, E, O>): Unit
 
   init {
     val client = ApacheClient()

@@ -27,7 +27,7 @@ import java.io.InputStream
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
 
-fun <I, E, O> ServerEndpoint<I, E, O>.toDispatcher(): Dispatcher =
+public fun <I, E, O> ServerEndpoint<I, E, O>.toDispatcher(): Dispatcher =
   object : Dispatcher() {
     override fun dispatch(request: RecordedRequest): MockResponse {
       val serverRequest = ServerRequest(request)
@@ -89,7 +89,7 @@ internal class ServerRequest(val ctx: RecordedRequest) : ServerRequest {
     ctx.headers.map { (n, v) -> Header(n, v) }
 }
 
-class ToResponseBody : ToResponseBody<MockResponseBody> {
+public class ToResponseBody : ToResponseBody<MockResponseBody> {
 
   override fun <R> fromRawValue(
     v: R,

@@ -12,11 +12,11 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import okhttp3.mockwebserver.MockWebServer
 
-abstract class ClientInterpreterSuite : FreeSpec() {
-  val server = MockWebServer()
+public abstract class ClientInterpreterSuite : FreeSpec() {
+  public val server = MockWebServer()
   private var baseUrl: String = ""
 
-  abstract suspend fun <I, E, O> request(
+  public abstract suspend fun <I, E, O> request(
     endpoint: Endpoint<I, E, O>,
     baseUrl: String,
     input: I
