@@ -182,7 +182,6 @@ private fun <I, E, O> Endpoint<I, E, O>.parseResponse(
   val response = request.execute()
   val code = StatusCode(response.rawStatusCode)
   val output = if (code.isSuccess()) output else errorOutput
-//  val parser = responseFromOutput(output)
 
   val headers = response.headers.toSingleValueMap()
     .mapNotNull { headerEntry: Map.Entry<String, String> -> Pair(headerEntry.key, headerEntry.value) }
