@@ -1,12 +1,11 @@
 package com.fortysevendegrees.thool.spring.client
 
-import com.fortysevendegrees.thool.Endpoint
 import com.fortysevendegrees.thool.model.Method
 import org.springframework.http.HttpMethod
 
 // Extract method, and use GET as default
-public fun Endpoint<*, *, *>.method(): HttpMethod? =
-  when (input.method()?.value ?: Method.GET.value) {
+public fun Method.method(): HttpMethod? =
+  when (this.value) {
     Method.GET.value -> HttpMethod.GET
     Method.HEAD.value -> HttpMethod.HEAD
     Method.POST.value -> HttpMethod.POST
@@ -18,6 +17,3 @@ public fun Endpoint<*, *, *>.method(): HttpMethod? =
     Method.CONNECT.value -> null
     else -> null
   }
-
-public fun String.trimLastSlash(): String =
-  if (this.lastOrNull() == '/') dropLast(1) else this

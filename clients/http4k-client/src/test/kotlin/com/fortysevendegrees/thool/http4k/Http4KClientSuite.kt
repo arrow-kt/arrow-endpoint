@@ -7,10 +7,14 @@ import com.fortysevendegrees.thool.test.ClientInterpreterSuite
 import org.http4k.client.ApacheClient
 import org.http4k.core.HttpHandler
 
-class InterpreterKtTest : ClientInterpreterSuite() {
+class Http4KClientSuite : ClientInterpreterSuite() {
 
   val client: HttpHandler = ApacheClient()
 
-  override suspend fun <I, E, O> request(endpoint: Endpoint<I, E, O>, baseUrl: String, input: I): DecodeResult<Either<E, O>> =
+  override suspend fun <I, E, O> request(
+    endpoint: Endpoint<I, E, O>,
+    baseUrl: String,
+    input: I
+  ): DecodeResult<Either<E, O>> =
     client.invoke(endpoint, baseUrl, input)
 }

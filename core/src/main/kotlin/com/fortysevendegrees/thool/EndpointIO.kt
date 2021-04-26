@@ -180,7 +180,7 @@ public fun <A, B> EndpointIO<A>.and(other: EndpointIO<B>): EndpointIO<Pair<A, B>
     { p1, p2 -> Params.ParamsAsList(listOf(p1.asAny, p2.asAny)) },
     { p ->
       Pair(
-        Params.ParamsAsAny(p.asList.take(1)),
+        Params.ParamsAsAny(p.asList.first()),
         Params.ParamsAsAny(p.asList.last())
       )
     }
@@ -213,7 +213,7 @@ public fun <A, B, C> EndpointIO<Pair<A, B>>.and(other: EndpointIO<C>): EndpointI
     { p ->
       Pair(
         Params.ParamsAsList(p.asList.take(2)),
-        Params.ParamsAsAny(p.asList.takeLast(1))
+        Params.ParamsAsAny(p.asList.last())
       )
     }
   )
@@ -241,7 +241,7 @@ public fun <A, B, C, D> EndpointIO<Triple<A, B, C>>.and(other: EndpointIO<D>): E
     { p ->
       Pair(
         Params.ParamsAsList(p.asList.take(3)),
-        Params.ParamsAsAny(p.asList.takeLast(1))
+        Params.ParamsAsAny(p.asList.last())
       )
     }
   )
@@ -255,7 +255,7 @@ public fun <A, B, C, D, E> EndpointIO<Tuple4<A, B, C, D>>.and(other: EndpointIO<
     { p ->
       Pair(
         Params.ParamsAsList(p.asList.take(4)),
-        Params.ParamsAsAny(p.asList.takeLast(1))
+        Params.ParamsAsAny(p.asList.last())
       )
     }
   )

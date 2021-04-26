@@ -14,13 +14,20 @@ import com.fortysevendegrees.thool.Mapping
 import com.fortysevendegrees.thool.Params
 import com.fortysevendegrees.thool.PlainCodec
 import com.fortysevendegrees.thool.SplitParams
+import com.fortysevendegrees.thool.client.RequestInfo
+import com.fortysevendegrees.thool.client.requestInfo
 import com.fortysevendegrees.thool.model.CodecFormat
 import com.fortysevendegrees.thool.model.StatusCode
+import com.fortysevendegrees.thool.server.intrepreter.ByteArrayBody
+import com.fortysevendegrees.thool.server.intrepreter.ByteBufferBody
+import com.fortysevendegrees.thool.server.intrepreter.InputStreamBody
+import com.fortysevendegrees.thool.server.intrepreter.StringBody
 import org.springframework.http.HttpMethod
 import org.springframework.web.reactive.function.client.ClientResponse
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
 import org.springframework.web.reactive.function.client.awaitExchange
+import org.springframework.web.reactive.function.client.body
 import java.io.InputStream
 import java.net.URI
 import java.nio.ByteBuffer
@@ -29,9 +36,10 @@ public fun <I, E, O> Endpoint<I, E, O>.toRequestAndParseWebClient(
   baseUrl: String
 ): suspend WebClient.(I) -> Pair<WebClient.RequestBodyUriSpec, DecodeResult<Either<E, O>>> =
   { input: I ->
-    val method = method()
+    val info = this@toRequestAndParseWebClient.input.requestInfo(input, baseUrl)
+    val method = info.method.method()
     requireNotNull(method)
-    val request: WebClient.RequestBodyUriSpec = toRequest(this, method, baseUrl, input)
+    val request: WebClient.RequestBodyUriSpec = toRequest(this, info, method)
     Pair(request, parseResponse(request, method, baseUrl))
   }
 
@@ -40,23 +48,29 @@ public suspend operator fun <I, E, O> WebClient.invoke(
   baseUrl: String,
   input: I
 ): DecodeResult<Either<E, O>> {
-  val method = endpoint.method()
+  val info = endpoint.input.requestInfo(input, baseUrl)
+  val method = info.method.method()
   requireNotNull(method)
-  val request: WebClient.RequestBodyUriSpec = endpoint.toRequest(this, method, baseUrl, input)
+  val request: WebClient.RequestBodyUriSpec = toRequest(this, info, method)
   return endpoint.parseResponse(request, method, baseUrl)
 }
 
-private fun <I, E, O> Endpoint<I, E, O>.toRequest(
+private fun toRequest(
   webClient: WebClient,
-  httpMethod: HttpMethod,
-  baseUrl: String,
-  i: I
+  info: RequestInfo,
+  method: HttpMethod,
 ): WebClient.RequestBodyUriSpec {
-  val params = Params.ParamsAsAny(i)
-  val url = input.buildUrl(baseUrl.trimLastSlash(), params)
-  return webClient.method(httpMethod).apply {
-    uri(URI.create(url))
-    input.setInputParams(this, params)
+  return webClient.method(method).apply {
+    uri(URI.create(info.fullUrl))
+    info.headers.forEach { (name, value) ->
+      header(name, value)
+    }
+    info.cookies.forEach { (name, value) ->
+      cookie(name, value)
+    }
+    info.body?.toByteArray()?.let {
+      body(it, ByteArray::class.java)
+    }
   }
 }
 
