@@ -23,18 +23,18 @@ import java.nio.charset.StandardCharsets
 class KtorToResponseBody : ToResponseBody<KtorResponseBody> {
 
   override fun fromRawValue(
-    v: Body,
+    raw: Body,
     headers: HasHeaders,
     format: CodecFormat
-  ): KtorResponseBody = rawValueToEntity(v, headers, format)
+  ): KtorResponseBody = rawValueToEntity(raw, headers, format)
 
   override fun fromStreamValue(
-    v: Flow<Byte>,
+    raw: Flow<Byte>,
     headers: HasHeaders,
     format: CodecFormat,
     charset: Charset?
   ): KtorResponseBody =
-    ByteFlowContent(v, headers.contentLength(), format.toContentType(headers, charset))
+    ByteFlowContent(raw, headers.contentLength(), format.toContentType(headers, charset))
 
   private fun ByteBuffer.moveToByteArray(): ByteArray {
     val array = ByteArray(remaining())

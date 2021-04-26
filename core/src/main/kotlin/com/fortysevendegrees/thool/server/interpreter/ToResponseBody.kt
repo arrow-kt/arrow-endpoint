@@ -16,12 +16,12 @@ public inline class InputStreamBody(public val inputStream: InputStream) : Body
 public interface ToResponseBody<B> {
 
   fun fromRawValue(
-    v: Body,
+    raw: Body,
     headers: HasHeaders,
     format: CodecFormat
   ): B // TODO: remove headers?
 
-  fun fromStreamValue(v: Flow<Byte>, headers: HasHeaders, format: CodecFormat, charset: Charset?): B
+  fun fromStreamValue(raw: Flow<Byte>, headers: HasHeaders, format: CodecFormat, charset: Charset?): B
 
 //  fun <REQ, RESP> fromWebSocketPipe(pipe: (REQ) -> RESP, o: WebSocketBodyOutput[streams.Pipe[REQ, RESP], REQ, RESP, _, S]): B
 }

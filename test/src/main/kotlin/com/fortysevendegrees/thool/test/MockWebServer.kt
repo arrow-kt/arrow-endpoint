@@ -95,11 +95,11 @@ internal class ServerRequest(val ctx: RecordedRequest) : ServerRequest {
 
 public class ToResponseBody : ToResponseBody<MockResponseBody> {
 
-  override fun fromRawValue(v: Body, headers: HasHeaders, format: CodecFormat): MockResponseBody =
-    rawValueToEntity(v, headers, format)
+  override fun fromRawValue(raw: Body, headers: HasHeaders, format: CodecFormat): MockResponseBody =
+    rawValueToEntity(raw, headers, format)
 
   override fun fromStreamValue(
-    v: Flow<Byte>,
+    raw: Flow<Byte>,
     headers: HasHeaders,
     format: CodecFormat,
     charset: Charset?
