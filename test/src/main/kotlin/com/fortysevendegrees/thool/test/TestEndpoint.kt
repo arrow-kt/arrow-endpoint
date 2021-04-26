@@ -3,7 +3,7 @@ package com.fortysevendegrees.thool.test
 import com.fortysevendegrees.thool.Codec
 import com.fortysevendegrees.thool.Endpoint
 import com.fortysevendegrees.thool.EndpointInput
-import com.fortysevendegrees.thool.Thool
+import com.fortysevendegrees.thool.Thool.anyJsonBody
 import com.fortysevendegrees.thool.Thool.fixedPath
 import com.fortysevendegrees.thool.Thool.header
 import com.fortysevendegrees.thool.Thool.path
@@ -14,9 +14,6 @@ import com.fortysevendegrees.thool.input
 import com.fortysevendegrees.thool.output
 
 object TestEndpoint {
-
-  data class Fruit(val name: String)
-  data class FruitAmount(val fruit: String, val amount: Int)
 
   public val fruitParam: EndpointInput.Query<String> = query("fruit", Codec.string)
 
@@ -33,7 +30,7 @@ object TestEndpoint {
       .output(stringBody())
 
   public val in_header_out_string: Endpoint<String, Nothing, String> =
-    Endpoint.input(Thool.header("X-Role", Codec.listFirst(Codec.string))).output(stringBody())
+    Endpoint.input(header("X-Role", Codec.listFirst(Codec.string))).output(stringBody())
 
   public val in_path_path_out_string: Endpoint<Pair<String, Int>, Nothing, String> =
     Endpoint.get { "fruit" / path(Codec.string) / "amount" / path(Codec.int) }.output(stringBody())
@@ -83,31 +80,41 @@ object TestEndpoint {
       ).output(stringBody())
       .name("mapped path path")
 
-//  val in_query_mapped_path_path_out_string: Endpoint[(FruitAmount, String), Unit, String, Any] = endpoint
-//  .in (("fruit" / path[String] / "amount" / path[Int]).mapTo(FruitAmount))
-//  .in (query[String]("color"))
-//  .out (stringBody)
-//  .name("query and mapped path path")
-//
-//  val in_query_out_mapped_string: Endpoint[String, Unit, List[Char], Any] =
-//  endpoint.in (query[String]("fruit")).out (stringBody.map(_.toList)(_.mkString(""))).name("out mapped")
-//
-//  val in_query_out_mapped_string_header: Endpoint[String, Unit, FruitAmount, Any] = endpoint
-//  .in (query[String]("fruit"))
-//  .out (stringBody.and(header [Int]("X-Role")).mapTo(FruitAmount))
-//  .name("out mapped")
-//
-//  val in_header_before_path: Endpoint[(String, Int), Unit, (Int, String), Any] = endpoint
-//  .in (header [String]("SomeHeader"))
-//  .in (path[Int])
-//  .out (header [Int]("IntHeader") and stringBody)
-//
-//  val in_json_out_json: Endpoint[FruitAmount, Unit, FruitAmount, Any] =
-//  endpoint.post.in ("api" / "echo")
-//  .in (jsonBody[FruitAmount])
-//  .out (jsonBody[FruitAmount]).name("echo json")
-//
-//  val in_content_type_fixed_header: Endpoint[Unit, Unit, Unit, Any] =
-//  endpoint.post.in ("api" / "echo")
-//  .in (header (Header.contentType(MediaType.ApplicationJson)))
+  public val in_query_mapped_path_path_out_string: Endpoint<Pair<FruitAmount, String>, Nothing, String> =
+    Endpoint
+      .get {
+        ("fruit" / path(Codec.string) / path(Codec.int))
+          .map({ (name, amount) -> FruitAmount(name, amount) }, { Pair(it.fruit, it.amount) })
+      }
+      .input(query("color", Codec.string))
+      .output(stringBody())
+      .name("query and mapped path path")
+
+  public val in_query_out_mapped_string: Endpoint<String, Nothing, List<Char>> =
+    Endpoint
+      .input(query("fruit", Codec.string))
+      .output(stringBody().map({ it.toList() }, { it.joinToString("") }))
+      .name("out mapped")
+
+  public val in_query_out_mapped_string_header: Endpoint<String, Nothing, FruitAmount> =
+    Endpoint
+      .input(query("fruit", Codec.string))
+      .output(
+        stringBody().and(header("X-Role", Codec.listFirst(Codec.int)))
+          .map({ (name, amount) -> FruitAmount(name, amount) }, { Pair(it.fruit, it.amount) })
+      )
+      .name("out mapped")
+
+  public val in_header_before_path: Endpoint<Pair<String, Int>, Nothing, Pair<Int, String>> =
+    Endpoint
+      .input(header("SomeHeader", Codec.listFirst(Codec.string)))
+      .input(path(Codec.int))
+      .output(header("IntHeader", Codec.listFirst(Codec.int)).and(stringBody()))
+
+  public val in_json_out_json: Endpoint<FruitAmount, Nothing, FruitAmount> =
+    Endpoint
+      .post { "api" / "echo" }
+      .input(anyJsonBody(Codec.fruitAmount()))
+      .output(anyJsonBody(Codec.fruitAmount()))
+      .name("echo json")
 }

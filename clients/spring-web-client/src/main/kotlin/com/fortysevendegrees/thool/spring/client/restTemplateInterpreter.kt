@@ -8,6 +8,7 @@ import com.fortysevendegrees.thool.DecodeResult
 import com.fortysevendegrees.thool.Endpoint
 import com.fortysevendegrees.thool.EndpointIO
 import com.fortysevendegrees.thool.EndpointOutput
+import com.fortysevendegrees.thool.Mapping
 import com.fortysevendegrees.thool.Params
 import com.fortysevendegrees.thool.client.requestInfo
 import com.fortysevendegrees.thool.model.StatusCode
@@ -107,11 +108,11 @@ private fun EndpointOutput<*>.getOutputParams(
 
       is EndpointIO.MappedPair<*, *, *, *> ->
         single.wrapped.getOutputParams(response, headers, code, statusText).flatMap { p ->
-          (single.mapping::decode as (Any?) -> DecodeResult<Any?>)(p.asAny)
+          (single.mapping as Mapping<Any?, Any?>).decode(p.asAny)
         }
       is EndpointOutput.MappedPair<*, *, *, *> ->
         single.output.getOutputParams(response, headers, code, statusText).flatMap { p ->
-          (single.mapping::decode as (Any?) -> DecodeResult<Any?>)(p.asAny)
+          (single.mapping as Mapping<Any?, Any?>).decode(p.asAny)
         }
     }.map { Params.ParamsAsAny(it) }
 

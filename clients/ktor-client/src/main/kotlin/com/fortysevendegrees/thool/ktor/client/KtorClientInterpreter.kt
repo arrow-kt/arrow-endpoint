@@ -6,6 +6,7 @@ import com.fortysevendegrees.thool.DecodeResult
 import com.fortysevendegrees.thool.Endpoint
 import com.fortysevendegrees.thool.EndpointIO
 import com.fortysevendegrees.thool.EndpointOutput
+import com.fortysevendegrees.thool.Mapping
 import com.fortysevendegrees.thool.Params
 import com.fortysevendegrees.thool.client.requestInfo
 import com.fortysevendegrees.thool.model.StatusCode
@@ -80,7 +81,7 @@ suspend fun <I, E, O> Endpoint<I, E, O>.responseToDomain(
       DecodeResult.Failure.Error(
         result.original,
         IllegalArgumentException(
-          "Cannot decode from ${result.original} of request ${response.request.method} ${response.request.url}",
+          "Cannot decode from ${result.original} of request $code - ${response.request.method} ${response.request.url}",
           result.error
         )
       )
@@ -120,12 +121,12 @@ suspend fun EndpointOutput<*>.outputParams(
         is EndpointOutput.FixedStatusCode -> codec.decode(Unit)
         is EndpointOutput.StatusCode -> codec.decode(code)
         is EndpointOutput.MappedPair<*, *, *, *> ->
-          output.outputParams(response, headers, code).flatMap {
-            (mapping::decode as (Any?) -> DecodeResult<Any?>)(it.asAny)
+          output.outputParams(response, headers, code).flatMap { p ->
+            (mapping as Mapping<Any?, Any?>).decode(p.asAny)
           }
         is EndpointIO.MappedPair<*, *, *, *> ->
           wrapped.outputParams(response, headers, code).flatMap { p ->
-            (mapping::decode as (Any?) -> DecodeResult<Any?>)(p.asAny)
+            (mapping as Mapping<Any?, Any?>).decode(p.asAny)
           }
       }.map(Params::ParamsAsAny)
     is EndpointIO.Pair<*, *, *> -> handleOutputPair(first, second, combine, response, headers, code)

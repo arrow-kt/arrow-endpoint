@@ -18,19 +18,17 @@ import com.fortysevendegrees.thool.client.RequestInfo
 import com.fortysevendegrees.thool.client.requestInfo
 import com.fortysevendegrees.thool.model.CodecFormat
 import com.fortysevendegrees.thool.model.StatusCode
-import com.fortysevendegrees.thool.server.intrepreter.ByteArrayBody
-import com.fortysevendegrees.thool.server.intrepreter.ByteBufferBody
-import com.fortysevendegrees.thool.server.intrepreter.InputStreamBody
-import com.fortysevendegrees.thool.server.intrepreter.StringBody
 import org.springframework.http.HttpMethod
 import org.springframework.web.reactive.function.client.ClientResponse
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
 import org.springframework.web.reactive.function.client.awaitExchange
-import org.springframework.web.reactive.function.client.body
 import java.io.InputStream
 import java.net.URI
 import java.nio.ByteBuffer
+import reactor.core.publisher.Mono
+
+import org.springframework.web.reactive.function.BodyInserters
 
 public fun <I, E, O> Endpoint<I, E, O>.toRequestAndParseWebClient(
   baseUrl: String
@@ -69,7 +67,7 @@ private fun toRequest(
       cookie(name, value)
     }
     info.body?.toByteArray()?.let {
-      body(it, ByteArray::class.java)
+      body(BodyInserters.fromPublisher(Mono.just(it), ByteArray::class.java))
     }
   }
 }
@@ -240,11 +238,11 @@ private suspend fun EndpointOutput<*>.getOutputParams(
 
       is EndpointIO.MappedPair<*, *, *, *> ->
         single.wrapped.getOutputParams(response, headers, code, statusText).flatMap { p ->
-          (single.mapping::decode as (Any?) -> DecodeResult<Any?>)(p.asAny)
+          (single.mapping as Mapping<Any?, Any?>).decode(p.asAny)
         }
       is EndpointOutput.MappedPair<*, *, *, *> ->
         single.output.getOutputParams(response, headers, code, statusText).flatMap { p ->
-          (single.mapping::decode as (Any?) -> DecodeResult<Any?>)(p.asAny)
+          (single.mapping as Mapping<Any?, Any?>).decode(p.asAny)
         }
     }.map { Params.ParamsAsAny(it) }
 
