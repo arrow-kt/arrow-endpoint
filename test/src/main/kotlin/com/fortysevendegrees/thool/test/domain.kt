@@ -5,6 +5,7 @@ import com.fortysevendegrees.thool.DecodeResult
 import com.fortysevendegrees.thool.FieldName
 import com.fortysevendegrees.thool.JsonCodec
 import com.fortysevendegrees.thool.Schema
+import com.fortysevendegrees.thool.model.CodecFormat
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -32,8 +33,31 @@ data class Fruit(val name: String)
 @Serializable
 data class FruitAmount(val fruit: String, val amount: Int)
 
-public fun Codec.Companion.fruitAmount(): JsonCodec<FruitAmount> =
+public fun Codec.Companion.jsonFruitAmount(): JsonCodec<FruitAmount> =
   Codec.json(Schema.fruitAmount(), { DecodeResult.Value(Json.decodeFromString(it)) }) { Json.encodeToString(it) }
+
+public fun Codec.Companion.jsonNullableFruitAmount(): JsonCodec<FruitAmount?> =
+  Codec.json(
+    Schema.fruitAmount().asNullable(),
+    { DecodeResult.Value(Json.decodeFromString(it)) }
+  ) { Json.encodeToString(it) }
+
+public fun Codec.Companion.formFruitAmount(): Codec<String, FruitAmount, CodecFormat.XWwwFormUrlencoded> =
+  formMapCodecUtf8
+    .map(
+      { form ->
+        FruitAmount(
+          requireNotNull(form["fruit"]) { "Fruit not found in form" },
+          requireNotNull(form["amount"]) { "Amount not found in form" }.toInt()
+        )
+      },
+      { (fruit, amount) ->
+        mapOf(
+          "fruit" to fruit,
+          "amount" to amount.toString()
+        )
+      }
+    )
 
 public fun Schema.Companion.fruitAmount(): Schema<FruitAmount> =
   Schema.Product(

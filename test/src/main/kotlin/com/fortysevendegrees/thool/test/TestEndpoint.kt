@@ -1,17 +1,37 @@
 package com.fortysevendegrees.thool.test
 
 import com.fortysevendegrees.thool.Codec
+import com.fortysevendegrees.thool.DecodeResult
 import com.fortysevendegrees.thool.Endpoint
 import com.fortysevendegrees.thool.EndpointInput
+import com.fortysevendegrees.thool.Schema
+import com.fortysevendegrees.thool.Thool
 import com.fortysevendegrees.thool.Thool.anyJsonBody
+import com.fortysevendegrees.thool.Thool.byteArrayBody
+import com.fortysevendegrees.thool.Thool.byteBufferBody
+import com.fortysevendegrees.thool.Thool.cookie
 import com.fortysevendegrees.thool.Thool.fixedPath
+import com.fortysevendegrees.thool.Thool.formBody
 import com.fortysevendegrees.thool.Thool.header
+import com.fortysevendegrees.thool.Thool.inputStreamBody
 import com.fortysevendegrees.thool.Thool.path
+import com.fortysevendegrees.thool.Thool.paths
 import com.fortysevendegrees.thool.Thool.query
+import com.fortysevendegrees.thool.Thool.queryParams
+import com.fortysevendegrees.thool.Thool.statusCode
 import com.fortysevendegrees.thool.Thool.stringBody
 import com.fortysevendegrees.thool.and
 import com.fortysevendegrees.thool.input
+import com.fortysevendegrees.thool.model.CodecFormat
+import com.fortysevendegrees.thool.model.MediaType
+import com.fortysevendegrees.thool.model.QueryParams
+import com.fortysevendegrees.thool.model.StatusCode
 import com.fortysevendegrees.thool.output
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import java.io.InputStream
+import java.nio.ByteBuffer
 
 object TestEndpoint {
 
@@ -30,7 +50,7 @@ object TestEndpoint {
       .output(stringBody())
 
   public val in_header_out_string: Endpoint<String, Nothing, String> =
-    Endpoint.input(header("X-Role", Codec.listFirst(Codec.string))).output(stringBody())
+    Endpoint.input(Thool.header("X-Role", Codec.listFirst(Codec.string))).output(stringBody())
 
   public val in_path_path_out_string: Endpoint<Pair<String, Int>, Nothing, String> =
     Endpoint.get { "fruit" / path(Codec.string) / "amount" / path(Codec.int) }.output(stringBody())
@@ -50,12 +70,6 @@ object TestEndpoint {
     Endpoint
       .get("api")
       .input(path(Codec.string))
-
-//  public val in_fixed_header_out_string: Endpoint<Unit, Nothing, String> =
-//    Endpoint
-//      .get("secret")
-//      .input(header("location", "secret"))
-//      .output(stringBody())
 
   public val in_mapped_query_out_string: Endpoint<List<Char>, Nothing, String> =
     Endpoint
@@ -92,13 +106,13 @@ object TestEndpoint {
 
   public val in_query_out_mapped_string: Endpoint<String, Nothing, List<Char>> =
     Endpoint
-      .input(query("fruit", Codec.string))
+      .input(fruitParam)
       .output(stringBody().map({ it.toList() }, { it.joinToString("") }))
       .name("out mapped")
 
   public val in_query_out_mapped_string_header: Endpoint<String, Nothing, FruitAmount> =
     Endpoint
-      .input(query("fruit", Codec.string))
+      .input(fruitParam)
       .output(
         stringBody().and(header("X-Role", Codec.listFirst(Codec.int)))
           .map({ (name, amount) -> FruitAmount(name, amount) }, { Pair(it.fruit, it.amount) })
@@ -114,7 +128,118 @@ object TestEndpoint {
   public val in_json_out_json: Endpoint<FruitAmount, Nothing, FruitAmount> =
     Endpoint
       .post { "api" / "echo" }
-      .input(anyJsonBody(Codec.fruitAmount()))
-      .output(anyJsonBody(Codec.fruitAmount()))
+      .input(anyJsonBody(Codec.jsonFruitAmount()))
+      .output(anyJsonBody(Codec.jsonFruitAmount()))
       .name("echo json")
+
+  public val Codec.Companion.mediaType: Codec<String, MediaType, CodecFormat.TextPlain>
+    get() = string.mapDecode({ DecodeResult.Failure.Mismatch("", "") }) { it.toString() }
+
+  public val in_content_type_header_with_custom_decode_results: Endpoint<MediaType, Nothing, Unit> =
+    Endpoint.post { "api" / "echo" }
+      .input(header("Content-Type", Codec.listFirst(Codec.mediaType)))
+
+  public val in_byte_array_out_byte_array: Endpoint<ByteArray, Nothing, ByteArray> =
+    Endpoint.post { "api" / "echo" }
+      .input(byteArrayBody())
+      .output(byteArrayBody())
+      .name("echo byte array")
+
+  public val in_byte_buffer_out_byte_buffer: Endpoint<ByteBuffer, Nothing, ByteBuffer> =
+    Endpoint.post { "api" / "echo" }
+      .input(byteBufferBody())
+      .output(byteBufferBody())
+      .name("echo byte buffer")
+
+  public val in_input_stream_out_input_stream: Endpoint<InputStream, Nothing, InputStream> =
+    Endpoint.post { "api" / "echo" }
+      .input(inputStreamBody())
+      .output(inputStreamBody())
+      .name("echo input stream")
+
+  public val in_string_out_stream_with_header: Endpoint<String, Nothing, Pair<InputStream, Long?>> =
+    Endpoint.post { "api" / "echo" }
+      .input(stringBody())
+      .output(inputStreamBody())
+      .output(header("Content-Length", Codec.listFirstOrNull(Codec.long)))
+      .name("input string output stream with header")
+
+  public val in_unit_out_json_unit: Endpoint<Unit, Nothing, Unit> =
+    Endpoint.get { "api" / "unit" }
+      .output(
+        anyJsonBody(
+          Codec.json(
+            Schema.unit,
+            { DecodeResult.Value(Json.decodeFromString(it)) },
+            { Json.encodeToString(it) }
+          )
+        )
+      )
+
+  public val in_unit_out_string: Endpoint<Unit, Nothing, String> =
+    Endpoint.get("api")
+      .output(stringBody())
+
+  public val in_form_out_form: Endpoint<FruitAmount, Nothing, FruitAmount> = // FruitAmount, Unit, FruitAmount, Any] =
+    Endpoint.post { "api" / "echo" }
+      .input(formBody(Codec.formFruitAmount()))
+      .output(formBody(Codec.formFruitAmount()))
+
+  public val in_query_params_out_string: Endpoint<QueryParams, Nothing, String> =
+    Endpoint.get { "api" / "echo" / "params" }.input(queryParams()).output(stringBody())
+
+  public val in_paths_out_string: Endpoint<List<String>, Nothing, String> =
+    Endpoint.get().input(paths()).output(stringBody())
+
+  public val in_path_paths_out_header_body: Endpoint<Pair<Int, List<String>>, Nothing, Pair<Int, String>> =
+    Endpoint.get("api").input(path(Codec.int)).input(fixedPath("and")).input(paths())
+      .output(header("IntPath", Codec.listFirst(Codec.int)).and(stringBody()))
+
+  public val in_path_fixed_capture_fixed_capture: Endpoint<Pair<Int, Int>, Nothing, Unit> =
+    Endpoint.get { "customer" / path("customer_id", Codec.int) / "orders" / path("order_id", Codec.int) }
+
+  public val in_query_list_out_header_list: Endpoint<List<String>, Nothing, List<String>> =
+    Endpoint.get { "api" / "echo" / "param-to-header" }
+      .input(query("qq", Codec.list(Codec.string)))
+      .output(header("hh", Codec.list(Codec.string)))
+
+  public val in_cookie_cookie_out_header: Endpoint<Pair<Int, String>, Nothing, List<String>> =
+    Endpoint
+      .get { "api" / "echo" / "headers" }
+      .input(cookie("c1", Codec.nullableFirst(Codec.int)))
+      .input(cookie("c2", Codec.nullableFirst(Codec.string)))
+      .output(header("Set-Cookie", Codec.list(Codec.string)))
+
+  public val in_root_path: Endpoint<Unit, Nothing, Unit> = Endpoint.get("")
+
+  public val in_single_path: Endpoint<Unit, Nothing, Unit> = Endpoint.get("api")
+
+  public val in_string_out_status: Endpoint<String, Nothing, StatusCode> =
+    Endpoint.input(fruitParam).output(statusCode())
+
+  public val delete_endpoint: Endpoint<Unit, Nothing, Unit> =
+    Endpoint.delete { "api" / "delete" }
+      .output(statusCode(StatusCode.Ok).description("ok"))
+
+  public val in_optional_json_out_optional_json: Endpoint<FruitAmount?, Nothing, FruitAmount?> =
+    Endpoint.post { "api" / "echo" }
+      .input(anyJsonBody(Codec.jsonNullableFruitAmount()))
+      .output(anyJsonBody(Codec.jsonNullableFruitAmount()))
+
+  /* Helper function to narrow Pair back to `I` */
+  private fun <I, E, O> addInputAndOutput(e: Endpoint<I, E, O>): Endpoint<Triple<I, String, String>, E, Triple<O, String, String>> =
+    e.input(query("x", Codec.string))
+      .input(query("y", Codec.string))
+      .output(header("X", Codec.listFirst(Codec.string)))
+      .output(header("Y", Codec.listFirst(Codec.string)))
+
+  public val in_4query_out_4header_extended: Endpoint<Triple<Pair<String, String>, String, String>, Nothing, Triple<Pair<String, String>, String, String>> =
+    addInputAndOutput(
+      Endpoint
+        .get { "api" / "echo" / "param-to-upper-header" }
+        .input(query("a", Codec.string))
+        .input(query("b", Codec.string))
+        .output(header("A", Codec.listFirst(Codec.string)))
+        .output(header("B", Codec.listFirst(Codec.string)))
+    )
 }

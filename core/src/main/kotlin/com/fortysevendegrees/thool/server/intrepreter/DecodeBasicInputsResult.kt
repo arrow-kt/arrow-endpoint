@@ -27,7 +27,6 @@ public sealed interface DecodeBasicInputsResult {
       check(bodyInputWithIndex == null) { "Double body definition: $input" }
 
     fun addBodyInput(input: EndpointIO.Body<*, *>, bodyIndex: Int): Values {
-      println("addBodyInput($input: EndpointIO.Body<*, *>, $bodyIndex: Int)")
       verifyNoBody(input)
       return copy(bodyInputWithIndex = Pair(Either.Left(input), bodyIndex))
     }
@@ -38,7 +37,7 @@ public sealed interface DecodeBasicInputsResult {
     }
 
     /** Sets the value of the body input, once it is known, if a body input is defined. */
-    fun setBodyInputValue(v: Any): Values =
+    fun setBodyInputValue(v: Any?): Values =
       when (bodyInputWithIndex) {
         null -> this
         else -> copy(basicInputsValues = basicInputsValues.updated(bodyInputWithIndex.second, v))

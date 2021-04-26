@@ -2,6 +2,8 @@ package com.fortysevendegrees.thool.model
 
 public data class QueryParams(val ps: List<Pair<String, List<String>>>) {
 
+  constructor(map: Map<String, String>) : this(map.entries.map { (k, v) -> Pair(k, listOf(v)) })
+
   fun toMap(): Map<String, String> = toList().toMap()
   fun toMultiMap(): Map<String, List<String>> = ps.toMap()
   fun toList(): List<Pair<String, String>> = ps.flatMap { (k, vs) -> vs.map { Pair(k, it) } }

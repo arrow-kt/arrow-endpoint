@@ -57,9 +57,8 @@ public data class OutputValues<B>(
       output: EndpointOutput<*>,
       params: Params,
       ov: OutputValues<B>
-    ): OutputValues<B> {
-      println("OutputValue.of ===> $output. $params")
-      return when (output) {
+    ): OutputValues<B> =
+      when (output) {
         is EndpointIO.Single<*> -> applySingle(rawToResponseBody, output, params, ov)
         is EndpointOutput.Single<*> -> applySingle(rawToResponseBody, output, params, ov)
         is EndpointOutput.Pair<*, *, *> -> applyPair(
@@ -80,7 +79,6 @@ public data class OutputValues<B>(
         )
         is EndpointOutput.Void -> throw IllegalArgumentException("Cannot encode a void output!")
       }
-    }
 
     private fun <B> OutputValues<B>.withBody(
       body: Body,
@@ -137,7 +135,6 @@ public data class OutputValues<B>(
         }
         is EndpointIO.StringBody -> {
           val mapping = output.codec as Mapping<String, Any?>
-          println("is EndpointIO.StringBody ===> ${value.asAny}")
           ov.withBody(StringBody(output.charset, mapping.encode(value.asAny)), rawToResponseBody, output)
         }
         is EndpointIO.MappedPair<*, *, *, *> -> {
