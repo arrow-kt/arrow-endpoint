@@ -26,3 +26,20 @@ public fun Schema.Companion.person(): Schema<Person> =
       Pair(FieldName("age"), Schema.int)
     )
   )
+
+data class Fruit(val name: String)
+
+@Serializable
+data class FruitAmount(val fruit: String, val amount: Int)
+
+public fun Codec.Companion.fruitAmount(): JsonCodec<FruitAmount> =
+  Codec.json(Schema.fruitAmount(), { DecodeResult.Value(Json.decodeFromString(it)) }) { Json.encodeToString(it) }
+
+public fun Schema.Companion.fruitAmount(): Schema<FruitAmount> =
+  Schema.Product(
+    Schema.ObjectInfo("FruitAmount"),
+    listOf(
+      Pair(FieldName("fruit"), Schema.string),
+      Pair(FieldName("amount"), Schema.int)
+    )
+  )

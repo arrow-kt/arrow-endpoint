@@ -9,13 +9,15 @@ import com.fortysevendegrees.thool.EndpointInput
 import com.fortysevendegrees.thool.Thool.anyJsonBody
 import com.fortysevendegrees.thool.Thool.stringBody
 import com.fortysevendegrees.thool.output
-import com.fortysevendegrees.thool.test.TestEndpoint.Fruit
-import com.fortysevendegrees.thool.test.TestEndpoint.FruitAmount
 import com.fortysevendegrees.thool.test.TestEndpoint.in_header_out_string
+import com.fortysevendegrees.thool.test.TestEndpoint.in_json_out_json
 import com.fortysevendegrees.thool.test.TestEndpoint.in_mapped_path_out_string
 import com.fortysevendegrees.thool.test.TestEndpoint.in_mapped_path_path_out_string
 import com.fortysevendegrees.thool.test.TestEndpoint.in_mapped_query_out_string
 import com.fortysevendegrees.thool.test.TestEndpoint.in_path_path_out_string
+import com.fortysevendegrees.thool.test.TestEndpoint.in_query_mapped_path_path_out_string
+import com.fortysevendegrees.thool.test.TestEndpoint.in_query_out_mapped_string
+import com.fortysevendegrees.thool.test.TestEndpoint.in_query_out_mapped_string_header
 import com.fortysevendegrees.thool.test.TestEndpoint.in_query_out_string
 import com.fortysevendegrees.thool.test.TestEndpoint.in_query_query_out_string
 import com.fortysevendegrees.thool.test.TestEndpoint.in_string_out_string
@@ -54,10 +56,18 @@ public abstract class ClientInterpreterSuite : FreeSpec() {
         FruitAmount("apple", 10),
         Either.Right("(apple, 10)")
       ),
-//    Triple(in_query_mapped_path_path_out_string, (FruitAmount("apple", 10), "red"), Either.Right("apple 10 Some(red)")),
-//    Triple(in_query_out_mapped_string, "apple", Either.Right("fruit: apple".toList)),
-//    Triple(in_query_out_mapped_string_header, "apple", Either.Right(FruitAmount("fruit: apple", 5))),
-//    Triple(in_json_out_json, FruitAmount("orange", 11), Either.Right(FruitAmount("orange", 11))),
+      Triple(
+        in_query_mapped_path_path_out_string.logic { (fruitAmount, color) -> "(${fruitAmount.fruit}, ${fruitAmount.amount}, $color)".right() },
+        Pair(FruitAmount("apple", 10), "red"),
+        Either.Right("(apple, 10, red)")
+      ),
+      Triple(in_query_out_mapped_string.logic { it.toList().right() }, "apple", Either.Right("apple".toList())),
+      Triple(
+        in_query_out_mapped_string_header.logic { FruitAmount(it, 5).right() },
+        "apple",
+        Either.Right(FruitAmount("apple", 5))
+      ),
+      Triple(in_json_out_json.logic { it.right() }, FruitAmount("orange", 11), Either.Right(FruitAmount("orange", 11))),
 //    Triple(in_byte_array_out_byte_array, "banana kiwi".getBytes(), Either.Right("banana kiwi".getBytes())),
 //    Triple(in_byte_buffer_out_byte_buffer, ByteBuffer.wrap("mango".getBytes), Either.Right(ByteBuffer.wrap("mango".getBytes)))
     ).forEach { (s, input, expected) ->

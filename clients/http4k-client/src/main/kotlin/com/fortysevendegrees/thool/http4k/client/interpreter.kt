@@ -19,7 +19,12 @@ import com.fortysevendegrees.thool.model.Method.Companion.PATCH
 import com.fortysevendegrees.thool.model.Method.Companion.CONNECT
 import com.fortysevendegrees.thool.model.Method.Companion.TRACE
 import com.fortysevendegrees.thool.model.StatusCode
+import com.fortysevendegrees.thool.server.intrepreter.ByteArrayBody
+import com.fortysevendegrees.thool.server.intrepreter.ByteBufferBody
+import com.fortysevendegrees.thool.server.intrepreter.InputStreamBody
+import com.fortysevendegrees.thool.server.intrepreter.StringBody
 import org.http4k.core.HttpHandler
+import org.http4k.core.MemoryBody
 import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Response
@@ -54,13 +59,19 @@ public fun <I, E, O> Endpoint<I, E, O>.toRequest(baseUrl: String, i: I): Request
   val r3 = info.headers.fold(r2) { r, (name, value) ->
     r.header(name, value)
   }
-
   val r4 = info.queryParams.ps.fold(r3) { r, (name, params) ->
     params.fold(r) { r, v ->
       r.query(name, v)
     }
   }
-  return r4
+
+  return when (val body = info.body) {
+    is ByteArrayBody -> r4.body(MemoryBody(body.byteArray))
+    is ByteBufferBody -> r4.body(MemoryBody(body.byteBuffer))
+    is InputStreamBody -> r4.body(body.inputStream)
+    is StringBody -> r4.body(body.string)
+    null -> r4
+  }
 }
 
 public fun com.fortysevendegrees.thool.model.Method.toHttp4kMethod(): Method? =
