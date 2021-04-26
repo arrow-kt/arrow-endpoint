@@ -1,4 +1,4 @@
-package com.fortysevendegrees.thool.server.intrepreter
+package com.fortysevendegrees.thool.server.interpreter
 
 import kotlinx.coroutines.flow.Flow
 import com.fortysevendegrees.thool.model.CodecFormat

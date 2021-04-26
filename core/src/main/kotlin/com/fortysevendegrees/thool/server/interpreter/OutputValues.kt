@@ -1,4 +1,4 @@
-package com.fortysevendegrees.thool.server.intrepreter
+package com.fortysevendegrees.thool.server.interpreter
 
 import com.fortysevendegrees.thool.EndpointIO
 import com.fortysevendegrees.thool.EndpointOutput
