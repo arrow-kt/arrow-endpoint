@@ -77,7 +77,7 @@ public sealed interface EndpointOutput<A> : EndpointTransput<A> {
   }
 
   public data class MappedPair<A, B, C, D>(val output: Pair<A, B, C>, val mapping: Mapping<C, D>) : Single<D> {
-    override fun <E> map(@Suppress("PARAMETER_NeAME_CHANGED_ON_OVERRIDE") m: Mapping<D, E>): EndpointTransput<E> =
+    override fun <E> map(@Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE") m: Mapping<D, E>): EndpointTransput<E> =
       MappedPair(output, mapping.map(m))
 
     override fun toString(): String = output.toString()
