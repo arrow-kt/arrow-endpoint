@@ -21,7 +21,6 @@ import com.fortysevendegrees.thool.model.StatusCode
 import org.springframework.http.HttpMethod
 import org.springframework.web.reactive.function.client.ClientResponse
 import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.awaitBody
 import org.springframework.web.reactive.function.client.awaitExchange
 import java.io.InputStream
 import java.net.URI
@@ -29,6 +28,8 @@ import java.nio.ByteBuffer
 import reactor.core.publisher.Mono
 
 import org.springframework.web.reactive.function.BodyInserters
+import org.springframework.web.reactive.function.client.awaitBodyOrNull
+import java.io.ByteArrayInputStream
 
 public fun <I, E, O> Endpoint<I, E, O>.toRequestAndParseWebClient(
   baseUrl: String
@@ -197,10 +198,8 @@ private suspend fun <I, E, O> Endpoint<I, E, O>.parseResponse(
     val code = StatusCode(response.rawStatusCode())
     val output = if (code.isSuccess()) output else errorOutput
 
-    val headers = response.headers().asHttpHeaders().toSingleValueMap()
-      .mapNotNull { headerEntry: Map.Entry<String, String> -> Pair(headerEntry.key, headerEntry.value) }
-      .groupBy({ it.first }) { it.second }
-    val params = output.getOutputParams(response, headers, code, response.statusCode().reasonPhrase)
+    val params =
+      output.getOutputParams(response, response.headers().asHttpHeaders(), code, response.statusCode().reasonPhrase)
 
     params.map { it.asAny }
       .map { p -> if (code.isSuccess()) Either.Right(p as O) else Either.Left(p as E) }
@@ -226,10 +225,16 @@ private suspend fun EndpointOutput<*>.getOutputParams(
 ): DecodeResult<Params> =
   when (val output = this) {
     is EndpointOutput.Single<*> -> when (val single = (output as EndpointOutput.Single<Any?>)) {
-      is EndpointIO.ByteArrayBody -> single.codec.decode(response.awaitBody(ByteArray::class))
-      is EndpointIO.ByteBufferBody -> single.codec.decode(response.awaitBody(ByteBuffer::class))
-      is EndpointIO.InputStreamBody -> single.codec.decode(response.awaitBody(InputStream::class))
-      is EndpointIO.StringBody -> single.codec.decode(response.awaitBody(String::class))
+      is EndpointIO.ByteArrayBody -> single.codec.decode(response.awaitBodyOrNull(ByteArray::class) ?: byteArrayOf())
+      is EndpointIO.ByteBufferBody -> single.codec.decode(
+        response.awaitBodyOrNull(ByteBuffer::class) ?: ByteBuffer.wrap(byteArrayOf())
+      )
+      is EndpointIO.InputStreamBody -> single.codec.decode(
+        ByteArrayInputStream(
+          response.awaitBodyOrNull(ByteArray::class) ?: byteArrayOf()
+        )
+      )
+      is EndpointIO.StringBody -> single.codec.decode(response.awaitBodyOrNull(String::class) ?: "")
       is EndpointIO.StreamBody -> TODO() // (output.codec::decode as (Any?) -> DecodeResult<Params>).invoke(body())
       is EndpointIO.Empty -> single.codec.decode(Unit)
       is EndpointOutput.FixedStatusCode -> single.codec.decode(Unit)

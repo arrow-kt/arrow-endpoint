@@ -26,6 +26,7 @@ import io.ktor.content.TextContent
 import io.ktor.http.ContentType
 import io.ktor.http.Headers
 import io.ktor.http.takeFrom
+import java.nio.ByteBuffer
 
 fun <I, E, O> Endpoint<I, E, O>.requestAndParse(
   baseUrl: String
@@ -112,7 +113,7 @@ suspend fun EndpointOutput<*>.outputParams(
     is EndpointOutput.Single<*> ->
       when (this) {
         is EndpointIO.ByteArrayBody -> codec.decode(response.receive())
-        is EndpointIO.ByteBufferBody -> codec.decode(response.receive())
+        is EndpointIO.ByteBufferBody -> codec.decode(ByteBuffer.wrap(response.receive<ByteArray>()))
         is EndpointIO.InputStreamBody -> codec.decode(response.receive())
         is EndpointIO.StringBody -> codec.decode(response.receive())
         is EndpointIO.Empty -> codec.decode(Unit)

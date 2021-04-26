@@ -20,6 +20,7 @@ import com.fortysevendegrees.thool.server.intrepreter.StringBody
 
 public data class RequestInfo(
   val method: Method,
+  // TODO see if we can easily use Uri here instead.
   val baseUrl: String,
   val pathSegments: List<PathSegment>,
   val queryParams: QueryParams,
@@ -34,14 +35,17 @@ public data class RequestInfo(
     get() = baseUrlWithPath + queryParams.ps
       .filter { it.second.isNotEmpty() }
       .joinToString(prefix = "?", separator = "&") { (name, values) ->
-        values.joinToString(separator = "&") { value -> "$name=$value" }
+        values.joinToString(separator = "&") { value -> "$name=${value.replace(" ", "%20")}" }
       }
 }
 
 private fun String.trimSlash(): String =
   dropWhile { it == '/' }.dropLastWhile { it == '/' }
 
-public fun <I> EndpointInput<I>.requestInfo(input: I, baseUrl: String): RequestInfo {
+public fun <I> EndpointInput<I>.requestInfo(
+  input: I,
+  baseUrl: String // Scheme, base & port
+): RequestInfo {
   val baseUrl = baseUrl.trimSlash()
   val _params = Params.ParamsAsAny(input)
   var method: Method? = null
@@ -86,19 +90,14 @@ public fun <I> EndpointInput<I>.requestInfo(input: I, baseUrl: String): RequestI
         cookies.add(Cookie(name, v))
       }
 
-      is EndpointInput.Query -> {
-        val result = Pair(name, codec.encode(value))
-        println("RequestInfo.requestInfo is EndpointInput.Query => val $result = Pair($name, codec.encode($value))")
-        queryParams.add(result)
-      }
-
+      is EndpointInput.Query ->
+        queryParams.add(Pair(name, codec.encode(value)))
       is EndpointInput.QueryParams ->
         queryParams.addAll(codec.encode(value).ps)
 
       // Recurse on composition of inputs.
       is EndpointInput.Pair<*, *, *> -> {
         val (leftParams, rightParams) = split(params)
-        println("RequestInfo.requestInfo is EndpointInput.Pair => val ($leftParams, $rightParams) = split($params)")
         this.first.buildClientInfo(leftParams)
         this.second.buildClientInfo(rightParams)
       }

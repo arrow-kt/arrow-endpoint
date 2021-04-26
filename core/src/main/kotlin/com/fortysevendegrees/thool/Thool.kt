@@ -7,6 +7,7 @@ import com.fortysevendegrees.thool.model.Method
 import com.fortysevendegrees.thool.model.QueryParams
 import com.fortysevendegrees.thool.model.StatusCode
 import kotlinx.coroutines.flow.Flow
+import java.nio.ByteBuffer
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 
@@ -96,6 +97,20 @@ object Thool {
    */
   fun flowBody(schema: Schema<Flow<Byte>>, format: CodecFormat, charset: Charset? = null) =
     EndpointIO.StreamBody(Codec.id(format, schema), EndpointIO.Info.empty(), charset)
+
+  fun byteArrayBody(): EndpointIO.ByteArrayBody<ByteArray> =
+    EndpointIO.ByteArrayBody(Codec.byteArray, EndpointIO.Info.empty())
+
+  fun byteBufferBody(): EndpointIO.ByteBufferBody<ByteBuffer> =
+    EndpointIO.ByteBufferBody(Codec.byteBuffer, EndpointIO.Info.empty())
+
+  fun inputStreamBody() = EndpointIO.InputStreamBody(Codec.inputStream, EndpointIO.Info.empty())
+
+  fun <A> formBody(codec: Codec<String, A, CodecFormat.XWwwFormUrlencoded>): EndpointIO.StringBody<A> =
+    anyFromStringBody(codec)
+
+  fun <A> formBody(charset: Charset, codec: Codec<String, A, CodecFormat.XWwwFormUrlencoded>): EndpointIO.StringBody<A> =
+    anyFromStringBody(codec, charset)
 
   fun method(m: Method): EndpointInput.FixedMethod<Unit> =
     EndpointInput.FixedMethod(m, Codec.idPlain(), EndpointIO.Info.empty())

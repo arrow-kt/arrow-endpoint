@@ -65,11 +65,8 @@ private fun <I, E, O> Endpoint<I, E, O>.parseResponse(
   val code = StatusCode(response.rawStatusCode)
   val output = if (code.isSuccess()) output else errorOutput
 
-  val headers = response.headers.toSingleValueMap()
-    .mapNotNull { headerEntry: Map.Entry<String, String> -> Pair(headerEntry.key, headerEntry.value) }
-    .groupBy({ it.first }) { it.second }
   val params =
-    output.getOutputParams(response, headers, code, response.statusCode.reasonPhrase)
+    output.getOutputParams(response, response.headers, code, response.statusCode.reasonPhrase)
 
   val result = params.map { it.asAny }
     .map { p -> if (code.isSuccess()) Either.Right(p as O) else Either.Left(p as E) }

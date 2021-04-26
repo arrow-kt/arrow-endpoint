@@ -204,14 +204,12 @@ public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
     fun <A, B, CF : CodecFormat> listFirst(c: Codec<A, B, CF>): Codec<List<A>, B, CF> =
       listBinarySchema(c)
         .mapDecode({ list ->
-          println("Codec.listFirst rawDecode =====> $list")
           when (list.size) {
             0 -> DecodeResult.Failure.Missing
             1 -> DecodeResult.Value(list[0])
             else -> DecodeResult.Failure.Multiple(list)
           }
         }) {
-          println("Codec.listFirst encode =====> $it")
           listOf(it)
         }
         .schema(c.schema())
@@ -232,6 +230,22 @@ public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
           }
         }) { listOfNotNull(it) }
         .schema(c.schema().asNullable())
+
+    /**
+     * Create a codec which requires that a nullable low-level representation contains a single element.
+     * Otherwise a decode failure is returned. The given base codec `c` is used for decoding/encoding.
+     *
+     * The schema and validator are copied from the base codec.
+     */
+    fun <A, B, CF : CodecFormat> nullableFirst(c: Codec<A, B, CF>): Codec<A?, B, CF> =
+      id(c.format, Schema.binary<A?>())
+        .mapDecode({ option ->
+          when (option) {
+            null -> DecodeResult.Failure.Missing
+            else -> c.decode(option)
+          }
+        }) { us -> us?.let(c::encode) }
+        .schema(c.schema())
 
     /**
      * Create a codec which decodes/encodes a list of low-level values to a list of high-level values, using the given base codec `c`.

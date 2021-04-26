@@ -30,7 +30,6 @@ import java.nio.charset.Charset
 public fun <I, E, O> ServerEndpoint<I, E, O>.toDispatcher(): Dispatcher =
   object : Dispatcher() {
     override fun dispatch(request: RecordedRequest): MockResponse {
-      println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ${request.requestUrl} ${request.path} ${request.requestUrl?.toUri()}")
       val serverRequest = ServerRequest(request)
       val interpreter = ServerInterpreter(
         serverRequest,
@@ -44,6 +43,8 @@ public fun <I, E, O> ServerEndpoint<I, E, O>.toDispatcher(): Dispatcher =
           when (val body = it.body) {
             null -> MockResponse().setResponseCode(it.code.code)
             else -> body.setResponseCode(it.code.code)
+          }.apply {
+            it.headers.forEach { (name, value) -> addHeader(name, value) }
           }
         } ?: MockResponse().setResponseCode(StatusCode.NotFound.code)
       }
@@ -108,10 +109,9 @@ public class ToResponseBody : ToResponseBody<MockResponseBody> {
     format: CodecFormat,
   ): MockResponseBody =
     when (r) {
-      is Body.ByteArray -> MockResponse().setBody(Buffer().apply { read(r.byteArray) })
-      is Body.ByteBuffer -> MockResponse().setBody(Buffer().apply { read(r.byteBuffer) })
+      is Body.ByteArray -> MockResponse().setBody(Buffer().apply { write(r.byteArray) })
+      is Body.ByteBuffer -> MockResponse().setBody(Buffer().apply { write(r.byteBuffer) })
       is Body.InputStream -> MockResponse().setBody(Buffer().apply { readFrom(r.inputStream) })
       is Body.String -> MockResponse().setBody(r.string)
     }.addHeader(HeaderNames.ContentType, format.mediaType.toString())
-      .apply { headers.headers.forEach { (n, v) -> addHeader(n, v) } }
 }
