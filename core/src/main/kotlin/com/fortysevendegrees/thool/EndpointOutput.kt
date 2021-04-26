@@ -136,11 +136,6 @@ fun <A, B> EndpointOutput<A>.reduce(
 fun EndpointOutput<*>.toList(): List<EndpointOutput<Any?>> =
   reduce(::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf)
 
-@Suppress("UNCHECKED_CAST")
-fun EndpointOutput<*>.bodyType(): RawBodyType<*>? =
-  toList().mapNotNull { (it as? EndpointIO.Body<Any?, Any?>)?.bodyType }
-    .firstOrNull()
-
 // We need to support this Arity-22
 @JvmName("and")
 fun <A, B> EndpointOutput<A>.and(other: EndpointOutput<B>): EndpointOutput<Pair<A, B>> =

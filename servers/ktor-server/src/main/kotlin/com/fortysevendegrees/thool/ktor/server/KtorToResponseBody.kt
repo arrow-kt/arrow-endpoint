@@ -1,51 +1,62 @@
 package com.fortysevendegrees.thool.ktor.server
 
-import com.fortysevendegrees.thool.RawBodyType
 import kotlinx.coroutines.flow.Flow
 import com.fortysevendegrees.thool.model.CodecFormat
 import com.fortysevendegrees.thool.model.HasHeaders
-import com.fortysevendegrees.thool.server.intrepreter.ToResponseBody
+import com.fortysevendegrees.thool.server.interpreter.Body
+import com.fortysevendegrees.thool.server.interpreter.ByteArrayBody
+import com.fortysevendegrees.thool.server.interpreter.ByteBufferBody
+import com.fortysevendegrees.thool.server.interpreter.InputStreamBody
+import com.fortysevendegrees.thool.server.interpreter.StringBody
+import com.fortysevendegrees.thool.server.interpreter.ToResponseBody
 import io.ktor.content.ByteArrayContent
 import io.ktor.http.ContentType
 import io.ktor.http.content.OutgoingContent
+import io.ktor.http.content.OutputStreamContent
 import io.ktor.http.withCharset
 import io.ktor.utils.io.ByteWriteChannel
 import kotlinx.coroutines.flow.collect
+import java.nio.ByteBuffer
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 
 class KtorToResponseBody : ToResponseBody<KtorResponseBody> {
 
-  override fun <R> fromRawValue(
-    v: R,
+  override fun fromRawValue(
+    raw: Body,
     headers: HasHeaders,
-    format: CodecFormat,
-    bodyType: RawBodyType<R>
-  ): KtorResponseBody = rawValueToEntity(bodyType, headers, format, v)
+    format: CodecFormat
+  ): KtorResponseBody = rawValueToEntity(raw, headers, format)
 
   override fun fromStreamValue(
-    v: Flow<Byte>,
+    raw: Flow<Byte>,
     headers: HasHeaders,
     format: CodecFormat,
     charset: Charset?
   ): KtorResponseBody =
-    ByteFlowContent(v, headers.contentLength(), format.toContentType(headers, charset))
+    ByteFlowContent(raw, headers.contentLength(), format.toContentType(headers, charset))
 
-  private fun <R> rawValueToEntity(
-    bodyType: RawBodyType<R>,
+  private fun ByteBuffer.moveToByteArray(): ByteArray {
+    val array = ByteArray(remaining())
+    get(array)
+    return array
+  }
+
+  private fun rawValueToEntity(
+    v: Body,
     headers: HasHeaders,
-    format: CodecFormat,
-    r: R
+    format: CodecFormat
   ): KtorResponseBody =
-    when (bodyType) {
-      is RawBodyType.StringBody -> ByteArrayContent(
-        (r as String).toByteArray(bodyType.charset),
-        format.toContentType(headers, bodyType.charset)
+    when (v) {
+      is ByteArrayBody -> ByteArrayContent(v.byteArray, format.toContentType(headers, null))
+      is ByteBufferBody -> ByteArrayContent(v.byteBuffer.moveToByteArray(), format.toContentType(headers, null))
+      is StringBody -> ByteArrayContent(v.string.toByteArray(v.charset))
+      is InputStreamBody -> OutputStreamContent(
+        {
+          v.inputStream.copyTo(this)
+        },
+        format.toContentType(headers, null)
       )
-      RawBodyType.ByteArrayBody ->
-        ByteArrayContent(r as ByteArray, format.toContentType(headers, null))
-      RawBodyType.InputStreamBody -> TODO()
-      RawBodyType.ByteBufferBody -> TODO()
     }
 
   private fun CodecFormat.toContentType(headers: HasHeaders, charset: Charset?): ContentType =

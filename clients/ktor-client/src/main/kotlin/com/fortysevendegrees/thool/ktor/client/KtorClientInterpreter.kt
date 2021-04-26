@@ -11,9 +11,7 @@ import com.fortysevendegrees.thool.EndpointOutput
 import com.fortysevendegrees.thool.Mapping
 import com.fortysevendegrees.thool.Params
 import com.fortysevendegrees.thool.PlainCodec
-import com.fortysevendegrees.thool.RawBodyType
 import com.fortysevendegrees.thool.SplitParams
-import com.fortysevendegrees.thool.bodyType
 import com.fortysevendegrees.thool.model.CodecFormat
 import com.fortysevendegrees.thool.model.Method
 import com.fortysevendegrees.thool.model.StatusCode
@@ -60,25 +58,11 @@ operator fun <I, E, O> HttpClient.invoke(
 suspend fun <I, E, O> Endpoint<I, E, O>.responseToDomain(
   response: HttpResponse
 ): DecodeResult<Either<E, O>> {
-  fun EndpointOutput<*>.responseFromOutput(
-    response: HttpResponse
-  ): suspend () -> Any = {
-    // TODO: StreamBody is missing maybe take advantage over type conversion in `receive`
-    when (bodyType()) {
-      RawBodyType.ByteArrayBody -> response.receive<ByteArray>()
-      RawBodyType.ByteBufferBody -> response.receive<ByteBuffer>()
-      RawBodyType.InputStreamBody -> response.receive<InputStream>()
-      is RawBodyType.StringBody -> response.receive<String>()
-      null -> Unit
-    }
-  }
-
   val code = StatusCode(response.status.value)
   val text = response.status.description
   val output = if (code.isSuccess()) output else errorOutput
-  val body = output.responseFromOutput(response)
   val headers = response.headers
-  val params = output.outputParams(body, headers, code, text)
+  val params = output.outputParams(response, headers, code, text)
   val result = params.map {
     val v = it.asAny
     if (code.isSuccess()) Either.Right(v as O) else Either.Left(v as E)
@@ -99,7 +83,7 @@ suspend fun <I, E, O> Endpoint<I, E, O>.responseToDomain(
 
 @Suppress("UNCHECKED_CAST")
 suspend fun EndpointOutput<*>.outputParams(
-  body: suspend () -> Any?,
+  response: HttpResponse,
   headers: Headers,
   code: StatusCode,
   codeDescription: String
@@ -108,40 +92,46 @@ suspend fun EndpointOutput<*>.outputParams(
     left: EndpointOutput<*>,
     right: EndpointOutput<*>,
     combine: CombineParams,
-    body: suspend () -> Any?,
+    response: HttpResponse,
     headers: Headers,
     code: StatusCode,
     codeDescription: String
   ): DecodeResult<Params> {
-    val l = left.outputParams(body, headers, code, codeDescription)
-    val r = right.outputParams(body, headers, code, codeDescription)
+    val l = left.outputParams(response, headers, code, codeDescription)
+    val r = right.outputParams(response, headers, code, codeDescription)
     return l.flatMap { ll -> r.map { rr -> combine(ll, rr) } }
   }
   return when (this) {
     is EndpointOutput.Single<*> ->
       when (this) {
-        is EndpointIO.Body<*, *> -> {
-          this as EndpointIO.Body<Any?, Any?>
-          val b = body()
-          val f = codec::decode
-          f(b)
-        }
+        is EndpointIO.ByteArrayBody -> codec.decode(response.receive())
+        is EndpointIO.ByteBufferBody -> codec.decode(response.receive())
+        is EndpointIO.InputStreamBody -> codec.decode(response.receive())
+        is EndpointIO.StringBody -> codec.decode(response.receive())
         is EndpointIO.Empty -> codec.decode(Unit)
         is EndpointIO.Header -> codec.decode(headers.getAll(name).orEmpty())
         is EndpointIO.StreamBody -> TODO() // (output.codec::decode as (Any?) -> DecodeResult<Params>).invoke(body())
         is EndpointOutput.FixedStatusCode -> codec.decode(Unit)
         is EndpointOutput.StatusCode -> codec.decode(code)
         is EndpointOutput.MappedPair<*, *, *, *> ->
-          output.outputParams(body, headers, code, codeDescription).flatMap {
+          output.outputParams(response, headers, code, codeDescription).flatMap {
             (mapping::decode as (Any?) -> DecodeResult<Any?>)(it.asAny)
           }
         is EndpointIO.MappedPair<*, *, *, *> ->
-          wrapped.outputParams(body, headers, code, codeDescription).flatMap { p ->
+          wrapped.outputParams(response, headers, code, codeDescription).flatMap { p ->
             (mapping::decode as (Any?) -> DecodeResult<Any?>)(p.asAny)
           }
       }.map(Params::ParamsAsAny)
-    is EndpointIO.Pair<*, *, *> -> handleOutputPair(first, second, combine, body, headers, code, codeDescription)
-    is EndpointOutput.Pair<*, *, *> -> handleOutputPair(first, second, combine, body, headers, code, codeDescription)
+    is EndpointIO.Pair<*, *, *> -> handleOutputPair(first, second, combine, response, headers, code, codeDescription)
+    is EndpointOutput.Pair<*, *, *> -> handleOutputPair(
+      first,
+      second,
+      combine,
+      response,
+      headers,
+      code,
+      codeDescription
+    )
     is EndpointOutput.Void -> DecodeResult.Failure.Error(
       "",
       IllegalArgumentException("Cannot convert a void output to a value!")
@@ -152,22 +142,6 @@ suspend fun EndpointOutput<*>.outputParams(
 @Suppress("UNCHECKED_CAST")
 fun <I> HttpRequestBuilder.setInputParams(input: EndpointInput<I>, params: Params): Unit =
   (params.asAny as I).let { value ->
-    fun <I> setBody(value: I, codec: Codec<*, *, CodecFormat>, rawBodyType: RawBodyType<*>): Unit =
-      when (rawBodyType) {
-        RawBodyType.ByteArrayBody -> {
-          body = ByteArrayContent((codec::encode as (I) -> ByteArray)(value))
-        }
-        RawBodyType.ByteBufferBody -> {
-          body = (codec::encode as (I) -> ByteBuffer)(value)
-        }
-        RawBodyType.InputStreamBody -> {
-          body = (codec::encode as (I) -> InputStream)(value)
-        }
-        is RawBodyType.StringBody -> {
-          body = (codec::encode as (I) -> String)(value)
-        }
-      }
-
     fun handleInputPair(left: EndpointInput<*>, right: EndpointInput<*>, params: Params, split: SplitParams): Unit =
       split(params).let { (leftParams, rightParams) ->
         setInputParams(left, leftParams)
@@ -178,7 +152,18 @@ fun <I> HttpRequestBuilder.setInputParams(input: EndpointInput<I>, params: Param
       setInputParams(input, Params.ParamsAsAny((mapped::encode as (Any?) -> Any)(params.asAny)))
 
     when (input) {
-      is EndpointIO.Body<*, *> -> setBody(value, input.codec, input.bodyType)
+      is EndpointIO.ByteArrayBody<*> -> {
+        body = ByteArrayContent((input.codec::encode as (I) -> ByteArray)(value))
+      }
+      is EndpointIO.ByteBufferBody<*> -> {
+        body = (input.codec::encode as (I) -> ByteBuffer)(value)
+      }
+      is EndpointIO.InputStreamBody<*> -> {
+        body = (input.codec::encode as (I) -> InputStream)(value)
+      }
+      is EndpointIO.StringBody<*> -> {
+        body = (input.codec::encode as (I) -> String)(value)
+      }
       is EndpointIO.Empty -> Unit
       is EndpointIO.Header ->
         headers.appendAll(input.name, input.codec.encode(value))

@@ -1,7 +1,7 @@
 package com.fortysevendegrees.thool.test
 
 import com.fortysevendegrees.thool.ConnectionInfo
-import com.fortysevendegrees.thool.RawBodyType
+import com.fortysevendegrees.thool.EndpointIO
 import com.fortysevendegrees.thool.ServerRequest
 import com.fortysevendegrees.thool.map
 import com.fortysevendegrees.thool.model.CodecFormat
@@ -13,9 +13,14 @@ import com.fortysevendegrees.thool.model.QueryParams
 import com.fortysevendegrees.thool.model.StatusCode
 import com.fortysevendegrees.thool.model.Uri
 import com.fortysevendegrees.thool.server.ServerEndpoint
-import com.fortysevendegrees.thool.server.intrepreter.RequestBody
-import com.fortysevendegrees.thool.server.intrepreter.ServerInterpreter
-import com.fortysevendegrees.thool.server.intrepreter.ToResponseBody
+import com.fortysevendegrees.thool.server.interpreter.Body
+import com.fortysevendegrees.thool.server.interpreter.ByteArrayBody
+import com.fortysevendegrees.thool.server.interpreter.ByteBufferBody
+import com.fortysevendegrees.thool.server.interpreter.InputStreamBody
+import com.fortysevendegrees.thool.server.interpreter.RequestBody
+import com.fortysevendegrees.thool.server.interpreter.ServerInterpreter
+import com.fortysevendegrees.thool.server.interpreter.StringBody
+import com.fortysevendegrees.thool.server.interpreter.ToResponseBody
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
@@ -23,7 +28,6 @@ import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.RecordedRequest
 import okio.Buffer
-import java.io.InputStream
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
 
@@ -50,12 +54,12 @@ public fun <I, E, O> ServerEndpoint<I, E, O>.toDispatcher(): Dispatcher =
   }
 
 internal class RequestBody(val ctx: RecordedRequest) : RequestBody {
-  override suspend fun <R> toRaw(bodyType: RawBodyType<R>): R {
+  override suspend fun <R> toRaw(bodyType: EndpointIO.Body<R, *>): R {
     return when (bodyType) {
-      RawBodyType.ByteArrayBody -> ctx.body.readByteArray()
-      RawBodyType.ByteBufferBody -> ByteBuffer.wrap(ctx.body.readByteArray())
-      RawBodyType.InputStreamBody -> ctx.body.inputStream()
-      is RawBodyType.StringBody -> ctx.body.readByteArray().toString(bodyType.charset)
+      is EndpointIO.ByteArrayBody -> ctx.body.readByteArray()
+      is EndpointIO.ByteBufferBody -> ByteBuffer.wrap(ctx.body.readByteArray())
+      is EndpointIO.InputStreamBody -> ctx.body.inputStream()
+      is EndpointIO.StringBody -> ctx.body.readByteArray().toString(bodyType.charset)
     } as R
   }
 
@@ -91,38 +95,26 @@ internal class ServerRequest(val ctx: RecordedRequest) : ServerRequest {
 
 public class ToResponseBody : ToResponseBody<MockResponseBody> {
 
-  override fun <R> fromRawValue(
-    v: R,
-    headers: HasHeaders,
-    format: CodecFormat,
-    bodyType: RawBodyType<R>
-  ): MockResponseBody = rawValueToEntity(bodyType, headers, format, v)
+  override fun fromRawValue(raw: Body, headers: HasHeaders, format: CodecFormat): MockResponseBody =
+    rawValueToEntity(raw, headers, format)
 
   override fun fromStreamValue(
-    v: Flow<Byte>,
+    raw: Flow<Byte>,
     headers: HasHeaders,
     format: CodecFormat,
     charset: Charset?
   ): MockResponseBody = TODO()
 
-  private fun <R> rawValueToEntity(
-    bodyType: RawBodyType<R>,
+  private fun rawValueToEntity(
+    r: Body,
     headers: HasHeaders,
     format: CodecFormat,
-    r: R
   ): MockResponseBody =
-    when (bodyType) {
-      is RawBodyType.StringBody ->
-        MockResponse().setBody(r as String)
-      RawBodyType.ByteArrayBody ->
-        MockResponse()
-          .setBody(Buffer().apply { read(r as ByteArray) })
-      RawBodyType.InputStreamBody ->
-        MockResponse()
-          .setBody(Buffer().apply { readFrom(r as InputStream) })
-      RawBodyType.ByteBufferBody ->
-        MockResponse()
-          .setBody(Buffer().apply { read(r as ByteBuffer) })
+    when (r) {
+      is ByteArrayBody -> MockResponse().setBody(Buffer().apply { read(r.byteArray) })
+      is ByteBufferBody -> MockResponse().setBody(Buffer().apply { read(r.byteBuffer) })
+      is InputStreamBody -> MockResponse().setBody(Buffer().apply { readFrom(r.inputStream) })
+      is StringBody -> MockResponse().setBody(r.string)
     }.addHeader(HeaderNames.ContentType, format.mediaType.toString())
       .apply { headers.headers.forEach { (n, v) -> addHeader(n, v) } }
 }

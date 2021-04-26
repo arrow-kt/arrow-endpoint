@@ -4,6 +4,8 @@ import arrow.core.Tuple4
 import arrow.core.Tuple5
 import com.fortysevendegrees.thool.model.CodecFormat
 import kotlinx.coroutines.flow.Flow
+import java.io.InputStream
+import java.nio.ByteBuffer
 import java.nio.charset.Charset
 
 // Elements that can occur in both input and output
@@ -54,21 +56,60 @@ public sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
     override fun toString(): String = "{header $name}"
   }
 
-  public data class Body<R, T>(
-    val bodyType: RawBodyType<R>,
-    override val codec: Codec<R, T, CodecFormat>,
+  // TODO FileBody, MultipartBody
+  public sealed interface Body<R, T> : Basic<R, T, CodecFormat>
+  public sealed interface BinaryBody<R, T> : Body<R, T>
+
+  public data class StringBody<T>(
+    val charset: Charset,
+    override val codec: Codec<String, T, CodecFormat>,
     override val info: Info<T>
-  ) : Basic<R, T, CodecFormat> {
-    override fun <B> copyWith(c: Codec<R, B, CodecFormat>, i: Info<B>): Body<R, B> =
-      Body(bodyType, c, i)
+  ) : Body<String, T> {
+    override fun <B> copyWith(c: Codec<String, B, CodecFormat>, i: Info<B>): StringBody<B> =
+      StringBody(charset, c, i)
 
     override fun toString(): String {
-      val charset = when (bodyType) {
-        is RawBodyType.StringBody -> " (${bodyType.charset})"
-        else -> ""
-      }
       val format = codec.format.mediaType
       return "{body as $format$charset}"
+    }
+  }
+
+  public data class ByteArrayBody<T>(
+    override val codec: Codec<ByteArray, T, CodecFormat>,
+    override val info: Info<T>
+  ) : BinaryBody<ByteArray, T> {
+    override fun <B> copyWith(c: Codec<ByteArray, B, CodecFormat>, i: Info<B>): ByteArrayBody<B> =
+      ByteArrayBody(c, i)
+
+    override fun toString(): String {
+      val format = codec.format.mediaType
+      return "{body as $format}"
+    }
+  }
+
+  public data class ByteBufferBody<T>(
+    override val codec: Codec<ByteBuffer, T, CodecFormat>,
+    override val info: Info<T>
+  ) : BinaryBody<ByteBuffer, T> {
+    override fun <B> copyWith(c: Codec<ByteBuffer, B, CodecFormat>, i: Info<B>): ByteBufferBody<B> =
+      ByteBufferBody(c, i)
+
+    override fun toString(): String {
+      val format = codec.format.mediaType
+      return "{body as $format}"
+    }
+  }
+
+  public data class InputStreamBody<T>(
+    override val codec: Codec<InputStream, T, CodecFormat>,
+    override val info: Info<T>
+  ) : BinaryBody<InputStream, T> {
+    override fun <B> copyWith(c: Codec<InputStream, B, CodecFormat>, i: Info<B>): InputStreamBody<B> =
+      InputStreamBody(c, i)
+
+    override fun toString(): String {
+      val format = codec.format.mediaType
+      return "{body as $format}"
     }
   }
 
@@ -86,14 +127,14 @@ public sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
   }
 
   public data class Info<T>(val description: String?, val examples: List<Example<T>>, val deprecated: Boolean) {
-    fun description(d: String): Info<T> = copy(description = d)
-    fun example(): T? = examples.firstOrNull()?.value
-    fun example(t: T): Info<T> = example(Example(t))
-    fun example(example: Example<T>): Info<T> = copy(examples = examples + example)
-    fun examples(ts: List<Example<T>>): Info<T> = copy(examples = ts)
-    fun deprecated(d: Boolean): Info<T> = copy(deprecated = d)
+    public fun description(d: String): Info<T> = copy(description = d)
+    public fun example(): T? = examples.firstOrNull()?.value
+    public fun example(t: T): Info<T> = example(Example(t))
+    public fun example(example: Example<T>): Info<T> = copy(examples = examples + example)
+    public fun examples(ts: List<Example<T>>): Info<T> = copy(examples = ts)
+    public fun deprecated(d: Boolean): Info<T> = copy(deprecated = d)
 
-    fun <U> map(codec: Mapping<T, U>): Info<U> =
+    public fun <U> map(codec: Mapping<T, U>): Info<U> =
       Info(
         description,
         examples.mapNotNull { e ->
@@ -105,12 +146,12 @@ public sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
       )
 
     public data class Example<out A>(val value: A, val name: String? = null, val summary: String? = null) {
-      fun <B> map(transform: (A) -> B): Example<B> =
+      public fun <B> map(transform: (A) -> B): Example<B> =
         Example(transform(value), name, summary)
     }
 
     public companion object {
-      fun <A> empty(): Info<A> = Info(null, emptyList(), deprecated = false)
+      public fun <A> empty(): Info<A> = Info(null, emptyList(), deprecated = false)
     }
   }
 
@@ -132,7 +173,7 @@ public sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
 
 // We need to support this Arity-22
 @JvmName("and")
-fun <A, B> EndpointIO<A>.and(other: EndpointIO<B>): EndpointIO<Pair<A, B>> =
+public fun <A, B> EndpointIO<A>.and(other: EndpointIO<B>): EndpointIO<Pair<A, B>> =
   EndpointIO.Pair(
     this,
     other,
@@ -146,7 +187,7 @@ fun <A, B> EndpointIO<A>.and(other: EndpointIO<B>): EndpointIO<Pair<A, B>> =
   )
 
 @JvmName("andRightUnit")
-fun <A> EndpointIO<A>.and(other: EndpointIO<Unit>): EndpointIO<A> =
+public fun <A> EndpointIO<A>.and(other: EndpointIO<Unit>): EndpointIO<A> =
   EndpointIO.Pair(
     this,
     other,
@@ -155,7 +196,7 @@ fun <A> EndpointIO<A>.and(other: EndpointIO<Unit>): EndpointIO<A> =
   )
 
 @JvmName("andLeftUnit")
-fun <A> EndpointIO<Unit>.and(other: EndpointIO<A>, dummy: Unit = Unit): EndpointIO<A> =
+public fun <A> EndpointIO<Unit>.and(other: EndpointIO<A>, dummy: Unit = Unit): EndpointIO<A> =
   EndpointIO.Pair(
     this,
     other,
@@ -164,7 +205,7 @@ fun <A> EndpointIO<Unit>.and(other: EndpointIO<A>, dummy: Unit = Unit): Endpoint
   )
 
 @JvmName("and3")
-fun <A, B, C> EndpointIO<Pair<A, B>>.and(other: EndpointIO<C>): EndpointIO<Triple<A, B, C>> =
+public fun <A, B, C> EndpointIO<Pair<A, B>>.and(other: EndpointIO<C>): EndpointIO<Triple<A, B, C>> =
   EndpointIO.Pair(
     this,
     other,
@@ -178,7 +219,7 @@ fun <A, B, C> EndpointIO<Pair<A, B>>.and(other: EndpointIO<C>): EndpointIO<Tripl
   )
 
 @JvmName("and2Pair")
-fun <A, B, C, D> EndpointIO<Pair<A, B>>.and(other: EndpointIO<Pair<C, D>>): EndpointIO<Tuple4<A, B, C, D>> =
+public fun <A, B, C, D> EndpointIO<Pair<A, B>>.and(other: EndpointIO<Pair<C, D>>): EndpointIO<Tuple4<A, B, C, D>> =
   EndpointIO.Pair(
     this,
     other,
@@ -192,7 +233,7 @@ fun <A, B, C, D> EndpointIO<Pair<A, B>>.and(other: EndpointIO<Pair<C, D>>): Endp
   )
 
 @JvmName("and4")
-fun <A, B, C, D> EndpointIO<Triple<A, B, C>>.and(other: EndpointIO<D>): EndpointIO<Tuple4<A, B, C, D>> =
+public fun <A, B, C, D> EndpointIO<Triple<A, B, C>>.and(other: EndpointIO<D>): EndpointIO<Tuple4<A, B, C, D>> =
   EndpointIO.Pair(
     this,
     other,
@@ -206,7 +247,7 @@ fun <A, B, C, D> EndpointIO<Triple<A, B, C>>.and(other: EndpointIO<D>): Endpoint
   )
 
 @JvmName("and5")
-fun <A, B, C, D, E> EndpointIO<Tuple4<A, B, C, D>>.and(other: EndpointIO<D>): EndpointIO<Tuple5<A, B, C, D, E>> =
+public fun <A, B, C, D, E> EndpointIO<Tuple4<A, B, C, D>>.and(other: EndpointIO<D>): EndpointIO<Tuple5<A, B, C, D, E>> =
   EndpointIO.Pair(
     this,
     other,
