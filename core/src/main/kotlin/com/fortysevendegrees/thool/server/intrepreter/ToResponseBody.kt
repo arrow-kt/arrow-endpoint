@@ -7,11 +7,25 @@ import java.io.InputStream
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
 
-public sealed interface Body
-public data class StringBody(public val charset: Charset, public val string: String) : Body
-public inline class ByteArrayBody(public val byteArray: ByteArray) : Body
-public inline class ByteBufferBody(public val byteBuffer: ByteBuffer) : Body
-public inline class InputStreamBody(public val inputStream: InputStream) : Body
+public sealed interface Body {
+  fun toByteArray(): ByteArray
+}
+
+public data class StringBody(public val charset: Charset, public val string: String) : Body {
+  override fun toByteArray(): ByteArray = string.toByteArray(charset)
+}
+
+public inline class ByteArrayBody(public val byteArray: ByteArray) : Body {
+  override fun toByteArray(): ByteArray = byteArray
+}
+
+public inline class ByteBufferBody(public val byteBuffer: ByteBuffer) : Body {
+  override fun toByteArray(): ByteArray = byteBuffer.array()
+}
+
+public inline class InputStreamBody(public val inputStream: InputStream) : Body {
+  override fun toByteArray(): ByteArray = inputStream.readBytes()
+}
 
 public interface ToResponseBody<B> {
 

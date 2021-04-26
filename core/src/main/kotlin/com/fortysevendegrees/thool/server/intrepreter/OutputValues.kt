@@ -55,18 +55,19 @@ public data class OutputValues<B>(
     fun <B> of(
       rawToResponseBody: ToResponseBody<B>,
       output: EndpointOutput<*>,
-      value: Params,
+      params: Params,
       ov: OutputValues<B>
-    ): OutputValues<B> =
-      when (output) {
-        is EndpointIO.Single<*> -> applySingle(rawToResponseBody, output, value, ov)
-        is EndpointOutput.Single<*> -> applySingle(rawToResponseBody, output, value, ov)
+    ): OutputValues<B> {
+      println("OutputValue.of ===> $output. $params")
+      return when (output) {
+        is EndpointIO.Single<*> -> applySingle(rawToResponseBody, output, params, ov)
+        is EndpointOutput.Single<*> -> applySingle(rawToResponseBody, output, params, ov)
         is EndpointOutput.Pair<*, *, *> -> applyPair(
           rawToResponseBody,
           output.first,
           output.second,
           output.split,
-          value,
+          params,
           ov
         )
         is EndpointIO.Pair<*, *, *> -> applyPair(
@@ -74,11 +75,12 @@ public data class OutputValues<B>(
           output.first,
           output.second,
           output.split,
-          value,
+          params,
           ov
         )
         is EndpointOutput.Void -> throw IllegalArgumentException("Cannot encode a void output!")
       }
+    }
 
     private fun <B> OutputValues<B>.withBody(
       body: Body,
@@ -135,6 +137,7 @@ public data class OutputValues<B>(
         }
         is EndpointIO.StringBody -> {
           val mapping = output.codec as Mapping<String, Any?>
+          println("is EndpointIO.StringBody ===> ${value.asAny}")
           ov.withBody(StringBody(output.charset, mapping.encode(value.asAny)), rawToResponseBody, output)
         }
         is EndpointIO.MappedPair<*, *, *, *> -> {

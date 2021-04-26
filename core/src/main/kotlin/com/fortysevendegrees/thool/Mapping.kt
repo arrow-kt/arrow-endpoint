@@ -3,6 +3,7 @@ package com.fortysevendegrees.thool
 import arrow.core.Option
 import arrow.core.andThen
 import arrow.core.getOrElse
+import arrow.core.identity
 import arrow.core.nonFatalOrThrow
 
 /**
@@ -56,14 +57,14 @@ public interface Mapping<L, H> {
         override fun encode(h: L): L = h
       }
 
-    fun <L, H> fromDecode(f: (L) -> DecodeResult<H>, g: (H) -> L): Mapping<L, H> =
+    fun <L, H> fromDecode(rawDecode: (L) -> DecodeResult<H>, encode: (H) -> L): Mapping<L, H> =
       object : Mapping<L, H> {
-        override fun rawDecode(l: L): DecodeResult<H> = f(l)
-        override fun encode(h: H): L = g(h)
+        override fun rawDecode(l: L): DecodeResult<H> = rawDecode(l)
+        override fun encode(h: H): L = encode(h)
       }
 
-    fun <L, H> from(f: (L) -> H, g: (H) -> L): Mapping<L, H> =
-      fromDecode(f.andThen { DecodeResult.Value(it) }, g)
+    fun <L, H> from(decode: (L) -> H, encode: (H) -> L): Mapping<L, H> =
+      fromDecode(decode.andThen { DecodeResult.Value(it) }, encode)
 
     /**
      * A mapping which, during encoding, adds the given `prefix`.
@@ -118,13 +119,15 @@ sealed class DecodeResult<out A> {
     o.map { Value(it) }.getOrElse { Failure.Missing }
 }
 
-fun <A> List<DecodeResult<A>>.sequence(): DecodeResult<List<A>> =
-  foldRight(DecodeResult.Value(emptyList())) { res, acc ->
-    when (res) {
-      is DecodeResult.Value -> when (acc) {
-        is DecodeResult.Value -> DecodeResult.Value(listOf(res.value) + acc.value)
-        is DecodeResult.Failure -> acc
-      }
-      is DecodeResult.Failure -> res
+fun <A> List<DecodeResult<A>>.sequence(): DecodeResult<List<A>> = traverseDecodeResult(::identity)
+
+inline fun <A, B> List<A>.traverseDecodeResult(f: (A) -> DecodeResult<B>): DecodeResult<List<B>> {
+  val acc = mutableListOf<B>()
+  forEach { a ->
+    when (val res = f(a)) {
+      is DecodeResult.Value -> acc.add(res.value)
+      is DecodeResult.Failure -> return@traverseDecodeResult res
     }
   }
+  return DecodeResult.Value(acc)
+}

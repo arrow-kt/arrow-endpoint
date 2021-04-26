@@ -1,18 +1,14 @@
 package com.fortysevendegrees.thool.http4k
 
 import arrow.core.Either
-import com.fortysevendegrees.thool.Codec
 import com.fortysevendegrees.thool.CombineParams
 import com.fortysevendegrees.thool.DecodeResult
 import com.fortysevendegrees.thool.Endpoint
 import com.fortysevendegrees.thool.EndpointIO
-import com.fortysevendegrees.thool.EndpointInput
 import com.fortysevendegrees.thool.EndpointOutput
 import com.fortysevendegrees.thool.Mapping
 import com.fortysevendegrees.thool.Params
-import com.fortysevendegrees.thool.PlainCodec
-import com.fortysevendegrees.thool.SplitParams
-import com.fortysevendegrees.thool.model.CodecFormat
+import com.fortysevendegrees.thool.client.requestInfo
 import com.fortysevendegrees.thool.model.Method.Companion.GET
 import com.fortysevendegrees.thool.model.Method.Companion.HEAD
 import com.fortysevendegrees.thool.model.Method.Companion.POST
@@ -24,7 +20,6 @@ import com.fortysevendegrees.thool.model.Method.Companion.CONNECT
 import com.fortysevendegrees.thool.model.Method.Companion.TRACE
 import com.fortysevendegrees.thool.model.StatusCode
 import org.http4k.core.HttpHandler
-import org.http4k.core.MemoryBody
 import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Response
@@ -37,9 +32,6 @@ public fun <I, E, O> Endpoint<I, E, O>.toRequestAndParser(baseUrl: String): (I) 
     Pair(request, { response: Response -> parseResponse(request, response) })
   }
 
-private fun String.trimLastSlash(): String =
-  if (this.lastOrNull() == '/') dropLast(1) else this
-
 public operator fun <I, E, O> HttpHandler.invoke(
   endpoint: Endpoint<I, E, O>,
   baseUrl: String,
@@ -50,77 +42,29 @@ public operator fun <I, E, O> HttpHandler.invoke(
   return endpoint.parseResponse(request, response)
 }
 
-public fun <I, E, O> Endpoint<I, E, O>.toRequest(
-  baseUrl: String,
-  i: I
-): Request {
-  val params = Params.ParamsAsAny(i)
-  val request = Request(
-    requireNotNull(method()) { "Method not defined!" },
-    input.buildUrl(baseUrl.trimLastSlash(), params)
+public fun <I, E, O> Endpoint<I, E, O>.toRequest(baseUrl: String, i: I): Request {
+  val info = input.requestInfo(i, baseUrl)
+  val r = Request(
+    requireNotNull(info.method.toHttp4kMethod()) { "Method ${info.method.value} not supported!" },
+    info.baseUrlWithPath
   )
-  input.setInputParams(request, params)
-  return request
-}
-
-public fun EndpointInput<*>.buildUrl(
-  baseUrl: String,
-  params: Params
-): String =
-  when (this) {
-    is EndpointInput.FixedPath -> "$baseUrl/${this.s}"
-    is EndpointInput.PathCapture -> {
-      val v = (codec as PlainCodec<Any?>).encode(params.asAny)
-      "$baseUrl/$v"
-    }
-    is EndpointInput.PathsCapture -> {
-      val ps = (codec as Codec<List<String>, Any?, CodecFormat.TextPlain>).encode(params.asAny)
-      baseUrl + ps.joinToString(prefix = "/", separator = "/")
-    }
-
-    // These don't influence baseUrl
-    is EndpointIO.Body<*, *> -> baseUrl
-    is EndpointIO.Empty -> baseUrl
-    is EndpointInput.FixedMethod -> baseUrl
-    is EndpointIO.Header -> baseUrl
-    is EndpointIO.StreamBody -> baseUrl
-    is EndpointInput.Query -> baseUrl
-    is EndpointInput.Cookie -> baseUrl
-    is EndpointInput.QueryParams -> baseUrl
-
-    // Recurse on composition of inputs.
-    is EndpointInput.Pair<*, *, *> -> handleInputPair(this.first, this.second, params, this.split, baseUrl)
-    is EndpointIO.Pair<*, *, *> -> handleInputPair(this.first, this.second, params, this.split, baseUrl)
-    is EndpointIO.MappedPair<*, *, *, *> -> handleMapped(this, this.mapping, params, baseUrl)
-    is EndpointInput.MappedPair<*, *, *, *> -> handleMapped(this, this.mapping, params, baseUrl)
+  val r2 = info.cookies.fold(r) { r, (name, value) ->
+    r.cookie(name, value)
+  }
+  val r3 = info.headers.fold(r2) { r, (name, value) ->
+    r.header(name, value)
   }
 
-public fun handleInputPair(
-  left: EndpointInput<*>,
-  right: EndpointInput<*>,
-  params: Params,
-  split: SplitParams,
-  baseUrl: String
-): String {
-  val (leftParams, rightParams) = split(params)
-  val baseUrl2 = (left as EndpointInput<Any?>).buildUrl(baseUrl, leftParams)
-  return (right as EndpointInput<Any?>).buildUrl(baseUrl2, rightParams)
+  val r4 = info.queryParams.ps.fold(r3) { r, (name, params) ->
+    params.fold(r) { r, v ->
+      r.query(name, v)
+    }
+  }
+  return r4
 }
 
-private fun handleMapped(
-  tuple: EndpointInput<*>,
-  codec: Mapping<*, *>,
-  params: Params,
-  baseUrl: String
-): String =
-  (tuple as EndpointInput<Any?>).buildUrl(
-    baseUrl,
-    Params.ParamsAsAny((codec::encode as (Any?) -> Any?)(params.asAny))
-  )
-
-// Extract method, and use GET as default
-public fun Endpoint<*, *, *>.method(): Method? =
-  when (input.method()?.value ?: GET.value) {
+public fun com.fortysevendegrees.thool.model.Method.toHttp4kMethod(): Method? =
+  when (this.value) {
     GET.value -> Method.GET
     HEAD.value -> Method.HEAD
     POST.value -> Method.POST
@@ -133,76 +77,6 @@ public fun Endpoint<*, *, *>.method(): Method? =
     CONNECT.value -> null
     else -> null
   }
-
-public fun <I> EndpointInput<I>.setInputParams(
-  request: Request,
-  params: Params
-): Request = (params.asAny as I).let { value ->
-  when (val input = this) {
-    is EndpointIO.Empty -> request
-    is EndpointIO.Header ->
-      input.codec.encode(value)
-        .fold(request) { req, v -> req.header(input.name, v) }
-
-    is EndpointIO.ByteArrayBody -> request.body(MemoryBody(input.codec.encode(value)))
-    is EndpointIO.ByteBufferBody -> request.body(MemoryBody(input.codec.encode(value)))
-    is EndpointIO.InputStreamBody -> request.body(input.codec.encode(value))
-    is EndpointIO.StringBody -> request.body(input.codec.encode(value))
-
-    is EndpointInput.Cookie -> input.codec.encode(value)?.let { v ->
-      request.cookie(input.name, v)
-    } ?: request
-
-    is EndpointInput.Query ->
-      input.codec.encode(value).fold(request) { request, v ->
-        request.query(input.name, v)
-      }
-
-    is EndpointInput.QueryParams ->
-      input.codec.encode(value).ps.fold(request) { request, (name, values) ->
-        values.fold(request) { request, v ->
-          request.query(name, v)
-        }
-      }
-
-    is EndpointIO.StreamBody -> TODO("Implement stream")
-
-    // These inputs were inserted into baseUrl already
-    is EndpointInput.FixedMethod -> request
-    is EndpointInput.FixedPath -> request
-    is EndpointInput.PathCapture -> request
-    is EndpointInput.PathsCapture -> request
-
-    // Recurse on composition
-    is EndpointIO.Pair<*, *, *> -> handleInputPair(input.first, input.second, params, input.split, request)
-    is EndpointInput.Pair<*, *, *> -> handleInputPair(input.first, input.second, params, input.split, request)
-    is EndpointIO.MappedPair<*, *, *, *> -> handleMapped(input, input.mapping, params, request)
-    is EndpointInput.MappedPair<*, *, *, *> -> handleMapped(input, input.mapping, params, request)
-  }
-}
-
-private fun handleInputPair(
-  left: EndpointInput<*>,
-  right: EndpointInput<*>,
-  params: Params,
-  split: SplitParams,
-  req: Request
-): Request {
-  val (leftParams, rightParams) = split(params)
-  val req2 = (left as EndpointInput<Any?>).setInputParams(req, leftParams)
-  return (right as EndpointInput<Any?>).setInputParams(req2, rightParams)
-}
-
-private fun handleMapped(
-  tuple: EndpointInput<*>,
-  codec: Mapping<*, *>,
-  params: Params,
-  req: Request
-): Request =
-  (tuple as EndpointInput<Any?>).setInputParams(
-    req,
-    Params.ParamsAsAny((codec::encode as (Any?) -> Any?)(params.asAny))
-  )
 
 // Functionality on how to go from Http4k Response to our domain
 public fun <I, E, O> Endpoint<I, E, O>.parseResponse(
@@ -228,7 +102,7 @@ public fun <I, E, O> Endpoint<I, E, O>.parseResponse(
       DecodeResult.Failure.Error(
         result.original,
         IllegalArgumentException(
-          "Cannot decode from ${result.original} of request ${request.method} ${request.uri}",
+          "Cannot decode from ${result.original} of request $code - ${request.method} ${request.uri}",
           result.error
         )
       )
@@ -260,11 +134,11 @@ fun EndpointOutput<*>.getOutputParams(
 
       is EndpointIO.MappedPair<*, *, *, *> ->
         single.wrapped.getOutputParams(response, headers, code, statusText).flatMap { p ->
-          (single.mapping::decode as (Any?) -> DecodeResult<Any?>)(p.asAny)
+          (single.mapping as Mapping<Any?, DecodeResult<Any?>>).decode(p.asAny)
         }
       is EndpointOutput.MappedPair<*, *, *, *> ->
         single.output.getOutputParams(response, headers, code, statusText).flatMap { p ->
-          (single.mapping::decode as (Any?) -> DecodeResult<Any?>)(p.asAny)
+          (single.mapping as Mapping<Any?, DecodeResult<Any?>>).decode(p.asAny)
         }
     }.map { Params.ParamsAsAny(it) }
 
@@ -287,7 +161,7 @@ fun EndpointOutput<*>.getOutputParams(
       statusText
     )
     is EndpointOutput.Void -> DecodeResult.Failure.Error(
-      "",
+      "Cannot convert a void output to a value!",
       IllegalArgumentException("Cannot convert a void output to a value!")
     )
   }

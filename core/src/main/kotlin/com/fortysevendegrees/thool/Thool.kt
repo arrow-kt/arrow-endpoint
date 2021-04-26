@@ -19,7 +19,7 @@ object Thool {
     EndpointInput.Query(name, codec, EndpointIO.Info.empty())
 
   fun <A> query(name: String, codec: PlainCodec<A>): EndpointInput.Query<A> =
-    EndpointInput.Query(name, Codec.listHead(codec), EndpointIO.Info.empty())
+    EndpointInput.Query(name, Codec.listFirst(codec), EndpointIO.Info.empty())
 
   fun queryParams(): EndpointInput.QueryParams<QueryParams> =
     EndpointInput.QueryParams(Codec.idPlain(), EndpointIO.Info.empty())

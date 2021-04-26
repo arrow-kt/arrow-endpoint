@@ -34,6 +34,7 @@ import java.nio.charset.Charset
 public fun <I, E, O> ServerEndpoint<I, E, O>.toDispatcher(): Dispatcher =
   object : Dispatcher() {
     override fun dispatch(request: RecordedRequest): MockResponse {
+      println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ${request.requestUrl} ${request.path} ${request.requestUrl?.toUri()}")
       val serverRequest = ServerRequest(request)
       val interpreter = ServerInterpreter(
         serverRequest,
