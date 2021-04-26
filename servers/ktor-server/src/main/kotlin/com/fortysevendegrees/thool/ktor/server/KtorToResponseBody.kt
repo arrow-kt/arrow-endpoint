@@ -4,10 +4,6 @@ import kotlinx.coroutines.flow.Flow
 import com.fortysevendegrees.thool.model.CodecFormat
 import com.fortysevendegrees.thool.model.HasHeaders
 import com.fortysevendegrees.thool.server.interpreter.Body
-import com.fortysevendegrees.thool.server.interpreter.ByteArrayBody
-import com.fortysevendegrees.thool.server.interpreter.ByteBufferBody
-import com.fortysevendegrees.thool.server.interpreter.InputStreamBody
-import com.fortysevendegrees.thool.server.interpreter.StringBody
 import com.fortysevendegrees.thool.server.interpreter.ToResponseBody
 import io.ktor.content.ByteArrayContent
 import io.ktor.http.ContentType
@@ -23,10 +19,10 @@ import java.nio.charset.StandardCharsets
 class KtorToResponseBody : ToResponseBody<KtorResponseBody> {
 
   override fun fromRawValue(
-    raw: Body,
+    v: Body,
     headers: HasHeaders,
     format: CodecFormat
-  ): KtorResponseBody = rawValueToEntity(raw, headers, format)
+  ): KtorResponseBody = rawValueToEntity(v, headers, format)
 
   override fun fromStreamValue(
     raw: Flow<Byte>,
@@ -36,22 +32,16 @@ class KtorToResponseBody : ToResponseBody<KtorResponseBody> {
   ): KtorResponseBody =
     ByteFlowContent(raw, headers.contentLength(), format.toContentType(headers, charset))
 
-  private fun ByteBuffer.moveToByteArray(): ByteArray {
-    val array = ByteArray(remaining())
-    get(array)
-    return array
-  }
-
   private fun rawValueToEntity(
     v: Body,
     headers: HasHeaders,
     format: CodecFormat
   ): KtorResponseBody =
     when (v) {
-      is ByteArrayBody -> ByteArrayContent(v.byteArray, format.toContentType(headers, null))
-      is ByteBufferBody -> ByteArrayContent(v.byteBuffer.moveToByteArray(), format.toContentType(headers, null))
-      is StringBody -> ByteArrayContent(v.string.toByteArray(v.charset))
-      is InputStreamBody -> OutputStreamContent(
+      is Body.ByteArray -> ByteArrayContent(v.toByteArray(), format.toContentType(headers, null))
+      is Body.ByteBuffer -> ByteArrayContent(v.toByteArray(), format.toContentType(headers, null))
+      is Body.String -> ByteArrayContent(v.toByteArray())
+      is Body.InputStream -> OutputStreamContent(
         {
           v.inputStream.copyTo(this)
         },
