@@ -19,10 +19,7 @@ import com.fortysevendegrees.thool.model.Method.Companion.PATCH
 import com.fortysevendegrees.thool.model.Method.Companion.CONNECT
 import com.fortysevendegrees.thool.model.Method.Companion.TRACE
 import com.fortysevendegrees.thool.model.StatusCode
-import com.fortysevendegrees.thool.server.intrepreter.ByteArrayBody
-import com.fortysevendegrees.thool.server.intrepreter.ByteBufferBody
-import com.fortysevendegrees.thool.server.intrepreter.InputStreamBody
-import com.fortysevendegrees.thool.server.intrepreter.StringBody
+import com.fortysevendegrees.thool.server.intrepreter.Body
 import org.http4k.core.HttpHandler
 import org.http4k.core.MemoryBody
 import org.http4k.core.Method
@@ -66,10 +63,10 @@ public fun <I, E, O> Endpoint<I, E, O>.toRequest(baseUrl: String, i: I): Request
   }
 
   return when (val body = info.body) {
-    is ByteArrayBody -> r4.body(MemoryBody(body.byteArray))
-    is ByteBufferBody -> r4.body(MemoryBody(body.byteBuffer))
-    is InputStreamBody -> r4.body(body.inputStream)
-    is StringBody -> r4.body(body.string)
+    is Body.ByteArray -> r4.body(MemoryBody(body.byteArray))
+    is Body.ByteBuffer -> r4.body(MemoryBody(body.byteBuffer))
+    is Body.InputStream -> r4.body(body.inputStream)
+    is Body.String -> r4.body(body.string)
     null -> r4
   }
 }

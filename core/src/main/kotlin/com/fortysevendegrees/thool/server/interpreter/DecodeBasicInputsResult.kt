@@ -1,6 +1,6 @@
-package com.fortysevendegrees.thool.server.intrepreter
+package com.fortysevendegrees.thool.server.interpreter
 
-import com.fortysevendegrees.thool.server.intrepreter.DecodeBasicInputsResult.Failure
+import com.fortysevendegrees.thool.server.interpreter.DecodeBasicInputsResult.Failure
 import arrow.core.Either
 import arrow.core.tail
 import com.fortysevendegrees.thool.DecodeResult

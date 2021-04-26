@@ -68,7 +68,7 @@ public sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
     val charset: Charset,
     override val codec: Codec<String, T, CodecFormat>,
     override val info: Info<T>
-  ) : Basic<String, T, CodecFormat>, Body<String, T> {
+  ) : Body<String, T> {
     override fun <B> copyWith(c: Codec<String, B, CodecFormat>, i: Info<B>): StringBody<B> =
       StringBody(charset, c, i)
 
@@ -81,7 +81,7 @@ public sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
   public data class ByteArrayBody<T>(
     override val codec: Codec<ByteArray, T, CodecFormat>,
     override val info: Info<T>
-  ) : Basic<ByteArray, T, CodecFormat>, BinaryBody<ByteArray, T> {
+  ) : BinaryBody<ByteArray, T> {
     override fun <B> copyWith(c: Codec<ByteArray, B, CodecFormat>, i: Info<B>): ByteArrayBody<B> =
       ByteArrayBody(c, i)
 
@@ -94,7 +94,7 @@ public sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
   public data class ByteBufferBody<T>(
     override val codec: Codec<ByteBuffer, T, CodecFormat>,
     override val info: Info<T>
-  ) : Basic<ByteBuffer, T, CodecFormat>, BinaryBody<ByteBuffer, T> {
+  ) : BinaryBody<ByteBuffer, T> {
     override fun <B> copyWith(c: Codec<ByteBuffer, B, CodecFormat>, i: Info<B>): ByteBufferBody<B> =
       ByteBufferBody(c, i)
 
@@ -107,7 +107,7 @@ public sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
   public data class InputStreamBody<T>(
     override val codec: Codec<InputStream, T, CodecFormat>,
     override val info: Info<T>
-  ) : Basic<InputStream, T, CodecFormat>, BinaryBody<InputStream, T> {
+  ) : BinaryBody<InputStream, T> {
     override fun <B> copyWith(c: Codec<InputStream, B, CodecFormat>, i: Info<B>): InputStreamBody<B> =
       InputStreamBody(c, i)
 

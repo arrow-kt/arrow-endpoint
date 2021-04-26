@@ -13,14 +13,10 @@ import com.fortysevendegrees.thool.model.QueryParams
 import com.fortysevendegrees.thool.model.StatusCode
 import com.fortysevendegrees.thool.model.Uri
 import com.fortysevendegrees.thool.server.ServerEndpoint
+import com.fortysevendegrees.thool.server.interpreter.RequestBody
+import com.fortysevendegrees.thool.server.interpreter.ServerInterpreter
+import com.fortysevendegrees.thool.server.interpreter.ToResponseBody
 import com.fortysevendegrees.thool.server.intrepreter.Body
-import com.fortysevendegrees.thool.server.intrepreter.ByteArrayBody
-import com.fortysevendegrees.thool.server.intrepreter.ByteBufferBody
-import com.fortysevendegrees.thool.server.intrepreter.InputStreamBody
-import com.fortysevendegrees.thool.server.intrepreter.RequestBody
-import com.fortysevendegrees.thool.server.intrepreter.ServerInterpreter
-import com.fortysevendegrees.thool.server.intrepreter.StringBody
-import com.fortysevendegrees.thool.server.intrepreter.ToResponseBody
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
@@ -101,7 +97,7 @@ public class ToResponseBody : ToResponseBody<MockResponseBody> {
     rawValueToEntity(v, headers, format)
 
   override fun fromStreamValue(
-    v: Flow<Byte>,
+    raw: Flow<Byte>,
     headers: HasHeaders,
     format: CodecFormat,
     charset: Charset?
@@ -113,9 +109,9 @@ public class ToResponseBody : ToResponseBody<MockResponseBody> {
     format: CodecFormat,
   ): MockResponseBody =
     when (r) {
-      is ByteArrayBody -> MockResponse().setBody(Buffer().apply { write(r.byteArray) })
-      is ByteBufferBody -> MockResponse().setBody(Buffer().apply { write(r.byteBuffer) })
-      is InputStreamBody -> MockResponse().setBody(Buffer().apply { readFrom(r.inputStream) })
-      is StringBody -> MockResponse().setBody(r.string)
+      is Body.ByteArray -> MockResponse().setBody(Buffer().apply { write(r.byteArray) })
+      is Body.ByteBuffer -> MockResponse().setBody(Buffer().apply { write(r.byteBuffer) })
+      is Body.InputStream -> MockResponse().setBody(Buffer().apply { readFrom(r.inputStream) })
+      is Body.String -> MockResponse().setBody(r.string)
     }.addHeader(HeaderNames.ContentType, format.mediaType.toString())
 }

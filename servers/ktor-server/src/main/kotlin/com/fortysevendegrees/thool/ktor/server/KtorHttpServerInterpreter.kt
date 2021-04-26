@@ -4,7 +4,7 @@ import com.fortysevendegrees.thool.EndpointIO
 import com.fortysevendegrees.thool.EndpointInput
 import com.fortysevendegrees.thool.model.Method
 import com.fortysevendegrees.thool.server.ServerEndpoint
-import com.fortysevendegrees.thool.server.intrepreter.ServerInterpreter
+import com.fortysevendegrees.thool.server.interpreter.ServerInterpreter
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.http.HttpMethod

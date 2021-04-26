@@ -4,11 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import com.fortysevendegrees.thool.model.CodecFormat
 import com.fortysevendegrees.thool.model.HasHeaders
 import com.fortysevendegrees.thool.server.intrepreter.Body
-import com.fortysevendegrees.thool.server.intrepreter.ByteArrayBody
-import com.fortysevendegrees.thool.server.intrepreter.ByteBufferBody
-import com.fortysevendegrees.thool.server.intrepreter.InputStreamBody
-import com.fortysevendegrees.thool.server.intrepreter.StringBody
-import com.fortysevendegrees.thool.server.intrepreter.ToResponseBody
+import com.fortysevendegrees.thool.server.interpreter.ToResponseBody
 import io.ktor.content.ByteArrayContent
 import io.ktor.http.ContentType
 import io.ktor.http.content.OutgoingContent
@@ -23,18 +19,18 @@ import java.nio.charset.StandardCharsets
 class KtorToResponseBody : ToResponseBody<KtorResponseBody> {
 
   override fun fromRawValue(
-    v: Body,
+    raw: Body,
     headers: HasHeaders,
     format: CodecFormat
-  ): KtorResponseBody = rawValueToEntity(v, headers, format)
+  ): KtorResponseBody = rawValueToEntity(raw, headers, format)
 
   override fun fromStreamValue(
-    v: Flow<Byte>,
+    raw: Flow<Byte>,
     headers: HasHeaders,
     format: CodecFormat,
     charset: Charset?
   ): KtorResponseBody =
-    ByteFlowContent(v, headers.contentLength(), format.toContentType(headers, charset))
+    ByteFlowContent(raw, headers.contentLength(), format.toContentType(headers, charset))
 
   private fun ByteBuffer.moveToByteArray(): ByteArray {
     val array = ByteArray(remaining())
@@ -43,17 +39,17 @@ class KtorToResponseBody : ToResponseBody<KtorResponseBody> {
   }
 
   private fun rawValueToEntity(
-    v: Body,
+    body: Body,
     headers: HasHeaders,
     format: CodecFormat
   ): KtorResponseBody =
-    when (v) {
-      is ByteArrayBody -> ByteArrayContent(v.byteArray, format.toContentType(headers, null))
-      is ByteBufferBody -> ByteArrayContent(v.byteBuffer.moveToByteArray(), format.toContentType(headers, null))
-      is StringBody -> ByteArrayContent(v.string.toByteArray(v.charset))
-      is InputStreamBody -> OutputStreamContent(
+    when (body) {
+      is Body.ByteArray -> ByteArrayContent(body.byteArray, format.toContentType(headers, null))
+      is Body.ByteBuffer -> ByteArrayContent(body.byteBuffer.moveToByteArray(), format.toContentType(headers, null))
+      is Body.String -> ByteArrayContent(body.string.toByteArray(body.charset))
+      is Body.InputStream -> OutputStreamContent(
         {
-          v.inputStream.copyTo(this)
+          body.inputStream.copyTo(this)
         },
         format.toContentType(headers, null)
       )

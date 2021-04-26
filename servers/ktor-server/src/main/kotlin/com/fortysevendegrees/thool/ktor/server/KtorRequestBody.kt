@@ -4,7 +4,7 @@ import com.fortysevendegrees.thool.EndpointIO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flow
-import com.fortysevendegrees.thool.server.intrepreter.RequestBody
+import com.fortysevendegrees.thool.server.interpreter.RequestBody
 import io.ktor.application.ApplicationCall
 import io.ktor.util.toByteArray
 import io.ktor.utils.io.consumeEachBufferRange

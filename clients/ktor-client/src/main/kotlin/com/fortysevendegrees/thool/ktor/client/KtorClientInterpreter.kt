@@ -10,10 +10,7 @@ import com.fortysevendegrees.thool.Mapping
 import com.fortysevendegrees.thool.Params
 import com.fortysevendegrees.thool.client.requestInfo
 import com.fortysevendegrees.thool.model.StatusCode
-import com.fortysevendegrees.thool.server.intrepreter.ByteArrayBody
-import com.fortysevendegrees.thool.server.intrepreter.ByteBufferBody
-import com.fortysevendegrees.thool.server.intrepreter.InputStreamBody
-import com.fortysevendegrees.thool.server.intrepreter.StringBody
+import com.fortysevendegrees.thool.server.intrepreter.Body
 import io.ktor.client.HttpClient
 import io.ktor.client.call.receive
 import io.ktor.client.request.cookie
@@ -54,12 +51,12 @@ operator fun <I, E, O> HttpClient.invoke(
       url.parameters.appendAll(name, params)
     }
     body = when (val body = info.body) {
-      is ByteArrayBody -> ByteArrayContent(body.byteArray/* contentType,  statusCode*/)
-      is ByteBufferBody -> ByteArrayContent(body.byteBuffer.array())
-      is InputStreamBody -> ByteArrayContent(body.inputStream.readBytes())
+      is Body.ByteArray -> ByteArrayContent(body.byteArray/* contentType,  statusCode*/)
+      is Body.ByteBuffer -> ByteArrayContent(body.byteBuffer.array())
+      is Body.InputStream -> ByteArrayContent(body.inputStream.readBytes())
 
       // TODO fix ContentType
-      is StringBody -> TextContent(body.string, ContentType.Text.Plain)
+      is Body.String -> TextContent(body.string, ContentType.Text.Plain)
       null -> EmptyContent
     }
   }
@@ -138,6 +135,7 @@ suspend fun EndpointOutput<*>.outputParams(
       response,
       headers,
       code
+
     )
     is EndpointOutput.Void -> DecodeResult.Failure.Error(
       "",

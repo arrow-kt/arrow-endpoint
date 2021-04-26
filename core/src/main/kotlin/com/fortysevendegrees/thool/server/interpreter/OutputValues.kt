@@ -1,4 +1,4 @@
-package com.fortysevendegrees.thool.server.intrepreter
+package com.fortysevendegrees.thool.server.interpreter
 
 import com.fortysevendegrees.thool.EndpointIO
 import com.fortysevendegrees.thool.EndpointOutput
@@ -11,6 +11,7 @@ import com.fortysevendegrees.thool.model.Header
 import com.fortysevendegrees.thool.model.HeaderNames
 import com.fortysevendegrees.thool.model.MediaType
 import com.fortysevendegrees.thool.model.StatusCode
+import com.fortysevendegrees.thool.server.intrepreter.Body
 import kotlinx.coroutines.flow.Flow
 import java.io.InputStream
 import java.nio.ByteBuffer
@@ -123,19 +124,19 @@ public data class OutputValues<B>(
         }
         is EndpointIO.ByteArrayBody -> {
           val mapping = output.codec as Mapping<ByteArray, Any?>
-          ov.withBody(ByteArrayBody(mapping.encode(value.asAny)), rawToResponseBody, output)
+          ov.withBody(Body.ByteArray(mapping.encode(value.asAny)), rawToResponseBody, output)
         }
         is EndpointIO.ByteBufferBody -> {
           val mapping = output.codec as Mapping<ByteBuffer, Any?>
-          ov.withBody(ByteBufferBody(mapping.encode(value.asAny)), rawToResponseBody, output)
+          ov.withBody(Body.ByteBuffer(mapping.encode(value.asAny)), rawToResponseBody, output)
         }
         is EndpointIO.InputStreamBody -> {
           val mapping = output.codec as Mapping<InputStream, Any?>
-          ov.withBody(InputStreamBody(mapping.encode(value.asAny)), rawToResponseBody, output)
+          ov.withBody(Body.InputStream(mapping.encode(value.asAny)), rawToResponseBody, output)
         }
         is EndpointIO.StringBody -> {
           val mapping = output.codec as Mapping<String, Any?>
-          ov.withBody(StringBody(output.charset, mapping.encode(value.asAny)), rawToResponseBody, output)
+          ov.withBody(Body.String(output.charset, mapping.encode(value.asAny)), rawToResponseBody, output)
         }
         is EndpointIO.MappedPair<*, *, *, *> -> {
           val mapping = output.mapping as Mapping<Any?, Any?>
