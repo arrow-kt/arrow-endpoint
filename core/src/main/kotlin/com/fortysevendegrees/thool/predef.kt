@@ -45,7 +45,6 @@ fun basicInputSortIndex(i: EndpointInput.Basic<*, *, *>): Int =
 //  is EndpointIO.FixedHeader<*> -> 3
 //  is EndpointInput.ExtractFromRequest<*> -> 4
     is EndpointIO.Body<*, *> -> 6
-    is EndpointIO.StreamBody<*> -> 6
     is EndpointIO.Empty<*> -> 7
   }
 

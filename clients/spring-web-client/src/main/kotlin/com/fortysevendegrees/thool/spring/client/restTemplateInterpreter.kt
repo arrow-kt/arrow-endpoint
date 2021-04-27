@@ -94,7 +94,6 @@ private fun EndpointOutput<*>.getOutputParams(
       is EndpointIO.ByteBufferBody -> single.codec.decode(ByteBuffer.wrap(response.body.readBytes()))
       is EndpointIO.InputStreamBody -> single.codec.decode(response.body.readBytes().inputStream())
       is EndpointIO.StringBody -> single.codec.decode(String(response.body.readBytes()))
-      is EndpointIO.StreamBody -> TODO() // (output.codec::decode as (Any?) -> DecodeResult<Params>).invoke(body())
       is EndpointIO.Empty -> single.codec.decode(Unit)
       is EndpointOutput.FixedStatusCode -> single.codec.decode(Unit)
       is EndpointOutput.StatusCode -> single.codec.decode(code)

@@ -3,7 +3,6 @@ package com.fortysevendegrees.thool
 import arrow.core.Tuple4
 import arrow.core.Tuple5
 import com.fortysevendegrees.thool.model.CodecFormat
-import kotlinx.coroutines.flow.Flow
 import java.io.InputStream
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
@@ -115,19 +114,6 @@ public sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
       val format = codec.format.mediaType
       return "{body as $format}"
     }
-  }
-
-  public data class StreamBody<A>(
-    override val codec: Codec<Flow<Byte>, A, CodecFormat>,
-    override val info: Info<A>,
-    val charset: Charset?
-  ) : Basic<Flow<Byte>, A, CodecFormat>, EndpointTransput.Basic<Flow<Byte>, A, CodecFormat> {
-    override fun <B> copyWith(
-      c: Codec<Flow<Byte>, B, CodecFormat>,
-      i: Info<B>
-    ): StreamBody<B> = StreamBody(c, i, charset)
-
-    override fun toString(): String = "{body as stream}"
   }
 
   public data class Info<T>(val description: String?, val examples: List<Example<T>>, val deprecated: Boolean) {

@@ -1,7 +1,6 @@
 package com.fortysevendegrees.thool.server.interpreter
 
 import com.fortysevendegrees.thool.server.interpreter.DecodeBasicInputsResult.Failure
-import arrow.core.Either
 import arrow.core.tail
 import com.fortysevendegrees.thool.DecodeResult
 import com.fortysevendegrees.thool.DecodeResult.Failure.Multiple
@@ -20,7 +19,7 @@ public sealed interface DecodeBasicInputsResult {
   /** @param basicInputsValues Values of basic inputs, in order as they are defined in the endpoint. */
   public data class Values(
     val basicInputsValues: List<Any?>,
-    val bodyInputWithIndex: Pair<Either<EndpointIO.Body<*, *>, EndpointIO.StreamBody<*>>, Int>?
+    val bodyInputWithIndex: Pair<EndpointIO.Body<*, *>, Int>?
   ) : DecodeBasicInputsResult {
 
     private fun verifyNoBody(input: EndpointInput<*>): Unit =
@@ -28,12 +27,7 @@ public sealed interface DecodeBasicInputsResult {
 
     fun addBodyInput(input: EndpointIO.Body<*, *>, bodyIndex: Int): Values {
       verifyNoBody(input)
-      return copy(bodyInputWithIndex = Pair(Either.Left(input), bodyIndex))
-    }
-
-    fun addStreamingBodyInput(input: EndpointIO.StreamBody<*>, bodyIndex: Int): Values {
-      verifyNoBody(input)
-      return copy(bodyInputWithIndex = Pair(Either.Right(input), bodyIndex))
+      return copy(bodyInputWithIndex = Pair(input, bodyIndex))
     }
 
     /** Sets the value of the body input, once it is known, if a body input is defined. */
@@ -235,8 +229,7 @@ object DecodeBasicInputs {
         val (input, index) = res.first
         val tail = res.second
         when (input) {
-          is EndpointIO.Body<*, *> -> _whenOthers(tail, values.addBodyInput(input, index), ctx)
-          is EndpointIO.StreamBody<*> -> _whenOthers(tail, values.addStreamingBodyInput(input, index), ctx)
+          is EndpointIO.Body<*, *> -> _whenOthers(res.second, values.addBodyInput(input, index), ctx)
           else -> {
             val (result, ctx2) = whenOther(input, ctx)
             when (result) {
@@ -271,7 +264,6 @@ object DecodeBasicInputs {
       is EndpointInput.Cookie -> TODO()
       is EndpointInput.PathCapture -> TODO()
       is EndpointInput.PathsCapture -> TODO()
-      is EndpointIO.StreamBody<*> -> TODO()
     }
 
   private fun isRequestMethod(basic: EndpointInput.Basic<*, *, *>): Boolean =

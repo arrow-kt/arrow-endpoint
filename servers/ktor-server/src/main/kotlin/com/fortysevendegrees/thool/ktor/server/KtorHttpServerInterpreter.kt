@@ -59,7 +59,6 @@ fun EndpointInput<*>.path(): String =
     is EndpointIO.Empty -> ""
     is EndpointInput.FixedMethod -> ""
     is EndpointIO.Header -> ""
-    is EndpointIO.StreamBody -> ""
     is EndpointInput.Query -> ""
     is EndpointInput.Cookie -> ""
     is EndpointInput.QueryParams -> ""

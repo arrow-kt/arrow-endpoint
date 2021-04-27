@@ -81,7 +81,6 @@ public fun <I> EndpointInput<I>.requestInfo(
       }
       is EndpointIO.Header ->
         headers.addAll(codec.encode(value).map { v -> Header(name, v) })
-      is EndpointIO.StreamBody -> TODO("Implement stream")
       is EndpointInput.Cookie -> codec.encode(value)?.let { v ->
         cookies.add(Cookie(name, v))
       }

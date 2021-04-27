@@ -25,7 +25,6 @@ fun EndpointOutput<*>.decode(body: Any, meta: ResponseMetadata): DecodeResult<Pa
           is EndpointIO.Body<*, *> -> (codec as Codec<Any?, Any?, CodecFormat>).decode(body)
           is EndpointIO.Empty -> codec.decode(Unit)
           is EndpointIO.Header -> codec.decode(meta.headers(name))
-          is EndpointIO.StreamBody -> TODO("How to get the Byte from body?")
           is EndpointIO.MappedPair<*, *, *, *> ->
             wrapped.decode(body, meta)
               .flatMap { (mapping as Mapping<Any?, Any?>).decode(it.asAny) }
