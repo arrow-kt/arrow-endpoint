@@ -12,7 +12,6 @@ import com.fortysevendegrees.thool.Mapping
 import com.fortysevendegrees.thool.Params
 import com.fortysevendegrees.thool.client.requestInfo
 import com.fortysevendegrees.thool.model.StatusCode
-import org.springframework.http.HttpHeaders
 import org.springframework.http.client.ClientHttpRequest
 import org.springframework.http.client.ClientHttpRequestFactory
 import org.springframework.http.client.ClientHttpResponse
@@ -47,8 +46,7 @@ private fun <I, E, O> Endpoint<I, E, O>.toRequest(
   requireNotNull(httpMethod) { "Method not defined!" }
   return requestFactory.createRequest(URI.create(info.fullUrl), httpMethod).apply {
     info.cookies.forEach { (name, value) ->
-      // TOOD what about name??
-      headers.add(HttpHeaders.COOKIE, value)
+      headers.add(name, value)
     }
     info.headers.forEach { (name, value) ->
       headers.add(name, value)
