@@ -181,7 +181,7 @@ fun <A, B, C> EndpointOutput<Pair<A, B>>.and(other: EndpointOutput<C>): Endpoint
     { p ->
       Pair(
         Params.ParamsAsList(p.asList.take(2)),
-        Params.ParamsAsAny(p.asList.takeLast(1))
+        Params.ParamsAsAny(p.asList.last())
       )
     }
   )

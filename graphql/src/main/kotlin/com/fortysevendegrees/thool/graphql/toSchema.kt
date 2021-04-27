@@ -194,7 +194,6 @@ fun <I, E, O> Endpoint<I, E, O>.toSchema(fetcher: DataFetcher<O>): GraphQLSchema
     .description(info.description)
 
   val path = extractPath()
-  println(path)
 
   // Not covering all methods here yet :scream:
   when (input.method() ?: Method.GET) {

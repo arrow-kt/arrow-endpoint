@@ -34,6 +34,7 @@ sealed class Params {
   object Unit : Params() {
     override val asAny: Any = Unit
     override val asList: List<Any?> = emptyList()
+    override fun toString(): String = "Params.Unit"
   }
 
   public data class ParamsAsAny(override val asAny: Any?) : Params() {

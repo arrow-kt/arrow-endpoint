@@ -19,7 +19,9 @@ public data class Endpoint<I, E, O>(
   val info: EndpointInfo
 ) {
 
-  fun logic(f: suspend (I) -> Either<E, O>): ServerEndpoint<I, E, O> =
+  public fun name(n: String): Endpoint<I, E, O> = this.copy(info = info.copy(name = n))
+
+  public fun logic(f: suspend (I) -> Either<E, O>): ServerEndpoint<I, E, O> =
     ServerEndpoint(this, f)
 
   /**
@@ -32,7 +34,7 @@ public data class Endpoint<I, E, O>(
    *
    * @param includeAuth Should authentication inputs be included in the result.
    */
-  fun renderPath(
+  public fun renderPath(
     renderPathParam: (Int, EndpointInput.PathCapture<*>) -> String =
       { index, pc -> pc.name?.let { name -> "{$name}" } ?: "{param$index}" },
     renderQueryParam: ((Int, EndpointInput.Query<*>) -> String)? = { _, q -> "${q.name}={${q.name}}" },
@@ -70,77 +72,84 @@ public data class Endpoint<I, E, O>(
     }
   }.first
 
+  /**
+   * Detailed description of the endpoint, with inputs/outputs represented in the same order as originally defined,
+   * including mapping information.
+   */
+  public fun details(): String =
+    "Endpoint${info.name?.let { "[$it]" } ?: ""}(input: $input, errorOutput: $errorOutput, output: $output)"
+
   public companion object : MethodSyntax {
 
-    fun <I> input(input: EndpointInput<I>): Endpoint<I, Nothing, Unit> =
+    public fun <I> input(input: EndpointInput<I>): Endpoint<I, Nothing, Unit> =
       Endpoint(input, EndpointOutput.Void(), EndpointOutput.empty(), EndpointInfo.empty())
 
-    fun <E> error(output: EndpointOutput<E>): Endpoint<Unit, E, Unit> =
+    public fun <E> error(output: EndpointOutput<E>): Endpoint<Unit, E, Unit> =
       Endpoint(EndpointInput.empty(), output, EndpointOutput.empty(), EndpointInfo.empty())
 
-    fun <O> output(output: EndpointOutput<O>): Endpoint<Unit, Nothing, O> =
+    public fun <O> output(output: EndpointOutput<O>): Endpoint<Unit, Nothing, O> =
       Endpoint(EndpointInput.empty(), EndpointOutput.Void(), output, EndpointInfo.empty())
 
-    fun <I> path(path: PathSyntax.() -> EndpointInput<I>): EndpointInput<I> =
+    public fun <I> path(path: PathSyntax.() -> EndpointInput<I>): EndpointInput<I> =
       path(PathSyntax)
   }
 }
 
-fun <I, I2, E, O> Endpoint<I, E, O>.input(input: EndpointInput<I2>): Endpoint<Pair<I, I2>, E, O> =
+public fun <I, I2, E, O> Endpoint<I, E, O>.input(input: EndpointInput<I2>): Endpoint<Pair<I, I2>, E, O> =
   Endpoint(this@input.input.and(input), errorOutput, output, info)
 
 @JvmName("withInputLeftUnit")
-fun <I, E, O> Endpoint<Unit, E, O>.input(input: EndpointInput<I>, dummmy: Unit = Unit): Endpoint<I, E, O> =
+public fun <I, E, O> Endpoint<Unit, E, O>.input(input: EndpointInput<I>, dummmy: Unit = Unit): Endpoint<I, E, O> =
   Endpoint(this@input.input.and(input), errorOutput, output, info)
 
 @JvmName("withInputRightUnit")
-fun <I, E, O> Endpoint<I, E, O>.input(input: EndpointInput<Unit>, dummmy: Unit = Unit): Endpoint<I, E, O> =
+public fun <I, E, O> Endpoint<I, E, O>.input(input: EndpointInput<Unit>, dummmy: Unit = Unit): Endpoint<I, E, O> =
   Endpoint(this@input.input.and(input), errorOutput, output, info)
 
 @JvmName("withInputLeftRightUnit")
-fun <E, O> Endpoint<Unit, E, O>.input(input: EndpointInput<Unit>, dummmy: Unit = Unit): Endpoint<Unit, E, O> =
+public fun <E, O> Endpoint<Unit, E, O>.input(input: EndpointInput<Unit>, dummmy: Unit = Unit): Endpoint<Unit, E, O> =
   Endpoint(this@input.input.and(input), errorOutput, output, info)
 
 @JvmName("withInput2")
-fun <I, I2, I3, E, O> Endpoint<Pair<I, I2>, E, O>.input(input: EndpointInput<I3>): Endpoint<Triple<I, I2, I3>, E, O> =
+public fun <I, I2, I3, E, O> Endpoint<Pair<I, I2>, E, O>.input(input: EndpointInput<I3>): Endpoint<Triple<I, I2, I3>, E, O> =
   Endpoint(this@input.input.and(input), errorOutput, output, info)
 
 @JvmName("withInput2Pair")
-fun <I, I2, I3, I4, E, O> Endpoint<Pair<I, I2>, E, O>.input(input: EndpointInput<Pair<I3, I4>>): Endpoint<Tuple4<I, I2, I3, I4>, E, O> =
+public fun <I, I2, I3, I4, E, O> Endpoint<Pair<I, I2>, E, O>.input(input: EndpointInput<Pair<I3, I4>>): Endpoint<Tuple4<I, I2, I3, I4>, E, O> =
   Endpoint(this@input.input.and(input), errorOutput, output, info)
 
 @JvmName("withInput3")
-fun <I, I2, I3, I4, E, O> Endpoint<Triple<I, I2, I3>, E, O>.input(input: EndpointInput<I4>): Endpoint<Tuple4<I, I2, I3, I4>, E, O> =
+public fun <I, I2, I3, I4, E, O> Endpoint<Triple<I, I2, I3>, E, O>.input(input: EndpointInput<I4>): Endpoint<Tuple4<I, I2, I3, I4>, E, O> =
   Endpoint(this@input.input.and(input), errorOutput, output, info)
 
 @JvmName("withInput4")
-fun <I, I2, I3, I4, I5, E, O> Endpoint<Tuple4<I, I2, I3, I4>, E, O>.input(input: EndpointInput<I5>): Endpoint<Tuple5<I, I2, I3, I4, I5>, E, O> =
+public fun <I, I2, I3, I4, I5, E, O> Endpoint<Tuple4<I, I2, I3, I4>, E, O>.input(input: EndpointInput<I5>): Endpoint<Tuple5<I, I2, I3, I4, I5>, E, O> =
   Endpoint(this@input.input.and(input), errorOutput, output, info)
 
 @JvmName("withInput2RightUnit")
-fun <I, I2, E, O> Endpoint<Pair<I, I2>, E, O>.input(input: EndpointInput<Unit>): Endpoint<Pair<I, I2>, E, O> =
+public fun <I, I2, E, O> Endpoint<Pair<I, I2>, E, O>.input(input: EndpointInput<Unit>): Endpoint<Pair<I, I2>, E, O> =
   Endpoint(this@input.input.and(input), errorOutput, output, info)
 
-fun <I, E, O, O2> Endpoint<I, E, O>.output(i: EndpointOutput<O2>): Endpoint<I, E, Pair<O, O2>> =
+public fun <I, E, O, O2> Endpoint<I, E, O>.output(i: EndpointOutput<O2>): Endpoint<I, E, Pair<O, O2>> =
   Endpoint(input, errorOutput, output.and(i), info)
 
 @JvmName("withOutputLeftUnit")
-fun <I, E, O> Endpoint<I, E, Unit>.output(i: EndpointOutput<O>, dummy: Unit = Unit): Endpoint<I, E, O> =
+public fun <I, E, O> Endpoint<I, E, Unit>.output(i: EndpointOutput<O>, dummy: Unit = Unit): Endpoint<I, E, O> =
   Endpoint(input, errorOutput, output.and(i), info)
 
 @JvmName("withOutput3")
-fun <I, E, O, O2, O3> Endpoint<I, E, Pair<O, O2>>.output(i: EndpointOutput<O3>): Endpoint<I, E, Triple<O, O2, O3>> =
+public fun <I, E, O, O2, O3> Endpoint<I, E, Pair<O, O2>>.output(i: EndpointOutput<O3>): Endpoint<I, E, Triple<O, O2, O3>> =
   Endpoint(input, errorOutput, output.and(i), info)
 
-fun <I, E, E2, O> Endpoint<I, E, O>.withErrorOutput(i: EndpointOutput<E2>): Endpoint<I, Pair<E, E2>, O> =
+public fun <I, E, E2, O> Endpoint<I, E, O>.errorOutput(i: EndpointOutput<E2>): Endpoint<I, Pair<E, E2>, O> =
   Endpoint(input, errorOutput.and(i), output, info)
 
 @JvmName("withErrorOutputLeftUnit")
-fun <I, E, O> Endpoint<I, Unit, O>.withErrorOutput(i: EndpointOutput<E>, dummy: Unit = Unit): Endpoint<I, E, O> =
+public fun <I, E, O> Endpoint<I, Unit, O>.errorOutput(i: EndpointOutput<E>, dummy: Unit = Unit): Endpoint<I, E, O> =
   Endpoint(input, errorOutput.and(i), output, info)
 
 @JvmName("withErrorOutput3")
-fun <I, E, E2, E3, O> Endpoint<I, Pair<E, E2>, O>.withOutput(i: EndpointOutput<E3>): Endpoint<I, Triple<E, E2, E3>, O> =
+public fun <I, E, E2, E3, O> Endpoint<I, Pair<E, E2>, O>.output(i: EndpointOutput<E3>): Endpoint<I, Triple<E, E2, E3>, O> =
   Endpoint(input, errorOutput.and(i), output, info)
 
 public data class EndpointInfo(
@@ -150,15 +159,15 @@ public data class EndpointInfo(
   val tags: List<String>,
   val deprecated: Boolean
 ) {
-  fun name(n: String): EndpointInfo = this.copy(name = n)
-  fun summary(s: String): EndpointInfo = copy(summary = s)
-  fun description(d: String): EndpointInfo = copy(description = d)
-  fun tags(ts: List<String>): EndpointInfo = copy(tags = tags + ts)
-  fun tag(t: String): EndpointInfo = copy(tags = tags + t)
-  fun deprecated(d: Boolean): EndpointInfo = copy(deprecated = d)
+  public fun name(n: String): EndpointInfo = this.copy(name = n)
+  public fun summary(s: String): EndpointInfo = copy(summary = s)
+  public fun description(d: String): EndpointInfo = copy(description = d)
+  public fun tags(ts: List<String>): EndpointInfo = copy(tags = tags + ts)
+  public fun tag(t: String): EndpointInfo = copy(tags = tags + t)
+  public fun deprecated(d: Boolean): EndpointInfo = copy(deprecated = d)
 
   public companion object {
-    fun empty(): EndpointInfo =
+    public fun empty(): EndpointInfo =
       EndpointInfo(null, null, null, emptyList(), deprecated = false)
   }
 }

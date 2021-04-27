@@ -14,10 +14,10 @@ class EndpointTest : StringSpec({
       val e2: Endpoint<Pair<String, Int>, Nothing, Unit> =
         Endpoint.input(query("q1", Codec.string).and(query("q2", Codec.int)))
 
-      val e3: Endpoint<String, Nothing, Unit> = Endpoint.input(header("h1", Codec.listHead(Codec.string)))
+      val e3: Endpoint<String, Nothing, Unit> = Endpoint.input(header("h1", Codec.listFirst(Codec.string)))
 
       val e4: Endpoint<Pair<String, Int>, Nothing, Unit> =
-        Endpoint.input(header("h1", Codec.listHead(Codec.string)).and(header("h2", Codec.listHead(Codec.int))))
+        Endpoint.input(header("h1", Codec.listFirst(Codec.string)).and(header("h2", Codec.listFirst(Codec.int))))
 
       val e5: Endpoint<Unit, Nothing, Unit> = Endpoint.input(fixedPath("p").and(fixedPath("p2")).and(fixedPath("p3")))
 

@@ -24,7 +24,7 @@ public sealed interface DecodeBasicInputsResult {
   ) : DecodeBasicInputsResult {
 
     private fun verifyNoBody(input: EndpointInput<*>): Unit =
-      check(bodyInputWithIndex != null) { "Double body definition: $input" }
+      check(bodyInputWithIndex == null) { "Double body definition: $input" }
 
     fun addBodyInput(input: EndpointIO.Body<*, *>, bodyIndex: Int): Values {
       verifyNoBody(input)
@@ -37,7 +37,7 @@ public sealed interface DecodeBasicInputsResult {
     }
 
     /** Sets the value of the body input, once it is known, if a body input is defined. */
-    fun setBodyInputValue(v: Any): Values =
+    fun setBodyInputValue(v: Any?): Values =
       when (bodyInputWithIndex) {
         null -> this
         else -> copy(basicInputsValues = basicInputsValues.updated(bodyInputWithIndex.second, v))
@@ -232,19 +232,20 @@ object DecodeBasicInputs {
     when (val res = inputs.headAndTailOrNull()) {
       null -> Pair(values, ctx)
       else -> {
-        val (input, idx) = res.first
+        val (input, index) = res.first
+        val tail = res.second
         when (input) {
-          is EndpointIO.Body<*, *> -> _whenOthers(res.second, values.addBodyInput(input, idx), ctx)
-          is EndpointIO.StreamBody<*> -> _whenOthers(res.second, values.addStreamingBodyInput(input, idx), ctx)
+          is EndpointIO.Body<*, *> -> _whenOthers(tail, values.addBodyInput(input, index), ctx)
+          is EndpointIO.StreamBody<*> -> _whenOthers(tail, values.addStreamingBodyInput(input, index), ctx)
           else -> {
-            val (result, ctx2) = whenOther(res.first.input, ctx)
+            val (result, ctx2) = whenOther(input, ctx)
             when (result) {
               is DecodeResult.Value -> _whenOthers(
-                res.second,
-                values.setBasicInputValue(result.value, res.first.index),
+                tail,
+                values.setBasicInputValue(result.value, index),
                 ctx2
               )
-              is DecodeResult.Failure -> Pair(Failure(res.first.input, result), ctx2)
+              is DecodeResult.Failure -> Pair(Failure(input, result), ctx2)
             }
           }
         }

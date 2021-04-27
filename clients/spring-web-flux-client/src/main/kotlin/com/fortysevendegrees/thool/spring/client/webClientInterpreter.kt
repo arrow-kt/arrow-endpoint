@@ -14,24 +14,31 @@ import com.fortysevendegrees.thool.Mapping
 import com.fortysevendegrees.thool.Params
 import com.fortysevendegrees.thool.PlainCodec
 import com.fortysevendegrees.thool.SplitParams
+import com.fortysevendegrees.thool.client.RequestInfo
+import com.fortysevendegrees.thool.client.requestInfo
 import com.fortysevendegrees.thool.model.CodecFormat
 import com.fortysevendegrees.thool.model.StatusCode
 import org.springframework.http.HttpMethod
 import org.springframework.web.reactive.function.client.ClientResponse
 import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.awaitBody
 import org.springframework.web.reactive.function.client.awaitExchange
 import java.io.InputStream
 import java.net.URI
 import java.nio.ByteBuffer
+import reactor.core.publisher.Mono
+
+import org.springframework.web.reactive.function.BodyInserters
+import org.springframework.web.reactive.function.client.awaitBodyOrNull
+import java.io.ByteArrayInputStream
 
 public fun <I, E, O> Endpoint<I, E, O>.toRequestAndParseWebClient(
   baseUrl: String
 ): suspend WebClient.(I) -> Pair<WebClient.RequestBodyUriSpec, DecodeResult<Either<E, O>>> =
   { input: I ->
-    val method = method()
+    val info = this@toRequestAndParseWebClient.input.requestInfo(input, baseUrl)
+    val method = info.method.method()
     requireNotNull(method)
-    val request: WebClient.RequestBodyUriSpec = toRequest(this, method, baseUrl, input)
+    val request: WebClient.RequestBodyUriSpec = toRequest(this, info, method)
     Pair(request, parseResponse(request, method, baseUrl))
   }
 
@@ -40,23 +47,29 @@ public suspend operator fun <I, E, O> WebClient.invoke(
   baseUrl: String,
   input: I
 ): DecodeResult<Either<E, O>> {
-  val method = endpoint.method()
+  val info = endpoint.input.requestInfo(input, baseUrl)
+  val method = info.method.method()
   requireNotNull(method)
-  val request: WebClient.RequestBodyUriSpec = endpoint.toRequest(this, method, baseUrl, input)
+  val request: WebClient.RequestBodyUriSpec = toRequest(this, info, method)
   return endpoint.parseResponse(request, method, baseUrl)
 }
 
-private fun <I, E, O> Endpoint<I, E, O>.toRequest(
+private fun toRequest(
   webClient: WebClient,
-  httpMethod: HttpMethod,
-  baseUrl: String,
-  i: I
+  info: RequestInfo,
+  method: HttpMethod,
 ): WebClient.RequestBodyUriSpec {
-  val params = Params.ParamsAsAny(i)
-  val url = input.buildUrl(baseUrl.trimLastSlash(), params)
-  return webClient.method(httpMethod).apply {
-    uri(URI.create(url))
-    input.setInputParams(this, params)
+  return webClient.method(method).apply {
+    uri(URI.create(info.fullUrl))
+    info.headers.forEach { (name, value) ->
+      header(name, value)
+    }
+    info.cookies.forEach { (name, value) ->
+      cookie(name, value)
+    }
+    info.body?.toByteArray()?.let {
+      body(BodyInserters.fromPublisher(Mono.just(it), ByteArray::class.java))
+    }
   }
 }
 
@@ -185,10 +198,8 @@ private suspend fun <I, E, O> Endpoint<I, E, O>.parseResponse(
     val code = StatusCode(response.rawStatusCode())
     val output = if (code.isSuccess()) output else errorOutput
 
-    val headers = response.headers().asHttpHeaders().toSingleValueMap()
-      .mapNotNull { headerEntry: Map.Entry<String, String> -> Pair(headerEntry.key, headerEntry.value) }
-      .groupBy({ it.first }) { it.second }
-    val params = output.getOutputParams(response, headers, code, response.statusCode().reasonPhrase)
+    val params =
+      output.getOutputParams(response, response.headers().asHttpHeaders(), code, response.statusCode().reasonPhrase)
 
     params.map { it.asAny }
       .map { p -> if (code.isSuccess()) Either.Right(p as O) else Either.Left(p as E) }
@@ -214,10 +225,16 @@ private suspend fun EndpointOutput<*>.getOutputParams(
 ): DecodeResult<Params> =
   when (val output = this) {
     is EndpointOutput.Single<*> -> when (val single = (output as EndpointOutput.Single<Any?>)) {
-      is EndpointIO.ByteArrayBody -> single.codec.decode(response.awaitBody(ByteArray::class))
-      is EndpointIO.ByteBufferBody -> single.codec.decode(response.awaitBody(ByteBuffer::class))
-      is EndpointIO.InputStreamBody -> single.codec.decode(response.awaitBody(InputStream::class))
-      is EndpointIO.StringBody -> single.codec.decode(response.awaitBody(String::class))
+      is EndpointIO.ByteArrayBody -> single.codec.decode(response.awaitBodyOrNull(ByteArray::class) ?: byteArrayOf())
+      is EndpointIO.ByteBufferBody -> single.codec.decode(
+        response.awaitBodyOrNull(ByteBuffer::class) ?: ByteBuffer.wrap(byteArrayOf())
+      )
+      is EndpointIO.InputStreamBody -> single.codec.decode(
+        ByteArrayInputStream(
+          response.awaitBodyOrNull(ByteArray::class) ?: byteArrayOf()
+        )
+      )
+      is EndpointIO.StringBody -> single.codec.decode(response.awaitBodyOrNull(String::class) ?: "")
       is EndpointIO.StreamBody -> TODO() // (output.codec::decode as (Any?) -> DecodeResult<Params>).invoke(body())
       is EndpointIO.Empty -> single.codec.decode(Unit)
       is EndpointOutput.FixedStatusCode -> single.codec.decode(Unit)
@@ -226,11 +243,11 @@ private suspend fun EndpointOutput<*>.getOutputParams(
 
       is EndpointIO.MappedPair<*, *, *, *> ->
         single.wrapped.getOutputParams(response, headers, code, statusText).flatMap { p ->
-          (single.mapping::decode as (Any?) -> DecodeResult<Any?>)(p.asAny)
+          (single.mapping as Mapping<Any?, Any?>).decode(p.asAny)
         }
       is EndpointOutput.MappedPair<*, *, *, *> ->
         single.output.getOutputParams(response, headers, code, statusText).flatMap { p ->
-          (single.mapping::decode as (Any?) -> DecodeResult<Any?>)(p.asAny)
+          (single.mapping as Mapping<Any?, Any?>).decode(p.asAny)
         }
     }.map { Params.ParamsAsAny(it) }
 

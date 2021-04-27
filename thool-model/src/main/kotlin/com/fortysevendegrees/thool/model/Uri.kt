@@ -329,7 +329,7 @@ public data class Uri(
     copy(fragmentSegment = fragmentSegment?.encoding(encoding))
 
   override fun toString(): String {
-    fun StringBuilder.encodeQuerySegments(qss: List<QuerySegment>, previousWasPlain: Boolean): String =
+    tailrec fun StringBuilder.encodeQuerySegments(qss: List<QuerySegment>, previousWasPlain: Boolean): String =
       when (val headQuerySegment = qss.firstOrNull()) {
         null -> toString()
         is QuerySegment.Plain -> {
