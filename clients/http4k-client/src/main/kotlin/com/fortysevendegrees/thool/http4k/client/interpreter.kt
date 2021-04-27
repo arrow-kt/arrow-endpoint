@@ -83,7 +83,6 @@ public fun EndpointInput<*>.buildUrl(
     is EndpointIO.Empty -> baseUrl
     is EndpointInput.FixedMethod -> baseUrl
     is EndpointIO.Header -> baseUrl
-    is EndpointIO.StreamBody -> baseUrl
     is EndpointInput.Query -> baseUrl
     is EndpointInput.Cookie -> baseUrl
     is EndpointInput.QueryParams -> baseUrl
@@ -164,8 +163,6 @@ public fun <I> EndpointInput<I>.setInputParams(
           request.query(name, v)
         }
       }
-
-    is EndpointIO.StreamBody -> TODO("Implement stream")
 
     // These inputs were inserted into baseUrl already
     is EndpointInput.FixedMethod -> request
@@ -252,7 +249,6 @@ fun EndpointOutput<*>.getOutputParams(
       is EndpointIO.InputStreamBody -> single.codec.decode(response.body.stream)
       is EndpointIO.StringBody -> single.codec.decode(response.body.toString())
 
-      is EndpointIO.StreamBody -> TODO("Support stream body")
       is EndpointIO.Empty -> single.codec.decode(Unit)
       is EndpointOutput.FixedStatusCode -> single.codec.decode(Unit)
       is EndpointOutput.StatusCode -> single.codec.decode(code)

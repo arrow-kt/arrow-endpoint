@@ -83,7 +83,6 @@ private fun EndpointInput<*>.buildUrl(
     is EndpointIO.Empty -> baseUrl
     is EndpointInput.FixedMethod -> baseUrl
     is EndpointIO.Header -> baseUrl
-    is EndpointIO.StreamBody -> baseUrl
     is EndpointInput.Cookie -> baseUrl
 
     // Recurse on composition of inputs.
@@ -133,8 +132,6 @@ private fun <I> EndpointInput<I>.setInputParams(
       is EndpointInput.Cookie -> input.codec.encode(value)
         ?.let { v: String -> request.apply { headers.add(HttpHeaders.COOKIE, v) } }
         ?: request
-
-      is EndpointIO.StreamBody -> TODO("Implement stream")
 
       // These inputs were inserted into baseUrl already
       is EndpointInput.FixedMethod -> request
@@ -217,7 +214,6 @@ private fun EndpointOutput<*>.getOutputParams(
       is EndpointIO.ByteBufferBody -> single.codec.decode(ByteBuffer.wrap(response.body.readBytes()))
       is EndpointIO.InputStreamBody -> single.codec.decode(response.body.readBytes().inputStream())
       is EndpointIO.StringBody -> single.codec.decode(String(response.body.readBytes()))
-      is EndpointIO.StreamBody -> TODO() // (output.codec::decode as (Any?) -> DecodeResult<Params>).invoke(body())
       is EndpointIO.Empty -> single.codec.decode(Unit)
       is EndpointOutput.FixedStatusCode -> single.codec.decode(Unit)
       is EndpointOutput.StatusCode -> single.codec.decode(code)

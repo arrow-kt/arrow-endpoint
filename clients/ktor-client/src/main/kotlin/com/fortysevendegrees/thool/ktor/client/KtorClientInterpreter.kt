@@ -110,7 +110,6 @@ suspend fun EndpointOutput<*>.outputParams(
         is EndpointIO.StringBody -> codec.decode(response.receive())
         is EndpointIO.Empty -> codec.decode(Unit)
         is EndpointIO.Header -> codec.decode(headers.getAll(name).orEmpty())
-        is EndpointIO.StreamBody -> TODO() // (output.codec::decode as (Any?) -> DecodeResult<Params>).invoke(body())
         is EndpointOutput.FixedStatusCode -> codec.decode(Unit)
         is EndpointOutput.StatusCode -> codec.decode(code)
         is EndpointOutput.MappedPair<*, *, *, *> ->
@@ -167,7 +166,6 @@ fun <I> HttpRequestBuilder.setInputParams(input: EndpointInput<I>, params: Param
       is EndpointIO.Empty -> Unit
       is EndpointIO.Header ->
         headers.appendAll(input.name, input.codec.encode(value))
-      is EndpointIO.StreamBody -> TODO("implement stream")
       is EndpointInput.Cookie -> input.codec.encode(value)?.let { cookie(input.name, it) }
       is EndpointInput.Query ->
         // appendMissing bc `url.takeFrom(String)` can already parse query segments
@@ -212,7 +210,6 @@ fun EndpointInput<*>.buildUrl(
     is EndpointIO.Empty -> baseUrl
     is EndpointInput.FixedMethod -> baseUrl
     is EndpointIO.Header -> baseUrl
-    is EndpointIO.StreamBody -> baseUrl
     is EndpointInput.Query -> baseUrl
     is EndpointInput.Cookie -> baseUrl
     is EndpointInput.QueryParams -> baseUrl

@@ -6,7 +6,6 @@ import com.fortysevendegrees.thool.model.HeaderNames
 import com.fortysevendegrees.thool.model.Method
 import com.fortysevendegrees.thool.model.QueryParams
 import com.fortysevendegrees.thool.model.StatusCode
-import kotlinx.coroutines.flow.Flow
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 
@@ -89,13 +88,6 @@ object Thool {
    */
   fun <A> xmlBody(codec: XmlCodec<A>): EndpointIO.StringBody<A> =
     anyFromStringBody(codec)
-
-  /**
-   * @param schema Schema of the body. This should be a schema for the "deserialized" stream.
-   * @param charset An optional charset of the resulting stream's data, to be used in the content type.
-   */
-  fun flowBody(schema: Schema<Flow<Byte>>, format: CodecFormat, charset: Charset? = null) =
-    EndpointIO.StreamBody(Codec.id(format, schema), EndpointIO.Info.empty(), charset)
 
   fun method(m: Method): EndpointInput.FixedMethod<Unit> =
     EndpointInput.FixedMethod(m, Codec.idPlain(), EndpointIO.Info.empty())

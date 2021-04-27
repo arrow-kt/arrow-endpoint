@@ -105,7 +105,6 @@ fun <A, B> EndpointOutput<A>.reduce(
   ifBody: (EndpointIO.Body<Any?, Any?>) -> List<B>,
   ifEmpty: (EndpointIO.Empty<Any?>) -> List<B>,
   ifHeader: (EndpointIO.Header<Any?>) -> List<B>,
-  ifStreamBody: (EndpointIO.StreamBody<Any?>) -> List<B>,
   ifFixedStatuscode: (EndpointOutput.FixedStatusCode<Any?>) -> List<B>,
   ifStatusCode: (EndpointOutput.StatusCode<Any?>) -> List<B>,
   ifVoid: (EndpointOutput.Void<Any?>) -> List<B>
@@ -114,27 +113,26 @@ fun <A, B> EndpointOutput<A>.reduce(
     is EndpointIO.Body<*, *> -> ifBody(this as EndpointIO.Body<Any?, Any?>)
     is EndpointIO.Empty -> ifEmpty(this as EndpointIO.Empty<Any?>)
     is EndpointIO.Header -> ifHeader(this as EndpointIO.Header<Any?>)
-    is EndpointIO.StreamBody -> ifStreamBody(this as EndpointIO.StreamBody<Any?>)
     is EndpointOutput.FixedStatusCode -> ifFixedStatuscode(this as EndpointOutput.FixedStatusCode<Any?>)
     is EndpointOutput.StatusCode -> ifStatusCode(this as EndpointOutput.StatusCode<Any?>)
     is EndpointOutput.Void -> ifVoid(this as EndpointOutput.Void<Any?>)
 
     is EndpointOutput.Pair<*, *, *> ->
-      first.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifFixedStatuscode, ifStatusCode, ifVoid) +
-        second.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifFixedStatuscode, ifStatusCode, ifVoid)
+      first.reduce(ifBody, ifEmpty, ifHeader, ifFixedStatuscode, ifStatusCode, ifVoid) +
+        second.reduce(ifBody, ifEmpty, ifHeader, ifFixedStatuscode, ifStatusCode, ifVoid)
     is EndpointIO.Pair<*, *, *> ->
-      first.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifFixedStatuscode, ifStatusCode, ifVoid) +
-        second.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifFixedStatuscode, ifStatusCode, ifVoid)
+      first.reduce(ifBody, ifEmpty, ifHeader, ifFixedStatuscode, ifStatusCode, ifVoid) +
+        second.reduce(ifBody, ifEmpty, ifHeader, ifFixedStatuscode, ifStatusCode, ifVoid)
     is EndpointIO.MappedPair<*, *, *, *> ->
-      wrapped.first.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifFixedStatuscode, ifStatusCode, ifVoid) +
-        wrapped.second.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifFixedStatuscode, ifStatusCode, ifVoid)
+      wrapped.first.reduce(ifBody, ifEmpty, ifHeader, ifFixedStatuscode, ifStatusCode, ifVoid) +
+        wrapped.second.reduce(ifBody, ifEmpty, ifHeader, ifFixedStatuscode, ifStatusCode, ifVoid)
     is EndpointOutput.MappedPair<*, *, *, *> ->
-      output.first.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifFixedStatuscode, ifStatusCode, ifVoid) +
-        output.second.reduce(ifBody, ifEmpty, ifHeader, ifStreamBody, ifFixedStatuscode, ifStatusCode, ifVoid)
+      output.first.reduce(ifBody, ifEmpty, ifHeader, ifFixedStatuscode, ifStatusCode, ifVoid) +
+        output.second.reduce(ifBody, ifEmpty, ifHeader, ifFixedStatuscode, ifStatusCode, ifVoid)
   }
 
 fun EndpointOutput<*>.toList(): List<EndpointOutput<Any?>> =
-  reduce(::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf)
+  reduce(::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf)
 
 // We need to support this Arity-22
 @JvmName("and")

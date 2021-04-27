@@ -141,7 +141,7 @@ public sealed interface EndpointInput<A> : EndpointTransput<A> {
   }
 
   fun toList(): List<EndpointInput<Any?>> =
-    reduce(::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf)
+    reduce(::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf)
 
   fun asListOfBasicInputs(includeAuth: Boolean = true): List<EndpointInput.Basic<*, *, *>> =
     toList().mapNotNull {
@@ -168,7 +168,6 @@ fun <A, B> EndpointInput<A>.reduce(
   ifBody: (EndpointIO.Body<Any?, Any?>) -> List<B> = { emptyList() },
   ifEmpty: (EndpointIO.Empty<Any?>) -> List<B> = { emptyList() },
   ifHeader: (EndpointIO.Header<Any?>) -> List<B> = { emptyList() },
-  ifStreamBody: (EndpointIO.StreamBody<Any?>) -> List<B> = { emptyList() },
   ifCookie: (EndpointInput.Cookie<Any?>) -> List<B> = { emptyList() },
   ifFixedMethod: (EndpointInput.FixedMethod<Any?>) -> List<B> = { emptyList() },
   ifFixedPath: (EndpointInput.FixedPath<Any?>) -> List<B> = { emptyList() },
@@ -181,7 +180,6 @@ fun <A, B> EndpointInput<A>.reduce(
     is EndpointIO.Body<*, *> -> ifBody(this as EndpointIO.Body<Any?, Any?>)
     is EndpointIO.Empty -> ifEmpty(this as EndpointIO.Empty<Any?>)
     is EndpointIO.Header -> ifHeader(this as EndpointIO.Header<Any?>)
-    is EndpointIO.StreamBody -> ifStreamBody(this as EndpointIO.StreamBody<Any?>)
     is EndpointInput.Cookie -> ifCookie(this as EndpointInput.Cookie<Any?>)
     is EndpointInput.FixedMethod -> ifFixedMethod(this as EndpointInput.FixedMethod<Any?>)
     is EndpointInput.FixedPath -> ifFixedPath(this as EndpointInput.FixedPath<Any?>)
@@ -195,7 +193,6 @@ fun <A, B> EndpointInput<A>.reduce(
         ifBody,
         ifEmpty,
         ifHeader,
-        ifStreamBody,
         ifCookie,
         ifFixedMethod,
         ifFixedPath,
@@ -208,7 +205,6 @@ fun <A, B> EndpointInput<A>.reduce(
           ifBody,
           ifEmpty,
           ifHeader,
-          ifStreamBody,
           ifCookie,
           ifFixedMethod,
           ifFixedPath,
@@ -222,7 +218,6 @@ fun <A, B> EndpointInput<A>.reduce(
         ifBody,
         ifEmpty,
         ifHeader,
-        ifStreamBody,
         ifCookie,
         ifFixedMethod,
         ifFixedPath,
@@ -235,7 +230,6 @@ fun <A, B> EndpointInput<A>.reduce(
           ifBody,
           ifEmpty,
           ifHeader,
-          ifStreamBody,
           ifCookie,
           ifFixedMethod,
           ifFixedPath,
@@ -249,7 +243,6 @@ fun <A, B> EndpointInput<A>.reduce(
         ifBody,
         ifEmpty,
         ifHeader,
-        ifStreamBody,
         ifCookie,
         ifFixedMethod,
         ifFixedPath,
@@ -262,7 +255,6 @@ fun <A, B> EndpointInput<A>.reduce(
           ifBody,
           ifEmpty,
           ifHeader,
-          ifStreamBody,
           ifCookie,
           ifFixedMethod,
           ifFixedPath,
@@ -276,7 +268,6 @@ fun <A, B> EndpointInput<A>.reduce(
         ifBody,
         ifEmpty,
         ifHeader,
-        ifStreamBody,
         ifCookie,
         ifFixedMethod,
         ifFixedPath,
@@ -289,7 +280,6 @@ fun <A, B> EndpointInput<A>.reduce(
           ifBody,
           ifEmpty,
           ifHeader,
-          ifStreamBody,
           ifCookie,
           ifFixedMethod,
           ifFixedPath,

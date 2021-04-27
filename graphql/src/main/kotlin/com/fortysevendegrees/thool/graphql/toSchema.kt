@@ -136,7 +136,6 @@ fun <I> EndpointInput<I>.toInput(
     is EndpointIO.Empty -> DecodeResult.Value(Params.Unit)
 
     is EndpointIO.Body<*, *> -> TODO("Decode body")
-    is EndpointIO.StreamBody -> TODO("Decode body")
 
     is EndpointInput.PathsCapture -> throw RuntimeException("remaining path positions params not allowed for GraphQL??")
     is EndpointInput.QueryParams -> TODO("How to extract query params from GraphQLServerRequest ??")
@@ -270,8 +269,7 @@ fun <O> EndpointOutput<O>.getReturnType(): List<GraphQLOutputType> =
           .fields(it.codec.schema().toFields())
           .build()
       )
-    },
-    ifStreamBody = { TODO("Subscription???") }
+    }
   )
 
 fun Schema<*>.toScalarOrNull(): GraphQLScalarType? =
