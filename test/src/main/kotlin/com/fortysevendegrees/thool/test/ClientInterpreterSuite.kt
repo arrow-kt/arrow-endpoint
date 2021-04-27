@@ -34,7 +34,6 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import okhttp3.mockwebserver.MockWebServer
 import java.io.ByteArrayInputStream
-import java.io.InputStream
 import java.nio.ByteBuffer
 
 public abstract class ClientInterpreterSuite : FreeSpec() {
@@ -134,20 +133,7 @@ public abstract class ClientInterpreterSuite : FreeSpec() {
     ).forEach { (s, input, expected) ->
       s.endpoint.details().invoke {
         server.dispatcher = s.toDispatcher()
-
-        fun adjust(r: Either<Any?, Any?>): Either<Any?, Any?> {
-          fun doAdjust(v: Any?): Any? = when (v) {
-            is InputStream -> v.readBytes().toList()
-            is ByteArray -> v.toList()
-            is ByteBuffer -> v.array().toList()
-            is ByteArrayInputStream -> v.readBytes().toList()
-            else -> v
-          }
-
-          return r.bimap(::doAdjust, ::doAdjust)
-        }
-
-        val result = request((s.endpoint as Endpoint<Any?, Any?, Any?>), baseUrl, input).map { adjust(it) }
+        val result = request((s.endpoint as Endpoint<Any?, Any?, Any?>), baseUrl, input).map(::adjust)
         result shouldBe DecodeResult.Value(adjust(expected))
       }
     }

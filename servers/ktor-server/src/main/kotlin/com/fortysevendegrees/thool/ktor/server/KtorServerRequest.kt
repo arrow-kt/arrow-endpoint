@@ -23,16 +23,15 @@ internal class KtorServerRequest(ctx: ApplicationCall) : ServerRequest {
   override val connectionInfo: ConnectionInfo by lazy { ConnectionInfo(null, null, null) }
   override val underlying: Any = ctx
 
-  override val uri: Uri =
-    Uri(
-      ctx.request.origin.scheme,
-      Authority(null, ctx.request.host(), ctx.request.port()),
-      PathSegments.absoluteOrEmptyS(ctx.request.path().removePrefix("/").split("/")),
-      ctx.request.queryParameters.entries().flatMap { (name, values) ->
-        values.map { QuerySegment.KeyValue(name, it) }
-      },
-      null
-    )
+  override val uri: Uri = Uri(
+    ctx.request.origin.scheme,
+    Authority(null, ctx.request.host(), ctx.request.port()),
+    PathSegments.absoluteOrEmptyS(ctx.request.path().removePrefix("/").split("/")),
+    ctx.request.queryParameters.entries().flatMap { (name, values) ->
+      values.map { QuerySegment.KeyValue(name, it) }
+    },
+    null
+  )
 
   override fun pathSegments(): List<String> = uri.path()
   override fun queryParameters(): QueryParams = uri.params()
