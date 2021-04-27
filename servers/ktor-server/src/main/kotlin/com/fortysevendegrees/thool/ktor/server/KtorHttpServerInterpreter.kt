@@ -2,7 +2,6 @@ package com.fortysevendegrees.thool.ktor.server
 
 import com.fortysevendegrees.thool.EndpointIO
 import com.fortysevendegrees.thool.EndpointInput
-import com.fortysevendegrees.thool.model.Method
 import com.fortysevendegrees.thool.server.ServerEndpoint
 import com.fortysevendegrees.thool.server.interpreter.ServerInterpreter
 import io.ktor.application.Application
@@ -10,6 +9,7 @@ import io.ktor.application.call
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
+import io.ktor.routing.Route
 import io.ktor.routing.Routing
 import io.ktor.routing.route
 import io.ktor.routing.routing
@@ -20,34 +20,36 @@ fun <I, E, O> Application.install(ses: ServerEndpoint<I, E, O>): Routing =
 fun <I, E, O> Application.install(ses: List<ServerEndpoint<I, E, O>>): Routing =
   routing {
     ses.forEach { endpoint ->
-      route(
-        endpoint.endpoint.input.path(),
-        endpoint.endpoint.input.toHttpMethod()
-      ) {
-        handle {
-          val serverRequest = KtorServerRequest(call)
-          val interpreter = ServerInterpreter(
-            serverRequest,
-            KtorRequestBody(call),
-            KtorToResponseBody(),
-            emptyList()
-          )
-
-          interpreter.invoke(ses)?.let {
-            when (it.body) {
-              null -> call.respond(HttpStatusCode.fromValue(it.code.code))
-              else -> call.respond(HttpStatusCode.fromValue(it.code.code), it.body as KtorResponseBody)
-            }
-          }
-        }
-      }
+      val method = endpoint.endpoint.input.toHttpMethod()
+      if (method == null) route(endpoint.endpoint.input.path()) { resolve(listOf(endpoint)) }
+      else route(endpoint.endpoint.input.path(), method) { resolve(listOf(endpoint)) }
     }
   }
 
-fun EndpointInput<*>.toHttpMethod(): HttpMethod =
-  HttpMethod((method() ?: Method.GET).value)
+private fun <I, E, O> Route.resolve(
+  ses: List<ServerEndpoint<I, E, O>>
+): Unit = handle {
+  val serverRequest = KtorServerRequest(this.call)
+  val interpreter = ServerInterpreter(
+    serverRequest,
+    KtorRequestBody(call),
+    KtorToResponseBody(),
+    emptyList()
+  )
 
-fun EndpointInput<*>.path(): String =
+  interpreter.invoke(ses)?.let {
+    println("====>>> Going to respond: $it")
+    when (it.body) {
+      null -> call.respond(HttpStatusCode.fromValue(it.code.code))
+      else -> call.respond(HttpStatusCode.fromValue(it.code.code), it.body as KtorResponseBody)
+    }
+  } ?: println("====>>> I am always called with nothing :''''(((")
+}
+
+private fun EndpointInput<*>.toHttpMethod(): HttpMethod? =
+  method()?.value?.let(::HttpMethod)
+
+private fun EndpointInput<*>.path(): String =
   when (this) {
     is EndpointInput.FixedPath -> s
     // TODO empty path capture == wildcard ?
@@ -71,7 +73,7 @@ fun EndpointInput<*>.path(): String =
     is EndpointInput.MappedPair<*, *, *, *> -> handleInputPair(this.input.first, this.input.second)
   }
 
-fun handleInputPair(
+private fun handleInputPair(
   left: EndpointInput<*>,
   right: EndpointInput<*>,
 ): String {
@@ -80,7 +82,7 @@ fun handleInputPair(
   return createPath(left, right)
 }
 
-fun createPath(left: String, right: String): String =
+private fun createPath(left: String, right: String): String =
   when {
     left.isBlank() -> right
     right.isBlank() -> left
