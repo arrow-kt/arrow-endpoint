@@ -115,7 +115,6 @@ suspend fun EndpointOutput<*>.outputParams(
         is EndpointIO.StringBody -> codec.decode(response.receive())
         is EndpointIO.Empty -> codec.decode(Unit)
         is EndpointIO.Header -> codec.decode(headers.getAll(name).orEmpty())
-        is EndpointIO.StreamBody -> TODO() // (output.codec::decode as (Any?) -> DecodeResult<Params>).invoke(body())
         is EndpointOutput.FixedStatusCode -> codec.decode(Unit)
         is EndpointOutput.StatusCode -> codec.decode(code)
         is EndpointOutput.MappedPair<*, *, *, *> ->

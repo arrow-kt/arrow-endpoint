@@ -11,7 +11,6 @@ import com.fortysevendegrees.thool.model.Header
 import com.fortysevendegrees.thool.model.HeaderNames
 import com.fortysevendegrees.thool.model.MediaType
 import com.fortysevendegrees.thool.model.StatusCode
-import kotlinx.coroutines.flow.Flow
 import java.io.InputStream
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
@@ -97,24 +96,6 @@ public data class OutputValues<B>(
       when (output) {
         is EndpointIO.Empty -> ov
         is EndpointOutput.FixedStatusCode -> ov.withStatusCode(output.statusCode)
-        is EndpointIO.StreamBody<*> -> {
-          val mapping = output.codec as Mapping<List<String>, Any?>
-          ov.withBody { headers ->
-            rawToResponseBody.fromStreamValue(
-              mapping.encode(value.asAny) as Flow<Byte>,
-              headers,
-              output.codec.format,
-              output.charset
-            )
-          }
-            .withDefaultContentType(output.codec.format, output.charset)
-            .withHeaderTransformation { hs ->
-              if (hs.any { it.hasName(HeaderNames.ContentLength) }) hs else hs + Header(
-                HeaderNames.TransferEncoding,
-                "chunked"
-              )
-            }
-        }
         is EndpointIO.Header -> {
           val mapping = output.codec as Mapping<List<String>, Any?>
           mapping.encode(value.asAny).fold(ov) { ovv, headerValue ->

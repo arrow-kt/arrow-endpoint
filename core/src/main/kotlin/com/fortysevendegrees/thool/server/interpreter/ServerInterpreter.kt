@@ -92,22 +92,12 @@ class ServerInterpreter<B>(
         when (result.bodyInputWithIndex) {
           null -> result
           else -> {
-            when (val bodyOrStream = result.bodyInputWithIndex.first) {
-              is Either.Left -> {
-                val raw = requestBody.toRaw(bodyOrStream.value)
-                val codec = bodyOrStream.value.codec as Codec<Any?, Any, CodecFormat>
-                when (val res = codec.decode(raw)) {
-                  is DecodeResult.Value -> result.setBodyInputValue(res.value)
-                  is DecodeResult.Failure -> DecodeBasicInputsResult.Failure(bodyOrStream.value, res)
-                }
-              }
-              is Either.Right -> {
-                val codec = bodyOrStream.value.codec as Codec<Any?, Any, CodecFormat>
-                when (val res = codec.decode(requestBody.toFlow())) {
-                  is DecodeResult.Failure -> DecodeBasicInputsResult.Failure(bodyOrStream.value, res)
-                  is DecodeResult.Value -> result.setBodyInputValue(res.value)
-                }
-              }
+            val body = result.bodyInputWithIndex.first
+            val raw = requestBody.toRaw(body)
+            val codec = body.codec as Codec<Any?, Any, CodecFormat>
+            when (val res = codec.decode(raw)) {
+              is DecodeResult.Value -> result.setBodyInputValue(res.value)
+              is DecodeResult.Failure -> DecodeBasicInputsResult.Failure(body, res)
             }
           }
         }

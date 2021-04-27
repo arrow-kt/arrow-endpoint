@@ -25,7 +25,6 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.RecordedRequest
 import okio.Buffer
 import java.nio.ByteBuffer
-import java.nio.charset.Charset
 
 public fun <I, E, O> ServerEndpoint<I, E, O>.toDispatcher(): Dispatcher =
   object : Dispatcher() {
@@ -95,13 +94,6 @@ public class ToResponseBody : ToResponseBody<MockResponseBody> {
 
   override fun fromRawValue(v: Body, headers: HasHeaders, format: CodecFormat): MockResponseBody =
     rawValueToEntity(v, headers, format)
-
-  override fun fromStreamValue(
-    raw: Flow<Byte>,
-    headers: HasHeaders,
-    format: CodecFormat,
-    charset: Charset?
-  ): MockResponseBody = TODO()
 
   private fun rawValueToEntity(
     r: Body,

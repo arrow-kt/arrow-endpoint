@@ -134,7 +134,6 @@ fun EndpointOutput<*>.getOutputParams(
       is EndpointIO.InputStreamBody -> single.codec.decode(response.body.stream)
       is EndpointIO.StringBody -> single.codec.decode(response.body.toString())
 
-      is EndpointIO.StreamBody -> TODO("Support stream body")
       is EndpointIO.Empty -> single.codec.decode(Unit)
       is EndpointOutput.FixedStatusCode -> single.codec.decode(Unit)
       is EndpointOutput.StatusCode -> single.codec.decode(code)

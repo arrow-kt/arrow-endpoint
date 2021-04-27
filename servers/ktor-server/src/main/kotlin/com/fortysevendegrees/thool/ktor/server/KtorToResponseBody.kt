@@ -1,18 +1,14 @@
 package com.fortysevendegrees.thool.ktor.server
 
-import kotlinx.coroutines.flow.Flow
 import com.fortysevendegrees.thool.model.CodecFormat
 import com.fortysevendegrees.thool.model.HasHeaders
 import com.fortysevendegrees.thool.server.interpreter.Body
 import com.fortysevendegrees.thool.server.interpreter.ToResponseBody
 import io.ktor.content.ByteArrayContent
 import io.ktor.http.ContentType
-import io.ktor.http.content.OutgoingContent
 import io.ktor.http.content.OutputStreamContent
 import io.ktor.http.content.TextContent
 import io.ktor.http.withCharset
-import io.ktor.utils.io.ByteWriteChannel
-import kotlinx.coroutines.flow.collect
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
@@ -24,14 +20,6 @@ class KtorToResponseBody : ToResponseBody<KtorResponseBody> {
     headers: HasHeaders,
     format: CodecFormat
   ): KtorResponseBody = rawValueToEntity(v, headers, format)
-
-  override fun fromStreamValue(
-    raw: Flow<Byte>,
-    headers: HasHeaders,
-    format: CodecFormat,
-    charset: Charset?
-  ): KtorResponseBody =
-    ByteFlowContent(raw, headers.contentLength(), format.toContentType(headers, charset))
 
   private fun rawValueToEntity(
     v: Body,
@@ -66,15 +54,4 @@ class KtorToResponseBody : ToResponseBody<KtorResponseBody> {
       CodecFormat.TextEventStream -> ContentType.Text.EventStream
       CodecFormat.Xml -> ContentType.Application.Xml
     }
-}
-
-class ByteFlowContent(
-  val flow: Flow<Byte>,
-  override val contentLength: Long?,
-  override val contentType: ContentType
-) : OutgoingContent.WriteChannelContent() {
-
-  override suspend fun writeTo(channel: ByteWriteChannel): Unit {
-    flow.collect(channel::writeByte)
-  }
 }
