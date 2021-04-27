@@ -6,6 +6,7 @@ import com.fortysevendegrees.thool.model.HeaderNames
 import com.fortysevendegrees.thool.model.Method
 import com.fortysevendegrees.thool.model.QueryParams
 import com.fortysevendegrees.thool.model.StatusCode
+import java.nio.ByteBuffer
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 
@@ -18,7 +19,7 @@ object Thool {
     EndpointInput.Query(name, codec, EndpointIO.Info.empty())
 
   fun <A> query(name: String, codec: PlainCodec<A>): EndpointInput.Query<A> =
-    EndpointInput.Query(name, Codec.listHead(codec), EndpointIO.Info.empty())
+    EndpointInput.Query(name, Codec.listFirst(codec), EndpointIO.Info.empty())
 
   fun queryParams(): EndpointInput.QueryParams<QueryParams> =
     EndpointInput.QueryParams(Codec.idPlain(), EndpointIO.Info.empty())
@@ -88,6 +89,20 @@ object Thool {
    */
   fun <A> xmlBody(codec: XmlCodec<A>): EndpointIO.StringBody<A> =
     anyFromStringBody(codec)
+
+  fun byteArrayBody(): EndpointIO.ByteArrayBody<ByteArray> =
+    EndpointIO.ByteArrayBody(Codec.byteArray, EndpointIO.Info.empty())
+
+  fun byteBufferBody(): EndpointIO.ByteBufferBody<ByteBuffer> =
+    EndpointIO.ByteBufferBody(Codec.byteBuffer, EndpointIO.Info.empty())
+
+  fun inputStreamBody() = EndpointIO.InputStreamBody(Codec.inputStream, EndpointIO.Info.empty())
+
+  fun <A> formBody(codec: Codec<String, A, CodecFormat.XWwwFormUrlencoded>): EndpointIO.StringBody<A> =
+    anyFromStringBody(codec)
+
+  fun <A> formBody(charset: Charset, codec: Codec<String, A, CodecFormat.XWwwFormUrlencoded>): EndpointIO.StringBody<A> =
+    anyFromStringBody(codec, charset)
 
   fun method(m: Method): EndpointInput.FixedMethod<Unit> =
     EndpointInput.FixedMethod(m, Codec.idPlain(), EndpointIO.Info.empty())

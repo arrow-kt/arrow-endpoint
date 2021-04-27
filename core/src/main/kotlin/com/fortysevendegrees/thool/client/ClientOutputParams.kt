@@ -37,7 +37,7 @@ fun EndpointOutput<*>.decode(body: Any, meta: ResponseMetadata): DecodeResult<Pa
       r.map { Params.ParamsAsAny(it) }
     }
     is EndpointOutput.Void ->
-      DecodeResult.Failure.Error("", IllegalArgumentException("Cannot convert a void output to a value!"))
+      DecodeResult.Failure.Error("Cannot convert a void output to a value!", IllegalArgumentException("Cannot convert a void output to a value!"))
   }
 
 private fun resolveOutputPair(

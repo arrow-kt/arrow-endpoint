@@ -54,8 +54,8 @@ public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
           }
     }
 
-  fun <HH> mapDecode(f: (H) -> DecodeResult<HH>, g: (HH) -> H): Codec<L, HH, CF> =
-    map(Mapping.fromDecode(f, g))
+  fun <HH> mapDecode(rawDecode: (H) -> DecodeResult<HH>, encode: (HH) -> H): Codec<L, HH, CF> =
+    map(Mapping.fromDecode(rawDecode, encode))
 
   fun <HH> map(f: (H) -> HH, g: (HH) -> H): Codec<L, HH, CF> =
     mapDecode(f.andThen { DecodeResult.Value(it) }, g)
@@ -193,7 +193,7 @@ public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
 
     private fun <A, B, CF : CodecFormat> listBinarySchema(c: Codec<A, B, CF>): Codec<List<A>, List<B>, CF> =
       id(c.format, Schema.binary<List<A>>())
-        .mapDecode({ aas -> aas.map(c::decode).sequence() }) { bbs -> bbs.map(c::encode) }
+        .mapDecode({ aas -> aas.traverseDecodeResult(c::decode) }) { bbs -> bbs.map(c::encode) }
 
     /**
      * Create a codec which requires that a list of low-level values contains a single element. Otherwise a decode
@@ -201,7 +201,7 @@ public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
      *
      * The schema and validator are copied from the base codec.
      */
-    fun <A, B, CF : CodecFormat> listHead(c: Codec<A, B, CF>): Codec<List<A>, B, CF> =
+    fun <A, B, CF : CodecFormat> listFirst(c: Codec<A, B, CF>): Codec<List<A>, B, CF> =
       listBinarySchema(c)
         .mapDecode({ list ->
           when (list.size) {
@@ -209,7 +209,42 @@ public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
             1 -> DecodeResult.Value(list[0])
             else -> DecodeResult.Failure.Multiple(list)
           }
-        }) { listOf(it) }
+        }) {
+          listOf(it)
+        }
+        .schema(c.schema())
+
+    /**
+     * Create a codec which requires that a list of low-level values contains a single element. Otherwise a decode
+     * failure is returned. The given base codec `c` is used for decoding/encoding.
+     *
+     * The schema and validator are copied from the base codec.
+     */
+    fun <A, B, CF : CodecFormat> listFirstOrNull(c: Codec<A, B, CF>): Codec<List<A>, B?, CF> =
+      listBinarySchema(c)
+        .mapDecode({ list ->
+          when (list.size) {
+            0 -> DecodeResult.Value(null)
+            1 -> DecodeResult.Value(list[0])
+            else -> DecodeResult.Failure.Multiple(list)
+          }
+        }) { listOfNotNull(it) }
+        .schema(c.schema().asNullable())
+
+    /**
+     * Create a codec which requires that a nullable low-level representation contains a single element.
+     * Otherwise a decode failure is returned. The given base codec `c` is used for decoding/encoding.
+     *
+     * The schema and validator are copied from the base codec.
+     */
+    fun <A, B, CF : CodecFormat> nullableFirst(c: Codec<A, B, CF>): Codec<A?, B, CF> =
+      id(c.format, Schema.binary<A?>())
+        .mapDecode({ option ->
+          when (option) {
+            null -> DecodeResult.Failure.Missing
+            else -> c.decode(option)
+          }
+        }) { us -> us?.let(c::encode) }
         .schema(c.schema())
 
     /**

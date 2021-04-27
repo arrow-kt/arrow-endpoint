@@ -54,18 +54,18 @@ public data class OutputValues<B>(
     fun <B> of(
       rawToResponseBody: ToResponseBody<B>,
       output: EndpointOutput<*>,
-      value: Params,
+      params: Params,
       ov: OutputValues<B>
     ): OutputValues<B> =
       when (output) {
-        is EndpointIO.Single<*> -> applySingle(rawToResponseBody, output, value, ov)
-        is EndpointOutput.Single<*> -> applySingle(rawToResponseBody, output, value, ov)
+        is EndpointIO.Single<*> -> applySingle(rawToResponseBody, output, params, ov)
+        is EndpointOutput.Single<*> -> applySingle(rawToResponseBody, output, params, ov)
         is EndpointOutput.Pair<*, *, *> -> applyPair(
           rawToResponseBody,
           output.first,
           output.second,
           output.split,
-          value,
+          params,
           ov
         )
         is EndpointIO.Pair<*, *, *> -> applyPair(
@@ -73,7 +73,7 @@ public data class OutputValues<B>(
           output.first,
           output.second,
           output.split,
-          value,
+          params,
           ov
         )
         is EndpointOutput.Void -> throw IllegalArgumentException("Cannot encode a void output!")
@@ -104,19 +104,19 @@ public data class OutputValues<B>(
         }
         is EndpointIO.ByteArrayBody -> {
           val mapping = output.codec as Mapping<ByteArray, Any?>
-          ov.withBody(ByteArrayBody(mapping.encode(value.asAny)), rawToResponseBody, output)
+          ov.withBody(Body.ByteArray(mapping.encode(value.asAny)), rawToResponseBody, output)
         }
         is EndpointIO.ByteBufferBody -> {
           val mapping = output.codec as Mapping<ByteBuffer, Any?>
-          ov.withBody(ByteBufferBody(mapping.encode(value.asAny)), rawToResponseBody, output)
+          ov.withBody(Body.ByteBuffer(mapping.encode(value.asAny)), rawToResponseBody, output)
         }
         is EndpointIO.InputStreamBody -> {
           val mapping = output.codec as Mapping<InputStream, Any?>
-          ov.withBody(InputStreamBody(mapping.encode(value.asAny)), rawToResponseBody, output)
+          ov.withBody(Body.InputStream(mapping.encode(value.asAny)), rawToResponseBody, output)
         }
         is EndpointIO.StringBody -> {
           val mapping = output.codec as Mapping<String, Any?>
-          ov.withBody(StringBody(output.charset, mapping.encode(value.asAny)), rawToResponseBody, output)
+          ov.withBody(Body.String(output.charset, mapping.encode(value.asAny)), rawToResponseBody, output)
         }
         is EndpointIO.MappedPair<*, *, *, *> -> {
           val mapping = output.mapping as Mapping<Any?, Any?>

@@ -14,12 +14,8 @@ import com.fortysevendegrees.thool.model.StatusCode
 import com.fortysevendegrees.thool.model.Uri
 import com.fortysevendegrees.thool.server.ServerEndpoint
 import com.fortysevendegrees.thool.server.interpreter.Body
-import com.fortysevendegrees.thool.server.interpreter.ByteArrayBody
-import com.fortysevendegrees.thool.server.interpreter.ByteBufferBody
-import com.fortysevendegrees.thool.server.interpreter.InputStreamBody
 import com.fortysevendegrees.thool.server.interpreter.RequestBody
 import com.fortysevendegrees.thool.server.interpreter.ServerInterpreter
-import com.fortysevendegrees.thool.server.interpreter.StringBody
 import com.fortysevendegrees.thool.server.interpreter.ToResponseBody
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -46,6 +42,8 @@ public fun <I, E, O> ServerEndpoint<I, E, O>.toDispatcher(): Dispatcher =
           when (val body = it.body) {
             null -> MockResponse().setResponseCode(it.code.code)
             else -> body.setResponseCode(it.code.code)
+          }.apply {
+            it.headers.forEach { (name, value) -> addHeader(name, value) }
           }
         } ?: MockResponse().setResponseCode(StatusCode.NotFound.code)
       }
@@ -94,8 +92,8 @@ internal class ServerRequest(val ctx: RecordedRequest) : ServerRequest {
 
 public class ToResponseBody : ToResponseBody<MockResponseBody> {
 
-  override fun fromRawValue(raw: Body, headers: HasHeaders, format: CodecFormat): MockResponseBody =
-    rawValueToEntity(raw, headers, format)
+  override fun fromRawValue(v: Body, headers: HasHeaders, format: CodecFormat): MockResponseBody =
+    rawValueToEntity(v, headers, format)
 
   private fun rawValueToEntity(
     r: Body,
@@ -103,10 +101,9 @@ public class ToResponseBody : ToResponseBody<MockResponseBody> {
     format: CodecFormat,
   ): MockResponseBody =
     when (r) {
-      is ByteArrayBody -> MockResponse().setBody(Buffer().apply { read(r.byteArray) })
-      is ByteBufferBody -> MockResponse().setBody(Buffer().apply { read(r.byteBuffer) })
-      is InputStreamBody -> MockResponse().setBody(Buffer().apply { readFrom(r.inputStream) })
-      is StringBody -> MockResponse().setBody(r.string)
+      is Body.ByteArray -> MockResponse().setBody(Buffer().apply { write(r.byteArray) })
+      is Body.ByteBuffer -> MockResponse().setBody(Buffer().apply { write(r.byteBuffer) })
+      is Body.InputStream -> MockResponse().setBody(Buffer().apply { readFrom(r.inputStream) })
+      is Body.String -> MockResponse().setBody(r.string)
     }.addHeader(HeaderNames.ContentType, format.mediaType.toString())
-      .apply { headers.headers.forEach { (n, v) -> addHeader(n, v) } }
 }

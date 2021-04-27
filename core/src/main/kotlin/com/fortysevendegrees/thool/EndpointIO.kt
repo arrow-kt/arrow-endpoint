@@ -11,6 +11,10 @@ import java.nio.charset.Charset
 // Such as body, headers, etc
 public sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
 
+  override fun <B> map(mapping: Mapping<A, B>): EndpointIO<B>
+  override fun <B> map(f: (A) -> B, g: (B) -> A): EndpointIO<B> = map(Mapping.from(f, g))
+  override fun <B> mapDecode(f: (A) -> DecodeResult<B>, g: (B) -> A): EndpointIO<B> = map(Mapping.fromDecode(f, g))
+
   public sealed interface Single<A> : EndpointIO<A>, EndpointInput.Single<A>, EndpointOutput.Single<A>
 
   public sealed interface Basic<L, A, CF : CodecFormat> :
@@ -166,7 +170,7 @@ public fun <A, B> EndpointIO<A>.and(other: EndpointIO<B>): EndpointIO<Pair<A, B>
     { p1, p2 -> Params.ParamsAsList(listOf(p1.asAny, p2.asAny)) },
     { p ->
       Pair(
-        Params.ParamsAsAny(p.asList.take(1)),
+        Params.ParamsAsAny(p.asList.first()),
         Params.ParamsAsAny(p.asList.last())
       )
     }
@@ -199,7 +203,7 @@ public fun <A, B, C> EndpointIO<Pair<A, B>>.and(other: EndpointIO<C>): EndpointI
     { p ->
       Pair(
         Params.ParamsAsList(p.asList.take(2)),
-        Params.ParamsAsAny(p.asList.takeLast(1))
+        Params.ParamsAsAny(p.asList.last())
       )
     }
   )
@@ -227,7 +231,7 @@ public fun <A, B, C, D> EndpointIO<Triple<A, B, C>>.and(other: EndpointIO<D>): E
     { p ->
       Pair(
         Params.ParamsAsList(p.asList.take(3)),
-        Params.ParamsAsAny(p.asList.takeLast(1))
+        Params.ParamsAsAny(p.asList.last())
       )
     }
   )
@@ -241,7 +245,7 @@ public fun <A, B, C, D, E> EndpointIO<Tuple4<A, B, C, D>>.and(other: EndpointIO<
     { p ->
       Pair(
         Params.ParamsAsList(p.asList.take(4)),
-        Params.ParamsAsAny(p.asList.takeLast(1))
+        Params.ParamsAsAny(p.asList.last())
       )
     }
   )
