@@ -5,12 +5,12 @@ import com.fortysevendegrees.thool.DecodeResult
 import com.fortysevendegrees.thool.Endpoint
 import com.fortysevendegrees.thool.ktor.client.requestAndParse
 import com.fortysevendegrees.thool.server.ServerEndpoint
-import com.fortysevendegrees.thool.test.ServerInterpreterSuite
+import com.fortysevendegrees.thool.test.CtxServerInterpreterSuite
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.withTestApplication
 import kotlinx.coroutines.runBlocking
 
-class KtorServerInterpreterSuite : ServerInterpreterSuite<TestApplicationEngine>() {
+class KtorServerInterpreterSuite : CtxServerInterpreterSuite<TestApplicationEngine>() {
   override suspend fun <A> withEndpoint(
     endpoint: ServerEndpoint<*, *, *>,
     run: suspend TestApplicationEngine.(baseString: String) -> A

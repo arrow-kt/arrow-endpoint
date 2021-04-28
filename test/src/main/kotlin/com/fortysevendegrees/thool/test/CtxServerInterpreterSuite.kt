@@ -35,10 +35,27 @@ import com.fortysevendegrees.thool.test.TestEndpoint.in_unit_out_json_unit
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import org.http4k.client.ApacheClient
+import org.http4k.core.Request
+import org.http4k.core.Response
 
-public abstract class ServerInterpreterSuite<Ctx> : FreeSpec() {
+/**
+ * Overload for CtxServerInterpreterSuite where there is no Server Ctx needs to be threaded between server and client functions
+ **/
+public abstract class ServerInterpreterSuite : CtxServerInterpreterSuite<Unit>()
 
-  private val client = ApacheClient()
+/**
+ * Abstract server interpreter test suite
+ *
+ * Allows for [Ctx] to be threaded between [withEndpoint] and [request].
+ * This is useful for testing frameworks that have specific testing support like Ktor,
+ * with these testing frameworks we often have to pass along some test context to pass testing state
+ * between server and client.
+ *
+ * See the Ktor module for an example that thread `TestApplicationEngine` between [withEndpoint] & [request].
+ */
+public abstract class CtxServerInterpreterSuite<Ctx> : FreeSpec() {
+
+  private val client: (Request) -> Response = ApacheClient()
 
   public abstract suspend fun <A> withEndpoint(
     endpoint: ServerEndpoint<*, *, *>,
