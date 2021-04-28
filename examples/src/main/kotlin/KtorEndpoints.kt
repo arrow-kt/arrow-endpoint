@@ -32,7 +32,7 @@ public data class Project(
 }
 
 fun Application.endpointModule() = Thool {
-  val pong: Endpoint<Unit, Nothing, String> = Endpoint
+  val pong: Endpoint<Unit, Unit, String> = Endpoint
     .get()
     .input(fixedPath("ping"))
     .output(stringBody())
@@ -41,7 +41,7 @@ fun Application.endpointModule() = Thool {
 
   install(ServerEndpoint(Endpoint.get().input(fixedPath("empty"))) { it.right() })
 
-  val helloWorld: Endpoint<Pair<String, String>, Nothing, Project> =
+  val helloWorld: Endpoint<Pair<String, String>, Unit, Project> =
     Endpoint
       .get()
       .input(fixedPath("hello"))

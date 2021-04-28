@@ -15,146 +15,146 @@ import com.fortysevendegrees.thool.model.Method
 
 public interface MethodSyntax {
 
-  fun get(path: String? = null): Endpoint<Unit, Nothing, Unit> =
+  fun get(path: String? = null): Endpoint<Unit, Unit, Unit> =
     Endpoint(
       if (path != null) Thool.method(Method.GET).and(Thool.fixedPath(path))
       else Thool.method(Method.GET),
-      EndpointOutput.Void(),
+      EndpointOutput.empty(),
       EndpointOutput.empty(),
       EndpointInfo.empty()
     )
 
-  fun post(path: String? = null): Endpoint<Unit, Nothing, Unit> =
+  fun post(path: String? = null): Endpoint<Unit, Unit, Unit> =
     Endpoint(
       if (path != null) Thool.method(Method.POST).and(Thool.fixedPath(path))
       else Thool.method(Method.POST),
-      EndpointOutput.Void(),
+      EndpointOutput.empty(),
       EndpointOutput.empty(),
       EndpointInfo.empty()
     )
 
-  fun head(path: String? = null): Endpoint<Unit, Nothing, Unit> =
+  fun head(path: String? = null): Endpoint<Unit, Unit, Unit> =
     Endpoint(
       if (path != null) Thool.method(Method.HEAD).and(Thool.fixedPath(path))
       else Thool.method(Method.HEAD),
-      EndpointOutput.Void(),
+      EndpointOutput.empty(),
       EndpointOutput.empty(),
       EndpointInfo.empty()
     )
 
-  fun put(path: String? = null): Endpoint<Unit, Nothing, Unit> =
+  fun put(path: String? = null): Endpoint<Unit, Unit, Unit> =
     Endpoint(
       if (path != null) Thool.method(Method.PUT).and(Thool.fixedPath(path))
       else Thool.method(Method.PUT),
-      EndpointOutput.Void(),
+      EndpointOutput.empty(),
       EndpointOutput.empty(),
       EndpointInfo.empty()
     )
 
-  fun delete(path: String? = null): Endpoint<Unit, Nothing, Unit> =
+  fun delete(path: String? = null): Endpoint<Unit, Unit, Unit> =
     Endpoint(
       if (path != null) Thool.method(Method.DELETE).and(Thool.fixedPath(path))
       else Thool.method(Method.DELETE),
-      EndpointOutput.Void(),
+      EndpointOutput.empty(),
       EndpointOutput.empty(),
       EndpointInfo.empty()
     )
 
-  fun options(path: String? = null): Endpoint<Unit, Nothing, Unit> =
+  fun options(path: String? = null): Endpoint<Unit, Unit, Unit> =
     Endpoint(
       if (path != null) Thool.method(Method.OPTIONS).and(Thool.fixedPath(path))
       else Thool.method(Method.OPTIONS),
-      EndpointOutput.Void(),
+      EndpointOutput.empty(),
       EndpointOutput.empty(),
       EndpointInfo.empty()
     )
 
-  fun patch(path: String? = null): Endpoint<Unit, Nothing, Unit> =
+  fun patch(path: String? = null): Endpoint<Unit, Unit, Unit> =
     Endpoint(
       if (path != null) Thool.method(Method.PATCH).and(Thool.fixedPath(path))
       else Thool.method(Method.PATCH),
-      EndpointOutput.Void(),
+      EndpointOutput.empty(),
       EndpointOutput.empty(),
       EndpointInfo.empty()
     )
 
-  fun connect(path: String? = null): Endpoint<Unit, Nothing, Unit> =
+  fun connect(path: String? = null): Endpoint<Unit, Unit, Unit> =
     Endpoint(
       if (path != null) Thool.method(Method.CONNECT).and(Thool.fixedPath(path))
       else Thool.method(Method.CONNECT),
-      EndpointOutput.Void(),
+      EndpointOutput.empty(),
       EndpointOutput.empty(),
       EndpointInfo.empty()
     )
 
-  fun trace(path: String? = null): Endpoint<Unit, Nothing, Unit> =
+  fun trace(path: String? = null): Endpoint<Unit, Unit, Unit> =
     Endpoint(
       if (path != null) Thool.method(Method.TRACE).and(Thool.fixedPath(path))
       else Thool.method(Method.TRACE),
-      EndpointOutput.Void(),
+      EndpointOutput.empty(),
       EndpointOutput.empty(),
       EndpointInfo.empty()
     )
 
-  fun <A> get(f: PathSyntax.() -> EndpointInput<A>): Endpoint<A, Nothing, Unit> =
+  fun <A> get(f: PathSyntax.() -> EndpointInput<A>): Endpoint<A, Unit, Unit> =
     Endpoint(
-      Thool.method(Method.GET).and(f(PathSyntax)), EndpointOutput.Void(),
+      Thool.method(Method.GET).and(f(PathSyntax)), EndpointOutput.empty(),
       EndpointOutput.empty(),
       EndpointInfo.empty()
     )
 
-  fun <A> post(f: PathSyntax.() -> EndpointInput<A>): Endpoint<A, Nothing, Unit> =
+  fun <A> post(f: PathSyntax.() -> EndpointInput<A>): Endpoint<A, Unit, Unit> =
     Endpoint(
-      Thool.method(Method.POST).and(f(PathSyntax)), EndpointOutput.Void(),
+      Thool.method(Method.POST).and(f(PathSyntax)), EndpointOutput.empty(),
       EndpointOutput.empty(),
       EndpointInfo.empty()
     )
 
-  fun <A> head(f: PathSyntax.() -> EndpointInput<A>): Endpoint<A, Nothing, Unit> =
+  fun <A> head(f: PathSyntax.() -> EndpointInput<A>): Endpoint<A, Unit, Unit> =
     Endpoint(
-      Thool.method(Method.HEAD).and(f(PathSyntax)), EndpointOutput.Void(),
+      Thool.method(Method.HEAD).and(f(PathSyntax)), EndpointOutput.empty(),
       EndpointOutput.empty(),
       EndpointInfo.empty()
     )
 
-  fun <A> put(f: PathSyntax.() -> EndpointInput<A>): Endpoint<A, Nothing, Unit> =
+  fun <A> put(f: PathSyntax.() -> EndpointInput<A>): Endpoint<A, Unit, Unit> =
     Endpoint(
-      Thool.method(Method.PUT).and(f(PathSyntax)), EndpointOutput.Void(),
+      Thool.method(Method.PUT).and(f(PathSyntax)), EndpointOutput.empty(),
       EndpointOutput.empty(),
       EndpointInfo.empty()
     )
 
-  fun <A> delete(f: PathSyntax.() -> EndpointInput<A>): Endpoint<A, Nothing, Unit> =
+  fun <A> delete(f: PathSyntax.() -> EndpointInput<A>): Endpoint<A, Unit, Unit> =
     Endpoint(
-      Thool.method(Method.DELETE).and(f(PathSyntax)), EndpointOutput.Void(),
+      Thool.method(Method.DELETE).and(f(PathSyntax)), EndpointOutput.empty(),
       EndpointOutput.empty(),
       EndpointInfo.empty()
     )
 
-  fun <A> options(f: PathSyntax.() -> EndpointInput<A>): Endpoint<A, Nothing, Unit> =
+  fun <A> options(f: PathSyntax.() -> EndpointInput<A>): Endpoint<A, Unit, Unit> =
     Endpoint(
-      Thool.method(Method.OPTIONS).and(f(PathSyntax)), EndpointOutput.Void(),
+      Thool.method(Method.OPTIONS).and(f(PathSyntax)), EndpointOutput.empty(),
       EndpointOutput.empty(),
       EndpointInfo.empty()
     )
 
-  fun <A> patch(f: PathSyntax.() -> EndpointInput<A>): Endpoint<A, Nothing, Unit> =
+  fun <A> patch(f: PathSyntax.() -> EndpointInput<A>): Endpoint<A, Unit, Unit> =
     Endpoint(
-      Thool.method(Method.PATCH).and(f(PathSyntax)), EndpointOutput.Void(),
+      Thool.method(Method.PATCH).and(f(PathSyntax)), EndpointOutput.empty(),
       EndpointOutput.empty(),
       EndpointInfo.empty()
     )
 
-  fun <A> connect(f: PathSyntax.() -> EndpointInput<A>): Endpoint<A, Nothing, Unit> =
+  fun <A> connect(f: PathSyntax.() -> EndpointInput<A>): Endpoint<A, Unit, Unit> =
     Endpoint(
-      Thool.method(Method.CONNECT).and(f(PathSyntax)), EndpointOutput.Void(),
+      Thool.method(Method.CONNECT).and(f(PathSyntax)), EndpointOutput.empty(),
       EndpointOutput.empty(),
       EndpointInfo.empty()
     )
 
-  fun <A> trace(f: PathSyntax.() -> EndpointInput<A>): Endpoint<A, Nothing, Unit> =
+  fun <A> trace(f: PathSyntax.() -> EndpointInput<A>): Endpoint<A, Unit, Unit> =
     Endpoint(
-      Thool.method(Method.TRACE).and(f(PathSyntax)), EndpointOutput.Void(),
+      Thool.method(Method.TRACE).and(f(PathSyntax)), EndpointOutput.empty(),
       EndpointOutput.empty(),
       EndpointInfo.empty()
     )
