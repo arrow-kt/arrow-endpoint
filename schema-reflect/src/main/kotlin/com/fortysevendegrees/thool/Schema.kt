@@ -52,7 +52,7 @@ fun <A : Any> KClass<A>.schema(): Schema<A> =
     this == OffsetTime::class -> Schema.offsetTime as Schema<A>
     this == BigDecimal::class -> Schema.bigDecimal as Schema<A>
     this == UUID::class -> Schema.string()
-    isSealed -> Schema.Coproduct(objectInfo(), sealedSubclassSchemas())
+    isSealed -> Schema.Coproduct(objectInfo(), sealedSubclassSchemas(), )
     isData -> Schema.Product(objectInfo(), properties())
     else -> (this as? KClass<Enum<*>>)?.let {
       Schema.Enum(

@@ -7,6 +7,9 @@ dependencies {
   implementation(project(Libs.htt4kClient))
   implementation(project(Libs.springClientWeb))
   implementation(project(Libs.springClientWebFlux))
+
+  implementation(project(":docs:openapi-docs"))
+
   implementation(Libs.kotlinxSerializationJson)
   implementation(Libs.http4kApache)
   api(Libs.kotestRunner)
