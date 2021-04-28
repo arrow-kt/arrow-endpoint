@@ -7,6 +7,7 @@ import com.fortysevendegrees.thool.server.interpreter.ToResponseBody
 import io.ktor.content.ByteArrayContent
 import io.ktor.http.ContentType
 import io.ktor.http.content.OutputStreamContent
+import io.ktor.http.content.TextContent
 import io.ktor.http.withCharset
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
@@ -28,7 +29,7 @@ class KtorToResponseBody : ToResponseBody<KtorResponseBody> {
     when (v) {
       is Body.ByteArray -> ByteArrayContent(v.toByteArray(), format.toContentType(headers, null))
       is Body.ByteBuffer -> ByteArrayContent(v.toByteArray(), format.toContentType(headers, null))
-      is Body.String -> ByteArrayContent(v.toByteArray())
+      is Body.String -> TextContent(v.string, format.toContentType(headers, null))
       is Body.InputStream -> OutputStreamContent(
         {
           v.inputStream.copyTo(this)
