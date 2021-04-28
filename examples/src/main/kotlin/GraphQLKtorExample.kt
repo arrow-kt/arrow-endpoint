@@ -33,7 +33,7 @@ import io.ktor.routing.post
 import io.ktor.routing.routing
 import java.io.IOException
 
-val helloWorld: Endpoint<Pair<String, String>, Nothing, Project> =
+val helloWorld: Endpoint<Pair<String, String>, Unit, Project> =
   Endpoint
     .get()
     .input(fixedPath("hello"))
@@ -42,7 +42,7 @@ val helloWorld: Endpoint<Pair<String, String>, Nothing, Project> =
     .input(query("language", Codec.string))
     .output(anyJsonBody(Project.jsonCodec))
 
-val post: Endpoint<Pair<String, String>, Nothing, Int> =
+val post: Endpoint<Pair<String, String>, Unit, Int> =
   Endpoint
     .post()
     .input(fixedPath("test"))

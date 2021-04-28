@@ -81,14 +81,14 @@ public data class Endpoint<I, E, O>(
 
   public companion object : MethodSyntax {
 
-    public fun <I> input(input: EndpointInput<I>): Endpoint<I, Nothing, Unit> =
-      Endpoint(input, EndpointOutput.Void(), EndpointOutput.empty(), EndpointInfo.empty())
+    public fun <I> input(input: EndpointInput<I>): Endpoint<I, Unit, Unit> =
+      Endpoint(input, EndpointOutput.empty(), EndpointOutput.empty(), EndpointInfo.empty())
 
     public fun <E> error(output: EndpointOutput<E>): Endpoint<Unit, E, Unit> =
       Endpoint(EndpointInput.empty(), output, EndpointOutput.empty(), EndpointInfo.empty())
 
-    public fun <O> output(output: EndpointOutput<O>): Endpoint<Unit, Nothing, O> =
-      Endpoint(EndpointInput.empty(), EndpointOutput.Void(), output, EndpointInfo.empty())
+    public fun <O> output(output: EndpointOutput<O>): Endpoint<Unit, Unit, O> =
+      Endpoint(EndpointInput.empty(), EndpointOutput.empty(), output, EndpointInfo.empty())
 
     public fun <I> path(path: PathSyntax.() -> EndpointInput<I>): EndpointInput<I> =
       path(PathSyntax)
