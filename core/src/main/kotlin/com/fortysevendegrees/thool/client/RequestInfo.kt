@@ -6,13 +6,13 @@ import com.fortysevendegrees.thool.EndpointInput
 import com.fortysevendegrees.thool.Mapping
 import com.fortysevendegrees.thool.Params
 import com.fortysevendegrees.thool.PlainCodec
+import com.fortysevendegrees.thool.model.Body
 import com.fortysevendegrees.thool.model.CodecFormat
 import com.fortysevendegrees.thool.model.Cookie
 import com.fortysevendegrees.thool.model.Header
 import com.fortysevendegrees.thool.model.Method
 import com.fortysevendegrees.thool.model.PathSegment
 import com.fortysevendegrees.thool.model.QueryParams
-import com.fortysevendegrees.thool.server.interpreter.Body
 
 public data class RequestInfo(
   val method: Method,

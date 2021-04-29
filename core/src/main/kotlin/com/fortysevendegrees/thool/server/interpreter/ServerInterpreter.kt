@@ -6,31 +6,29 @@ import com.fortysevendegrees.thool.Endpoint
 import com.fortysevendegrees.thool.EndpointInput
 import com.fortysevendegrees.thool.EndpointInterceptor
 import com.fortysevendegrees.thool.EndpointOutput
-import com.fortysevendegrees.thool.ServerRequest
-import com.fortysevendegrees.thool.ServerResponse
 import arrow.core.Either
 import arrow.core.tail
 import com.fortysevendegrees.thool.Params
 import com.fortysevendegrees.thool.model.CodecFormat
-import com.fortysevendegrees.thool.model.Headers
+import com.fortysevendegrees.thool.model.ServerRequest
+import com.fortysevendegrees.thool.model.ServerResponse
 import com.fortysevendegrees.thool.model.StatusCode
 import com.fortysevendegrees.thool.server.ServerEndpoint
 
-class ServerInterpreter<B>(
+class ServerInterpreter(
   val request: ServerRequest,
   val requestBody: RequestBody,
-  val toResponseBody: ToResponseBody<B>,
-  val interceptors: List<EndpointInterceptor<B>>
+  val interceptors: List<EndpointInterceptor>
 ) {
 
-  tailrec suspend operator fun <I, E, O> invoke(ses: List<ServerEndpoint<I, E, O>>): ServerResponse<B>? =
+  tailrec suspend operator fun <I, E, O> invoke(ses: List<ServerEndpoint<I, E, O>>): ServerResponse? =
     if (ses.isEmpty()) null
     else {
       invoke(ses.first()) ?: invoke(ses.tail())
     }
 
-  suspend operator fun <I, E, O> invoke(se: ServerEndpoint<I, E, O>): ServerResponse<B>? {
-    val valueToResponse: suspend (i: I) -> ServerResponse<B> = { i ->
+  suspend operator fun <I, E, O> invoke(se: ServerEndpoint<I, E, O>): ServerResponse? {
+    val valueToResponse: suspend (i: I) -> ServerResponse = { i ->
       when (val res = se.logic(i)) {
         is Either.Left -> outputToResponse(StatusCode.BadRequest, se.endpoint.errorOutput, res.value)
         is Either.Right -> outputToResponse(StatusCode.Ok, se.endpoint.output, res.value)
@@ -61,11 +59,11 @@ class ServerInterpreter<B>(
   }
 
   private suspend fun <I> callInterceptorsOnDecodeSuccess(
-    interceptors: List<EndpointInterceptor<B>>,
+    interceptors: List<EndpointInterceptor>,
     endpoint: Endpoint<I, *, *>,
     i: I,
-    callLogic: suspend (I) -> ServerResponse<B>
-  ): ServerResponse<B> =
+    callLogic: suspend (I) -> ServerResponse
+  ): ServerResponse =
     interceptors.firstOrNull()?.onDecodeSuccess(request, endpoint, i) { output ->
       when (output) {
         null -> callInterceptorsOnDecodeSuccess(interceptors.tail(), endpoint, i, callLogic)
@@ -74,11 +72,11 @@ class ServerInterpreter<B>(
     } ?: callLogic(i)
 
   private suspend fun callInterceptorsOnDecodeFailure(
-    interceptors: List<EndpointInterceptor<B>>,
+    interceptors: List<EndpointInterceptor>,
     endpoint: Endpoint<*, *, *>,
     failingInput: EndpointInput<*>,
     failure: DecodeResult.Failure
-  ): ServerResponse<B>? =
+  ): ServerResponse? =
     interceptors.firstOrNull()?.onDecodeFailure(request, endpoint, failure, failingInput) { output ->
       when (output) {
         null -> callInterceptorsOnDecodeFailure(interceptors.tail(), endpoint, failingInput, failure)
@@ -104,9 +102,8 @@ class ServerInterpreter<B>(
       is DecodeBasicInputsResult.Failure -> result
     }
 
-  private fun <O> outputToResponse(defaultStatusCode: StatusCode, output: EndpointOutput<O>, v: O): ServerResponse<B> {
+  private fun <O> outputToResponse(defaultStatusCode: StatusCode, output: EndpointOutput<O>, v: O): ServerResponse {
     val outputValues = OutputValues.of(
-      toResponseBody,
       output,
       Params.ParamsAsAny(v),
       OutputValues.empty()
@@ -115,6 +112,6 @@ class ServerInterpreter<B>(
 
     val headers = outputValues.headers()
 
-    return ServerResponse(statusCode, headers, outputValues.body?.let { f -> f(Headers(headers)) })
+    return ServerResponse(statusCode, "", headers, outputValues.body)
   }
 }

@@ -1,6 +1,6 @@
 package com.fortysevendegrees.thool.model
 
-public interface ResponseMetadata : Headers {
+public interface ResponseMetadata {
   public val code: StatusCode
   public val statusText: String
 
@@ -28,7 +28,7 @@ public interface ResponseMetadata : Headers {
 private data class ResponseMetadataImpl(
   override val code: StatusCode,
   override val statusText: String,
-  override val headers: List<Header>
+  val headers: List<Header>
 ) : ResponseMetadata {
   override fun toString(): String = "ResponseMetadata($code,$statusText,${headers.toStringSafe()})"
 }

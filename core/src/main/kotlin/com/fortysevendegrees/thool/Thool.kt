@@ -2,7 +2,7 @@ package com.fortysevendegrees.thool
 
 import com.fortysevendegrees.thool.model.CodecFormat
 import com.fortysevendegrees.thool.model.Cookie
-import com.fortysevendegrees.thool.model.Headers
+import com.fortysevendegrees.thool.model.Header
 import com.fortysevendegrees.thool.model.Method
 import com.fortysevendegrees.thool.model.QueryParams
 import com.fortysevendegrees.thool.model.StatusCode
@@ -45,7 +45,7 @@ object Thool {
     EndpointInput.Cookie(name, codec, EndpointIO.Info.empty())
 
   fun cookies(): EndpointIO.Header<List<Cookie>> =
-    header(Headers.Cookie, Codec.cookiesCodec)
+    header(Header.Cookie, Codec.cookiesCodec)
 
   fun fixedPath(s: String): EndpointInput.FixedPath<Unit> =
     EndpointInput.FixedPath(s, Codec.idPlain(), EndpointIO.Info.empty())
