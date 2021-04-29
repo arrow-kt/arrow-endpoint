@@ -97,19 +97,19 @@ public data class OutputValues(
         }
         is EndpointIO.ByteArrayBody -> {
           val mapping = output.codec as Mapping<ByteArray, Any?>
-          ov.withBody(Body.ByteArray(mapping.encode(value.asAny)), output)
+          ov.withBody(Body.ByteArray(mapping.encode(value.asAny), output.codec.format), output)
         }
         is EndpointIO.ByteBufferBody -> {
           val mapping = output.codec as Mapping<ByteBuffer, Any?>
-          ov.withBody(Body.ByteBuffer(mapping.encode(value.asAny)), output)
+          ov.withBody(Body.ByteBuffer(mapping.encode(value.asAny), output.codec.format), output)
         }
         is EndpointIO.InputStreamBody -> {
           val mapping = output.codec as Mapping<InputStream, Any?>
-          ov.withBody(Body.InputStream(mapping.encode(value.asAny)), output)
+          ov.withBody(Body.InputStream(mapping.encode(value.asAny), output.codec.format), output)
         }
         is EndpointIO.StringBody -> {
           val mapping = output.codec as Mapping<String, Any?>
-          ov.withBody(Body.String(output.charset, mapping.encode(value.asAny)), output)
+          ov.withBody(Body.String(output.charset, mapping.encode(value.asAny), output.codec.format), output)
         }
         is EndpointIO.MappedPair<*, *, *, *> -> {
           val mapping = output.mapping as Mapping<Any?, Any?>

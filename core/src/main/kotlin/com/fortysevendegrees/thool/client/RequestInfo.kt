@@ -63,16 +63,16 @@ public fun <I> EndpointInput<I>.requestInfo(
         pathSegments.addAll(ps.map(::PathSegment))
       }
       is EndpointIO.ByteArrayBody -> {
-        body = Body.ByteArray(codec.encode(value))
+        body = Body.ByteArray(codec.encode(value), codec.format)
       }
       is EndpointIO.ByteBufferBody -> {
-        body = Body.ByteBuffer(codec.encode(value))
+        body = Body.ByteBuffer(codec.encode(value), codec.format)
       }
       is EndpointIO.InputStreamBody -> {
-        body = Body.InputStream(codec.encode(value))
+        body = Body.InputStream(codec.encode(value), codec.format)
       }
       is EndpointIO.StringBody -> {
-        body = Body.String(charset, codec.encode(value))
+        body = Body.String(charset, codec.encode(value), codec.format)
       }
 
       is EndpointIO.Empty -> Unit

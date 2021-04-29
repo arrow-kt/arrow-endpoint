@@ -1,12 +1,16 @@
 package com.fortysevendegrees.thool.model
 
 import java.nio.charset.Charset
+import java.nio.ByteBuffer as JByteBuffer
+import kotlin.ByteArray as KByteArray
+import kotlin.String as KString
+import java.io.InputStream as JInputStream
 
-public data class Address(val hostname: String, val port: Int)
+public data class Address(val hostname: KString, val port: Int)
 public data class ConnectionInfo(val local: Address?, val remote: Address?, val secure: Boolean?)
 
 public data class ServerRequest(
-  val protocol: String,
+  val protocol: KString,
   val connectionInfo: ConnectionInfo,
   public val method: Method,
   public val uri: Uri,
@@ -15,41 +19,55 @@ public data class ServerRequest(
    * Can differ from `uri.path()`, if the endpoint is deployed in a context.
    * If the routes are mounted within a context (e.g. using a router), we have to match against what comes after the context.
    */
-  public val pathSegments: List<String>,
+  public val pathSegments: List<KString>,
   public val queryParameters: QueryParams
 ) {
-  override fun toString(): String =
+  override fun toString(): KString =
     "ServerRequest($protocol, $connectionInfo, $method, $uri, ${headers.toStringSafe()})"
 }
 
 public sealed interface Body {
-  public fun toByteArray(): kotlin.ByteArray
-  public data class String(public val charset: Charset, public val string: kotlin.String) : Body {
-    override fun toByteArray(): kotlin.ByteArray = string.toByteArray(charset)
+  public fun toByteArray(): KByteArray
+  public val format: CodecFormat
+
+  public fun Body.charsetOrNull(): Charset? =
+    when (this) {
+      is String -> charset
+      else -> null
+    }
+
+  public data class String(
+    public val charset: Charset,
+    public val string: KString,
+    public override val format: CodecFormat
+  ) : Body {
+    override fun toByteArray(): KByteArray = string.toByteArray(charset)
   }
 
-  public inline class ByteArray(public val byteArray: kotlin.ByteArray) : Body {
-    override fun toByteArray(): kotlin.ByteArray = byteArray
+  public data class ByteArray(public val byteArray: KByteArray, public override val format: CodecFormat) : Body {
+    override fun toByteArray(): KByteArray = byteArray
   }
 
-  public inline class ByteBuffer(public val byteBuffer: java.nio.ByteBuffer) : Body {
-    override fun toByteArray(): kotlin.ByteArray {
-      val array = kotlin.ByteArray(byteBuffer.remaining())
+  public data class ByteBuffer(public val byteBuffer: JByteBuffer, public override val format: CodecFormat) :
+    Body {
+    override fun toByteArray(): KByteArray {
+      val array = KByteArray(byteBuffer.remaining())
       byteBuffer.get(array)
       return array
     }
   }
 
-  public inline class InputStream(public val inputStream: java.io.InputStream) : Body {
-    override fun toByteArray(): kotlin.ByteArray = inputStream.readBytes()
+  public data class InputStream(public val inputStream: JInputStream, public override val format: CodecFormat) :
+    Body {
+    override fun toByteArray(): KByteArray = inputStream.readBytes()
   }
 }
 
 public data class ServerResponse(
   val code: StatusCode,
-  val statusText: String,
+  val statusText: KString,
   val headers: List<Header>,
   val body: Body?
 ) {
-  override fun toString(): String = "ServerResponse($code, $statusText, ${headers.toStringSafe()}, $body)"
+  override fun toString(): KString = "ServerResponse($code, $statusText, ${headers.toStringSafe()}, $body)"
 }

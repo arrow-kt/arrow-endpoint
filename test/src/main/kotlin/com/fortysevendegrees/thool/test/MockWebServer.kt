@@ -17,7 +17,6 @@ import com.fortysevendegrees.thool.server.ServerEndpoint
 import com.fortysevendegrees.thool.server.interpreter.RequestBody
 import com.fortysevendegrees.thool.server.interpreter.ServerInterpreter
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
@@ -57,8 +56,6 @@ internal class RequestBody(val ctx: RecordedRequest) : RequestBody {
       is EndpointIO.StringBody -> ctx.body.readByteArray().toString(bodyType.charset)
     } as R
   }
-
-  override fun toFlow(): Flow<Byte> = TODO()
 }
 
 public fun RecordedRequest.toServerRequest(): ServerRequest =
