@@ -130,7 +130,8 @@ public fun ApplicationCall.toServerRequest(): ServerRequest {
 
 private fun RequestConnectionPoint.toAddress(): Address = Address(host, port)
 
-internal class KtorRequestBody(val ctx: ApplicationCall) : RequestBody {
+internal class KtorRequestBody(private val ctx: ApplicationCall) : RequestBody {
+  @Suppress("IMPLICIT_CAST_TO_ANY", "UNCHECKED_CAST")
   override suspend fun <R> toRaw(bodyType: EndpointIO.Body<R, *>): R {
     val body = ctx.request.receiveChannel()
     return when (bodyType) {

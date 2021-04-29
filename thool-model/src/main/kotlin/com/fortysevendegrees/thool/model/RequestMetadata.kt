@@ -65,9 +65,8 @@ public sealed interface Body {
 
 public data class ServerResponse(
   val code: StatusCode,
-  val statusText: KString,
   val headers: List<Header>,
   val body: Body?
 ) {
-  override fun toString(): KString = "ServerResponse($code, $statusText, ${headers.toStringSafe()}, $body)"
+  override fun toString(): KString = "ServerResponse($code, ${headers.toStringSafe()}, $body)"
 }

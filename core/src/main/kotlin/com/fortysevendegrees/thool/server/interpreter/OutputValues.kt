@@ -14,21 +14,21 @@ import java.io.InputStream
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
 
-public data class OutputValues(
+internal data class OutputValues(
   val body: Body?,
   val baseHeaders: List<Header>,
   val headerTransformations: List<(List<Header>) -> List<Header>>,
   val statusCode: StatusCode?
 ) {
-  fun withBody(b: Body): OutputValues {
+  private fun withBody(b: Body): OutputValues {
     check(body == null) { "Body is already defined" }
     return copy(body = b)
   }
 
-  fun withHeaderTransformation(t: (List<Header>) -> List<Header>): OutputValues =
+  private fun withHeaderTransformation(t: (List<Header>) -> List<Header>): OutputValues =
     copy(headerTransformations = headerTransformations + t)
 
-  fun withDefaultContentType(format: CodecFormat, charset: Charset?): OutputValues =
+  private fun withDefaultContentType(format: CodecFormat, charset: Charset?): OutputValues =
     withHeaderTransformation { hs ->
       if (hs.any { it.hasName(Header.ContentType) }) hs
       else hs + Header(
@@ -37,10 +37,10 @@ public data class OutputValues(
       )
     }
 
-  fun withHeader(n: String, v: String): OutputValues =
+  private fun withHeader(n: String, v: String): OutputValues =
     copy(baseHeaders = baseHeaders + Header(n, v))
 
-  fun withStatusCode(sc: StatusCode): OutputValues =
+  private fun withStatusCode(sc: StatusCode): OutputValues =
     copy(statusCode = sc)
 
   fun headers(): List<Header> =

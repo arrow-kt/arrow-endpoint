@@ -81,7 +81,7 @@ object DecodeBasicInputs {
    */
   // TODO rename
   fun apply(input: EndpointInput<*>, request: ServerRequest): DecodeBasicInputsResult =
-    apply(input, DecodeInputsContext(request, request.uri.path()))
+    apply(input, DecodeInputsContext(request, request.pathSegments))
 
   // TODO rename
   private fun apply(input: EndpointInput<*>, ctx: DecodeInputsContext): DecodeBasicInputsResult {

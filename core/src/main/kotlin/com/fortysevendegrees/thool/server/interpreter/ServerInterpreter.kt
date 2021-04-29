@@ -15,19 +15,19 @@ import com.fortysevendegrees.thool.model.ServerResponse
 import com.fortysevendegrees.thool.model.StatusCode
 import com.fortysevendegrees.thool.server.ServerEndpoint
 
-class ServerInterpreter(
-  val request: ServerRequest,
-  val requestBody: RequestBody,
-  val interceptors: List<EndpointInterceptor>
+public class ServerInterpreter(
+  public val request: ServerRequest,
+  public val requestBody: RequestBody,
+  public val interceptors: List<EndpointInterceptor>
 ) {
 
-  tailrec suspend operator fun <I, E, O> invoke(ses: List<ServerEndpoint<I, E, O>>): ServerResponse? =
+  public tailrec suspend operator fun <I, E, O> invoke(ses: List<ServerEndpoint<I, E, O>>): ServerResponse? =
     if (ses.isEmpty()) null
     else {
       invoke(ses.first()) ?: invoke(ses.tail())
     }
 
-  suspend operator fun <I, E, O> invoke(se: ServerEndpoint<I, E, O>): ServerResponse? {
+  public suspend operator fun <I, E, O> invoke(se: ServerEndpoint<I, E, O>): ServerResponse? {
     val valueToResponse: suspend (i: I) -> ServerResponse = { i ->
       when (val res = se.logic(i)) {
         is Either.Left -> outputToResponse(StatusCode.BadRequest, se.endpoint.errorOutput, res.value)
@@ -112,6 +112,6 @@ class ServerInterpreter(
 
     val headers = outputValues.headers()
 
-    return ServerResponse(statusCode, "", headers, outputValues.body)
+    return ServerResponse(statusCode, headers, outputValues.body)
   }
 }

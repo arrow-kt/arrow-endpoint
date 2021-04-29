@@ -26,6 +26,9 @@ public data class Header(val name: String, val value: String) {
   /** @return Representation in the format: `[name]: [value]`. */
   override fun toString(): String = toStringSafe()
 
+  override fun hashCode(): Int =
+    (31 * name.toLowerCase().hashCode()) + value.hashCode()
+
   override fun equals(other: Any?): Boolean =
     when (other) {
       is Header -> hasName(other.name) && value == other.value
@@ -133,28 +136,23 @@ public data class Header(val name: String, val value: String) {
     public fun isContent(headerName: String): Boolean =
       ContentHeaders.contains(headerName.toLowerCase().trim())
 
-    /** Performs a case-insensitive check, whether this header is content-related.
-     */
+    /** Performs a case-insensitive check, whether this header is content-related. */
     public fun isContent(header: Header): Boolean =
       isContent(header.name)
 
-    /** Performs a case-insensitive check, whether this header name is sensitive.
-     */
+    /** Performs a case-insensitive check, whether this header name is sensitive. */
     public fun isSensitive(headerName: String): Boolean =
       isSensitive(headerName, SensitiveHeaders)
 
-    /** Performs a case-insensitive check, whether this header name is sensitive.
-     */
+    /** Performs a case-insensitive check, whether this header name is sensitive. */
     public fun isSensitive(headerName: String, sensitiveHeaders: Set<String>): Boolean =
       sensitiveHeaders.map(String::toLowerCase).contains(headerName.toLowerCase().trim())
 
-    /** Performs a case-insensitive check, whether this header is sensitive.
-     */
+    /** Performs a case-insensitive check, whether this header is sensitive. */
     public fun isSensitive(header: Header): Boolean =
       isSensitive(header.name, SensitiveHeaders)
 
-    /** Performs a case-insensitive check, whether this header is sensitive.
-     */
+    /** Performs a case-insensitive check, whether this header is sensitive. */
     public fun isSensitive(header: Header, sensitiveHeaders: Set<String>): Boolean =
       isSensitive(header.name, sensitiveHeaders)
   }
@@ -181,9 +179,3 @@ public fun List<Header>.contentLength(): Long? =
       null
     }
   }
-
-// public fun cookies(): List<Either<String, CookieWithMeta>> =
-// headers(Header.SetCookie).map { h -> CookieWithMeta.parse(h) }
-
-// public fun unsafeCookies(): List<CookieWithMeta> =
-// cookies().map { it.fold({ e -> throw RuntimeException(e) }, ::identity) }
