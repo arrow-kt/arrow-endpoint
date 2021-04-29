@@ -1,9 +1,11 @@
 package com.fortysevendegrees.thool.ktor.server
 
+import com.fortysevendegrees.thool.Address
 import com.fortysevendegrees.thool.ConnectionInfo
 import com.fortysevendegrees.thool.ServerRequest
 import com.fortysevendegrees.thool.model.Authority
 import com.fortysevendegrees.thool.model.Header
+import com.fortysevendegrees.thool.model.HostSegment
 import com.fortysevendegrees.thool.model.Method
 import com.fortysevendegrees.thool.model.PathSegments
 import com.fortysevendegrees.thool.model.QueryParams
@@ -11,6 +13,7 @@ import com.fortysevendegrees.thool.model.QuerySegment
 import com.fortysevendegrees.thool.model.Uri
 import io.ktor.application.ApplicationCall
 import io.ktor.features.origin
+import io.ktor.http.RequestConnectionPoint
 import io.ktor.request.host
 import io.ktor.request.httpMethod
 import io.ktor.request.httpVersion
@@ -20,12 +23,12 @@ import io.ktor.util.flattenEntries
 
 internal class KtorServerRequest(ctx: ApplicationCall) : ServerRequest {
   override val protocol: String = ctx.request.httpVersion
-  override val connectionInfo: ConnectionInfo by lazy { ConnectionInfo(null, null, null) }
+  override val connectionInfo: ConnectionInfo by lazy { ConnectionInfo(ctx.request.origin.toAddress(), null, null) }
   override val underlying: Any = ctx
 
   override val uri: Uri = Uri(
     ctx.request.origin.scheme,
-    Authority(null, ctx.request.host(), ctx.request.port()),
+    Authority(null, HostSegment(ctx.request.host()), ctx.request.port()),
     PathSegments.absoluteOrEmptyS(ctx.request.path().removePrefix("/").split("/")),
     ctx.request.queryParameters.entries().flatMap { (name, values) ->
       values.map { QuerySegment.KeyValue(name, it) }
@@ -39,3 +42,5 @@ internal class KtorServerRequest(ctx: ApplicationCall) : ServerRequest {
   override val headers: List<Header> =
     ctx.request.headers.flattenEntries().map { (name, value) -> Header(name, value) }
 }
+
+private fun RequestConnectionPoint.toAddress(): Address = Address(host, port)

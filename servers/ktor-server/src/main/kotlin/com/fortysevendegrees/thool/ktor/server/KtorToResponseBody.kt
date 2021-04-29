@@ -1,7 +1,7 @@
 package com.fortysevendegrees.thool.ktor.server
 
 import com.fortysevendegrees.thool.model.CodecFormat
-import com.fortysevendegrees.thool.model.HasHeaders
+import com.fortysevendegrees.thool.model.Headers
 import com.fortysevendegrees.thool.server.interpreter.Body
 import com.fortysevendegrees.thool.server.interpreter.ToResponseBody
 import io.ktor.content.ByteArrayContent
@@ -9,7 +9,6 @@ import io.ktor.http.ContentType
 import io.ktor.http.content.OutputStreamContent
 import io.ktor.http.content.TextContent
 import io.ktor.http.withCharset
-import java.nio.ByteBuffer
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 
@@ -17,13 +16,13 @@ class KtorToResponseBody : ToResponseBody<KtorResponseBody> {
 
   override fun fromRawValue(
     v: Body,
-    headers: HasHeaders,
+    headers: Headers,
     format: CodecFormat
   ): KtorResponseBody = rawValueToEntity(v, headers, format)
 
   private fun rawValueToEntity(
     v: Body,
-    headers: HasHeaders,
+    headers: Headers,
     format: CodecFormat
   ): KtorResponseBody =
     when (v) {
@@ -38,7 +37,7 @@ class KtorToResponseBody : ToResponseBody<KtorResponseBody> {
       )
     }
 
-  private fun CodecFormat.toContentType(headers: HasHeaders, charset: Charset?): ContentType =
+  private fun CodecFormat.toContentType(headers: Headers, charset: Charset?): ContentType =
     headers.contentType()?.let(ContentType::parse) ?: when (this) {
       is CodecFormat.Json -> ContentType.Application.Json
       is CodecFormat.TextPlain ->

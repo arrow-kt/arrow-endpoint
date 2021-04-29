@@ -1,8 +1,7 @@
 package com.fortysevendegrees.thool.server.interpreter
 
 import com.fortysevendegrees.thool.model.CodecFormat
-import com.fortysevendegrees.thool.model.HasHeaders
-import java.io.InputStream
+import com.fortysevendegrees.thool.model.Headers
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
 
@@ -32,7 +31,7 @@ public interface ToResponseBody<B> {
 
   fun fromRawValue(
     raw: Body,
-    headers: HasHeaders,
+    headers: Headers,
     format: CodecFormat
   ): B // TODO: remove headers?
 

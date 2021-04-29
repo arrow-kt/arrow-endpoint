@@ -1,18 +1,19 @@
 package com.fortysevendegrees.thool.model
 
-public interface RequestMetadata : HasHeaders {
-  val method: Method
-  val uri: Uri
+public interface RequestMetadata : Headers {
+  public val method: Method
+  public val uri: Uri
 
   public companion object {
-    operator fun invoke(_method: Method, _uri: Uri, _headers: List<Header>): RequestMetadata =
-      object : RequestMetadata {
-        override val headers: List<Header> = _headers
-        override val method: Method = _method
-        override val uri: Uri = _uri
-
-        override fun toString(): String =
-          "RequestMetadata($method,$uri,${headers.toStringSafe()})"
-      }
+    public operator fun invoke(method: Method, uri: Uri, headers: List<Header>): RequestMetadata =
+      RequestMetadataImpl(method, uri, headers)
   }
+}
+
+private data class RequestMetadataImpl(
+  override val method: Method,
+  override val uri: Uri,
+  override val headers: List<Header>
+) : RequestMetadata {
+  override fun toString(): String = "RequestMetadata($method,$uri,${headers.toStringSafe()})"
 }

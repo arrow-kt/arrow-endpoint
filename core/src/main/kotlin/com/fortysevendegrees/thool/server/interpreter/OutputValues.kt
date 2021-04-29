@@ -6,9 +6,8 @@ import com.fortysevendegrees.thool.Mapping
 import com.fortysevendegrees.thool.Params
 import com.fortysevendegrees.thool.SplitParams
 import com.fortysevendegrees.thool.model.CodecFormat
-import com.fortysevendegrees.thool.model.HasHeaders
+import com.fortysevendegrees.thool.model.Headers
 import com.fortysevendegrees.thool.model.Header
-import com.fortysevendegrees.thool.model.HeaderNames
 import com.fortysevendegrees.thool.model.MediaType
 import com.fortysevendegrees.thool.model.StatusCode
 import java.io.InputStream
@@ -16,12 +15,12 @@ import java.nio.ByteBuffer
 import java.nio.charset.Charset
 
 public data class OutputValues<B>(
-  val body: ((HasHeaders) -> B)?,
+  val body: ((Headers) -> B)?,
   val baseHeaders: List<Header>,
   val headerTransformations: List<(List<Header>) -> List<Header>>,
   val statusCode: StatusCode?
 ) {
-  fun withBody(b: (HasHeaders) -> B): OutputValues<B> {
+  fun withBody(b: (Headers) -> B): OutputValues<B> {
     check(body == null) { "Body is already defined" }
     return copy(body = b)
   }
@@ -31,9 +30,9 @@ public data class OutputValues<B>(
 
   fun withDefaultContentType(format: CodecFormat, charset: Charset?): OutputValues<B> =
     withHeaderTransformation { hs ->
-      if (hs.any { it.hasName(HeaderNames.ContentType) }) hs
+      if (hs.any { it.hasName(Headers.ContentType) }) hs
       else hs + Header(
-        HeaderNames.ContentType,
+        Headers.ContentType,
         (charset?.let(format.mediaType::charset) ?: format.mediaType).toString()
       )
     }
@@ -147,11 +146,7 @@ public data class OutputValues<B>(
     private fun charset(mediaType: MediaType, body: EndpointIO.Body<*, *>): Charset? =
       when (body) {
         // TODO: add to MediaType - setting optional charset if text
-        is EndpointIO.StringBody -> if (mediaType.mainType.equals(
-            "text",
-            ignoreCase = true
-          )
-        ) body.charset else null
+        is EndpointIO.StringBody -> if (mediaType.mainType.equals("text", ignoreCase = true)) body.charset else null
         else -> null
       }
   }

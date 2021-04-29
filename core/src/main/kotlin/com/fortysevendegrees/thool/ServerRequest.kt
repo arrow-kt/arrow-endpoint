@@ -2,7 +2,6 @@ package com.fortysevendegrees.thool
 
 import com.fortysevendegrees.thool.model.QueryParams
 import com.fortysevendegrees.thool.model.RequestMetadata
-import java.net.InetSocketAddress
 
 public interface ServerRequest : RequestMetadata {
   val protocol: String
@@ -14,4 +13,5 @@ public interface ServerRequest : RequestMetadata {
   fun queryParameters(): QueryParams
 }
 
-public data class ConnectionInfo(val local: InetSocketAddress?, val remote: InetSocketAddress?, val secure: Boolean?)
+public data class Address(val hostname: String, val port: Int)
+public data class ConnectionInfo(val local: Address?, val remote: Address?, val secure: Boolean?)

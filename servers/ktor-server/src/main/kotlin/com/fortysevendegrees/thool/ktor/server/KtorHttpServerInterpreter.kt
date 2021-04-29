@@ -1,6 +1,6 @@
 package com.fortysevendegrees.thool.ktor.server
 
-import com.fortysevendegrees.thool.model.HeaderNames
+import com.fortysevendegrees.thool.model.Headers
 import com.fortysevendegrees.thool.server.ServerEndpoint
 import com.fortysevendegrees.thool.server.interpreter.ServerInterpreter
 import io.ktor.application.Application
@@ -26,7 +26,7 @@ public fun <I, E, O> Application.install(ses: List<ServerEndpoint<I, E, O>>): Un
     interpreter.invoke(ses)?.let {
       it.headers.forEach { (name, value) ->
         // Header(s) Content-Type are controlled by the engine and cannot be set explicitly
-        if (name != HeaderNames.ContentType) call.response.header(name, value)
+        if (name != Headers.ContentType) call.response.header(name, value)
       }
       when (it.body) {
         null -> call.respond(HttpStatusCode.fromValue(it.code.code))

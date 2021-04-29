@@ -5,9 +5,8 @@ import com.fortysevendegrees.thool.EndpointIO
 import com.fortysevendegrees.thool.ServerRequest
 import com.fortysevendegrees.thool.map
 import com.fortysevendegrees.thool.model.CodecFormat
-import com.fortysevendegrees.thool.model.HasHeaders
+import com.fortysevendegrees.thool.model.Headers
 import com.fortysevendegrees.thool.model.Header
-import com.fortysevendegrees.thool.model.HeaderNames
 import com.fortysevendegrees.thool.model.Method
 import com.fortysevendegrees.thool.model.QueryParams
 import com.fortysevendegrees.thool.model.StatusCode
@@ -92,12 +91,12 @@ internal class ServerRequest(val ctx: RecordedRequest) : ServerRequest {
 
 public class ToResponseBody : ToResponseBody<MockResponseBody> {
 
-  override fun fromRawValue(v: Body, headers: HasHeaders, format: CodecFormat): MockResponseBody =
+  override fun fromRawValue(v: Body, headers: Headers, format: CodecFormat): MockResponseBody =
     rawValueToEntity(v, headers, format)
 
   private fun rawValueToEntity(
     r: Body,
-    headers: HasHeaders,
+    headers: Headers,
     format: CodecFormat,
   ): MockResponseBody =
     when (r) {
@@ -105,5 +104,5 @@ public class ToResponseBody : ToResponseBody<MockResponseBody> {
       is Body.ByteBuffer -> MockResponse().setBody(Buffer().apply { write(r.byteBuffer) })
       is Body.InputStream -> MockResponse().setBody(Buffer().apply { readFrom(r.inputStream) })
       is Body.String -> MockResponse().setBody(r.string)
-    }.addHeader(HeaderNames.ContentType, format.mediaType.toString())
+    }.addHeader(Headers.ContentType, format.mediaType.toString())
 }

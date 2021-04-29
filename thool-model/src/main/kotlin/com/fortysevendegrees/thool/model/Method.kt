@@ -1,6 +1,6 @@
 package com.fortysevendegrees.thool.model
 
-/* inline */ public class Method private constructor(public val value: String) {
+public /*inline*/ class Method private constructor(public val value: String) {
 
   /**
    * An HTTP method is idempotent if an identical request can be made once or several times in a row with the same

@@ -13,7 +13,8 @@ import arrow.core.sequenceEither
  */
 public data class Cookie(val name: String, val value: String) {
 
-  /** @return Representation of the cookie as in a header value, in the format: `[name]=[value]`.
+  /**
+   * @return Representation of the cookie as in a header value, in the format: `[name]=[value]`.
    */
   override fun toString(): String = "$name=$value"
 
@@ -28,19 +29,19 @@ public data class Cookie(val name: String, val value: String) {
       if (AllowedValueCharacters.matches(value)) null
       else "Cookie value can not contain control characters"
 
-    fun of(name: String, value: String): Either<String, Cookie> =
+    public fun of(name: String, value: String): Either<String, Cookie> =
       Nullable.zip(validateName(name), validateValue(value)) { a, b -> "$a, $b" }?.left() ?: Cookie(name, value).right()
 
     /**
      * Parse the cookie, represented as a header value (in the format: `[name]=[value]`).
      */
-    fun parse(s: String): Either<String, List<Cookie>> {
+    public fun parse(s: String): Either<String, List<Cookie>> {
       val cs = s.split(";").map { ss ->
-        val cookie = ss.split(Regex("="), 2).map(String::trim)
+        val cookie = ss.split(Regex("="), limit = 2).map(String::trim)
         when (cookie.size) {
           1 -> Cookie.of(cookie[0], "")
           2 -> Cookie.of(cookie[0], cookie[1])
-          else -> TODO("Impossibru")
+          else -> throw RuntimeException("Cookie.parse failed. Expected size 1 or 2 but found $cookie")
         }
       }
 
