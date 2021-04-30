@@ -6,13 +6,13 @@ import com.fortysevendegrees.thool.EndpointInput
 import com.fortysevendegrees.thool.Mapping
 import com.fortysevendegrees.thool.Params
 import com.fortysevendegrees.thool.PlainCodec
+import com.fortysevendegrees.thool.model.Body
 import com.fortysevendegrees.thool.model.CodecFormat
 import com.fortysevendegrees.thool.model.Cookie
 import com.fortysevendegrees.thool.model.Header
 import com.fortysevendegrees.thool.model.Method
 import com.fortysevendegrees.thool.model.PathSegment
 import com.fortysevendegrees.thool.model.QueryParams
-import com.fortysevendegrees.thool.server.interpreter.Body
 
 public data class RequestInfo(
   val method: Method,
@@ -63,16 +63,16 @@ public fun <I> EndpointInput<I>.requestInfo(
         pathSegments.addAll(ps.map(::PathSegment))
       }
       is EndpointIO.ByteArrayBody -> {
-        body = Body.ByteArray(codec.encode(value))
+        body = Body.ByteArray(codec.encode(value), codec.format)
       }
       is EndpointIO.ByteBufferBody -> {
-        body = Body.ByteBuffer(codec.encode(value))
+        body = Body.ByteBuffer(codec.encode(value), codec.format)
       }
       is EndpointIO.InputStreamBody -> {
-        body = Body.InputStream(codec.encode(value))
+        body = Body.InputStream(codec.encode(value), codec.format)
       }
       is EndpointIO.StringBody -> {
-        body = Body.String(charset, codec.encode(value))
+        body = Body.String(charset, codec.encode(value), codec.format)
       }
 
       is EndpointIO.Empty -> Unit

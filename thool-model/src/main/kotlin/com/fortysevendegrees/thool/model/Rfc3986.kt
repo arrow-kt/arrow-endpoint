@@ -40,7 +40,7 @@ internal object Rfc3986 {
           c == ' ' && spaceAsPlus -> append('+')
           else -> {
             append("%")
-            append(formatByte(b))
+            append(b.format())
           }
         }
       }
@@ -107,5 +107,5 @@ internal object Rfc3986 {
     return (if (needToChange) sb.toString() else this).right()
   }
 
-  private fun formatByte(byte: Byte): String = "%02X".format(byte)
+  private fun Byte.format(): String = "%02X".format(this)
 }

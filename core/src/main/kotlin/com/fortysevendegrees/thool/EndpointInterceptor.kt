@@ -1,16 +1,14 @@
 package com.fortysevendegrees.thool
 
-import com.fortysevendegrees.thool.model.Header
-import com.fortysevendegrees.thool.model.ResponseMetadata
-import com.fortysevendegrees.thool.model.StatusCode
-import com.fortysevendegrees.thool.model.toStringSafe
+import com.fortysevendegrees.thool.model.ServerRequest
+import com.fortysevendegrees.thool.model.ServerResponse
 
 /**
  * Allows intercepting the handling of a request by an endpoint, when either the endpoint's inputs have been
  * decoded successfully, or when decoding has failed.
  * @tparam B The interpreter-specific, low-level type of body.
  */
-public interface EndpointInterceptor<B> {
+public interface EndpointInterceptor {
 
   /** Called when the the given `request` has been successfully decoded into inputs `i`, as described by
    * `endpoint.input`.
@@ -25,8 +23,8 @@ public interface EndpointInterceptor<B> {
     request: ServerRequest,
     endpoint: Endpoint<I, *, *>,
     i: I,
-    next: suspend (ValuedEndpointOutput<*>?) -> ServerResponse<B>
-  ): ServerResponse<B> = next(null)
+    next: suspend (ValuedEndpointOutput<*>?) -> ServerResponse
+  ): ServerResponse = next(null)
 
   /** Called when the the given `request` hasn't been successfully decoded into inputs `i`, as described by `endpoint`,
    * with `failure` occurring when decoding `failingInput`.
@@ -41,14 +39,8 @@ public interface EndpointInterceptor<B> {
     endpoint: Endpoint<*, *, *>,
     failure: DecodeResult.Failure,
     failingInput: EndpointInput<*>,
-    next: suspend (ValuedEndpointOutput<*>?) -> ServerResponse<B>?
-  ): ServerResponse<B>? = next(null)
+    next: suspend (ValuedEndpointOutput<*>?) -> ServerResponse?
+  ): ServerResponse? = next(null)
 }
 
 public data class ValuedEndpointOutput<A>(val output: EndpointOutput<A>, val value: A)
-
-public data class ServerResponse<B>(override val code: StatusCode, override val headers: List<Header>, val body: B?) :
-  ResponseMetadata {
-  override val statusText: String = ""
-  override fun toString(): String = "ServerResponse($code,${headers.toStringSafe()}, $body)"
-}

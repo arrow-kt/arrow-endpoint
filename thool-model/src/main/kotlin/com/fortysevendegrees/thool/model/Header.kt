@@ -3,15 +3,15 @@ package com.fortysevendegrees.thool.model
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
-import com.fortysevendegrees.thool.model.HeaderNames.SensitiveHeaders
 import java.lang.IllegalStateException
 
-/** An HTTP header. The [[name]] property is case-insensitive during equality checks.
+/**
+ * An HTTP header.
+ * The [name] property is case-insensitive during equality checks.
+ * To compare if two headers have the same name, use the [hasName] method, which does a case-insensitive check,
+ * instead of comparing the [name] property.
  *
- * To compare if two headers have the same name, use the [[is]] com.fortysevendegrees.tapir.method, which does a case-insensitive check,
- * instead of comparing the [[name]] property.
- *
- * The [[name]] and [[value]] should be already encoded (if necessary), as when serialised, they end up unmodified in
+ * The [name] and [value] should be already encoded (if necessary), as when serialised, they end up unmodified in
  * the header.
  */
 public data class Header(val name: String, val value: String) {
@@ -19,83 +19,155 @@ public data class Header(val name: String, val value: String) {
   /**
    * Check if the name of this header is the same as the given one. The names are compared in a case-insensitive way.
    */
-  fun hasName(otherName: String): Boolean =
+  public fun hasName(otherName: String): Boolean =
     name.equals(otherName, ignoreCase = true)
 
-  /** @return Representation in the format: `[name]: [value]`.
-   */
-  override fun toString(): String = "$name: $value"
+  /** @return Representation in the format: `[name]: [value]`. */
+  override fun toString(): String = toStringSafe()
 
-  /** @return Representation in the format: `[name]: [value]`. If the header is sensitive
-   *         (see [[HeaderNames.SensitiveHeaders]]), the value is omitted.
+  override fun hashCode(): Int =
+    (31 * name.toLowerCase().hashCode()) + value.hashCode()
+
+  override fun equals(other: Any?): Boolean =
+    when (other) {
+      is Header -> hasName(other.name) && value == other.value
+      else -> false
+    }
+
+  /**
+   *  @return Representation in the format: `[name]: [value]`.
+   *  If the header is sensitive (see [Header.SensitiveHeaders]), the value is omitted.
    */
-  fun toStringSafe(sensitiveHeaders: Set<String> = SensitiveHeaders): String =
-    "$name: ${if (HeaderNames.isSensitive(name, sensitiveHeaders)) "***" else value}"
+  public fun toStringSafe(sensitiveHeaders: Set<String> = SensitiveHeaders): String =
+    "$name: ${if (isSensitive(name, sensitiveHeaders)) "***" else value}"
 
   public companion object {
     /** @throws IllegalArgumentException If the header name contains illegal characters. */
-    fun unsafe(name: String, value: String): Header =
+    public fun unsafe(name: String, value: String): Header =
       Rfc2616.validateToken("Header name", name)
         ?.let { throw IllegalStateException(it) } ?: Header(name, value)
 
-    fun safe(name: String, value: String): Either<String, Header> =
+    public fun of(name: String, value: String): Either<String, Header> =
       Rfc2616.validateToken("Header name", name)?.left() ?: Header(name, value).right()
 
-//    def accept(mediaType: MediaType, additionalMediaTypes: MediaType*): Header = accept(s"${(mediaType :: additionalMediaTypes.toList).com.fortysevendegrees.tapir.map(_.noCharset).mkString(", ")}")
-//    def accept(mediaRanges: String): Header = Header(HeaderNames.Accept, mediaRanges)
-//    def acceptCharset(charsetRanges: String): Header = Header(HeaderNames.AcceptCharset, charsetRanges)
-//    def acceptEncoding(encodingRanges: String): Header = Header(HeaderNames.AcceptEncoding, encodingRanges)
-//    def accessControlAllowCredentials(allow: Boolean): Header =Header(HeaderNames.AccessControlAllowCredentials, allow.toString)
-//    def accessControlAllowHeaders(headerNames: String*): Header =Header(HeaderNames.AccessControlAllowHeaders, headerNames.mkString(", "))
-//    def accessControlAllowMethods(methods: Method*): Header =Header(HeaderNames.AccessControlAllowMethods, methods.com.fortysevendegrees.tapir.map(_.com.fortysevendegrees.tapir.method).mkString(", "))
-//    def accessControlAllowOrigin(originRange: String): Header =Header(HeaderNames.AccessControlAllowOrigin, originRange)
-//    def accessControlExposeHeaders(headerNames: String*): Header =Header(HeaderNames.AccessControlExposeHeaders, headerNames.mkString(", "))
-//    def accessControlMaxAge(deltaSeconds: Long): Header =Header(HeaderNames.AccessControlMaxAge, deltaSeconds.toString)
-//    def accessControlRequestHeaders(headerNames: String*): Header =Header(HeaderNames.AccessControlRequestHeaders, headerNames.mkString(", "))
-//    def accessControlRequestMethod(com.fortysevendegrees.tapir.method: Method): Header =Header(HeaderNames.AccessControlRequestMethod, com.fortysevendegrees.tapir.method.toString)
-//    def authorization(authType: String, credentials: String): Header =Header(HeaderNames.Authorization, s"$authType $credentials")
-//    def cacheControl(first: CacheDirective, other: CacheDirective*): Header = cacheControl(first +: other)
-//    def cacheControl(directives: Iterable[CacheDirective]): Header =Header(HeaderNames.CacheControl, directives.com.fortysevendegrees.tapir.map(_.toString).mkString(", "))
-//    def contentLength(length: Long): Header = Header(HeaderNames.ContentLength, length.toString)
-//    def contentEncoding(encoding: String): Header = Header(HeaderNames.ContentEncoding, encoding)
-//    def contentType(mediaType: MediaType): Header = Header(HeaderNames.ContentType, mediaType.toString)
-//    def cookie(firstCookie: Cookie, otherCookies: Cookie*): Header =Header(HeaderNames.Cookie, (firstCookie +: otherCookies).com.fortysevendegrees.tapir.map(_.toString).mkString("; "))
-//    def etag(tag: String): Header = etag(ETag(tag))
-//    def etag(tag: ETag): Header = Header(HeaderNames.Etag, tag.toString)
-//    def expires(i: Instant): Header =Header(HeaderNames.Expires, DateTimeFormatter.RFC_1123_DATE_TIME.format(i.atZone(GMT)))
-//    def lastModified(i: Instant): Header =Header(HeaderNames.LastModified, DateTimeFormatter.RFC_1123_DATE_TIME.format(i.atZone(GMT)))
-//    def location(uri: String): Header = Header(HeaderNames.Location, uri)
-//    def location(uri: Uri): Header = Header(HeaderNames.Location, uri.toString)
-//    def proxyAuthorization(authType: String, credentials: String): Header =Header(HeaderNames.ProxyAuthorization, s"$authType $credentials")
-//    def setCookie(cookie: CookieWithMeta): Header = Header(HeaderNames.SetCookie, cookie.toString)
-//    def userAgent(userAgent: String): Header = Header(HeaderNames.UserAgent, userAgent)
-//    def xForwardedFor(firstAddress: String, otherAddresses: String*): Header =Header(HeaderNames.XForwardedFor, (firstAddress +: otherAddresses).mkString(", "))
+    // https://www.iana.org/assignments/message-headers/message-headers.xml#perm-headers
+    public const val Accept: String = "Accept"
+    public const val AcceptCharset: String = "Accept-Charset"
+    public const val AcceptEncoding: String = "Accept-Encoding"
+    public const val AcceptLanguage: String = "Accept-Language"
+    public const val AcceptRanges: String = "Accept-Ranges"
+    public const val AccessControlAllowCredentials: String = "Access-Control-Allow-Credentials"
+    public const val AccessControlAllowHeaders: String = "Access-Control-Allow-Headers"
+    public const val AccessControlAllowMethods: String = "Access-Control-Allow-Methods"
+    public const val AccessControlAllowOrigin: String = "Access-Control-Allow-Origin"
+    public const val AccessControlExposeHeaders: String = "Access-Control-Expose-Headers"
+    public const val AccessControlMaxAge: String = "Access-Control-Max-Age"
+    public const val AccessControlRequestHeaders: String = "Access-Control-Request-Headers"
+    public const val AccessControlRequestMethod: String = "Access-Control-Request-Method"
+    public const val Age: String = "Age"
+    public const val Allow: String = "Allow"
+    public const val Authorization: String = "Authorization"
+    public const val CacheControl: String = "Cache-Control"
+    public const val Connection: String = "Connection"
+    public const val ContentDisposition: String = "Content-Disposition"
+    public const val ContentEncoding: String = "Content-Encoding"
+    public const val ContentLanguage: String = "Content-Language"
+    public const val ContentLength: String = "Content-Length"
+    public const val ContentLocation: String = "Content-Location"
+    public const val ContentMd5: String = "Content-MD5"
+    public const val ContentRange: String = "Content-Range"
+    public const val ContentTransferEncoding: String = "Content-Transfer-Encoding"
+    public const val ContentType: String = "Content-Type"
+    public const val Cookie: String = "Cookie"
+    public const val Date: String = "Date"
+    public const val Etag: String = "ETag"
+    public const val Expect: String = "Expect"
+    public const val Expires: String = "Expires"
+    public const val Forwarded: String = "Forwarded"
+    public const val From: String = "From"
+    public const val Host: String = "Host"
+    public const val IfMatch: String = "If-Match"
+    public const val IfModifiedSince: String = "If-Modified-Since"
+    public const val IfNoneMatch: String = "If-None-Match"
+    public const val IfRange: String = "If-Range"
+    public const val IfUnmodifiedSince: String = "If-Unmodified-Since"
+    public const val LastModified: String = "Last-Modified"
+    public const val Link: String = "Link"
+    public const val Location: String = "Location"
+    public const val MaxForwards: String = "Max-Forwards"
+    public const val Origin: String = "Origin"
+    public const val Pragma: String = "Pragma"
+    public const val ProxyAuthenticate: String = "Proxy-Authenticate"
+    public const val ProxyAuthorization: String = "Proxy-Authorization"
+    public const val Range: String = "Range"
+    public const val Referer: String = "Referer"
+    public const val RemoteAddress: String = "Remote-Address"
+    public const val RetryAfter: String = "Retry-After"
+    public const val Server: String = "Server"
+    public const val SetCookie: String = "Set-Cookie"
+    public const val StrictTransportSecurity: String = "Strict-Transport-Security"
+    public const val Te: String = "Te"
+    public const val Trailer: String = "Trailer"
+    public const val TransferEncoding: String = "Transfer-Encoding"
+    public const val Upgrade: String = "Upgrade"
+    public const val UserAgent: String = "User-Agent"
+    public const val Vary: String = "Vary"
+    public const val Via: String = "Via"
+    public const val Warning: String = "Warning"
+    public const val WwwAuthenticate: String = "WWW-Authenticate"
+    public const val XFrameOptions: String = "X-Frame-Options"
+    public const val XForwardedFor: String = "X-Forwarded-For"
+    public const val XForwardedHost: String = "X-Forwarded-Host"
+    public const val XForwardedPort: String = "X-Forwarded-Port"
+    public const val XForwardedProto: String = "X-Forwarded-Proto"
+    public const val XRealIp: String = "X-Real-Ip"
+    public const val XRequestedWith: String = "X-Requested-With"
+    public const val XXSSProtection: String = "X-XSS-Protection"
 
-//    private val GMT = ZoneId.of("GMT")
-//
-//    private val Rfc850DatetimePattern = "dd-MMM-yyyy HH:mm:ss zzz"
-//    private val Rfc850DatetimeFormat by lazy { DateTimeFormatter.ofPattern(Rfc850DatetimePattern, Locale.US) }
-//
-//    val Rfc850WeekDays = Set("mon", "tue", "wed", "thu", "fri", "sat", "sun")
-//
-//    private def parseRfc850DateTime(v: String): Instant = {
-//      val expiresParts = v.split(", ")
-//      if (expiresParts.length != 2)
-//        throw new Exception ("There must be exactly one \", \"")
-//      if (!Rfc850WeekDays.contains(expiresParts(0).trim.toLowerCase(Locale.ENGLISH)))
-//        throw new Exception ("String must start with weekday name")
-//      Instant.from(Rfc850DatetimeFormat.parse(expiresParts(1)))
-//    }
-//
-//    def parseHttpDate(v: String): Either[String, Instant] =
-//    Try(Instant.from(DateTimeFormatter.RFC_1123_DATE_TIME.parse(v))) match {
-//      case Success (r) => Right(r)
-//      case Failure (e) =>
-//      Try(parseRfc850DateTime(v)) match {
-//        case Success (r) => Right(r)
-//        case Failure (_) => Left(s"Invalid http date: $v (${e.getMessage})")
-//      }
-//    }
-//    def unsafeParseHttpDate(s: String): Instant = parseHttpDate(s).getOrThrow
+    public val ContentHeaders: Set<String> =
+      setOf(ContentLength, ContentType, ContentMd5).map(String::toLowerCase).toSet()
+
+    public val SensitiveHeaders: Set<String> =
+      setOf(Authorization, Cookie, SetCookie).map(String::toLowerCase).toSet()
+
+    /** Performs a case-insensitive check, whether this header name is content-related.
+     */
+    public fun isContent(headerName: String): Boolean =
+      ContentHeaders.contains(headerName.toLowerCase().trim())
+
+    /** Performs a case-insensitive check, whether this header is content-related. */
+    public fun isContent(header: Header): Boolean =
+      isContent(header.name)
+
+    /** Performs a case-insensitive check, whether this header name is sensitive. */
+    public fun isSensitive(headerName: String): Boolean =
+      isSensitive(headerName, SensitiveHeaders)
+
+    /** Performs a case-insensitive check, whether this header name is sensitive. */
+    public fun isSensitive(headerName: String, sensitiveHeaders: Set<String>): Boolean =
+      sensitiveHeaders.map(String::toLowerCase).contains(headerName.toLowerCase().trim())
+
+    /** Performs a case-insensitive check, whether this header is sensitive. */
+    public fun isSensitive(header: Header): Boolean =
+      isSensitive(header.name, SensitiveHeaders)
+
+    /** Performs a case-insensitive check, whether this header is sensitive. */
+    public fun isSensitive(header: Header, sensitiveHeaders: Set<String>): Boolean =
+      isSensitive(header.name, sensitiveHeaders)
   }
 }
+
+public fun List<Header>.toStringSafe(sensitiveHeaders: Set<String> = Header.SensitiveHeaders): List<String> =
+  map { it.toStringSafe(sensitiveHeaders) }
+
+public fun List<Header>.header(h: String): String? =
+  firstOrNull { it.hasName(h) }?.value
+
+public fun List<Header>.headers(h: String): List<String> =
+  mapNotNull { if (it.hasName(h)) it.value else null }
+
+public fun List<Header>.contentType(): String? =
+  header(Header.ContentType)
+
+public fun List<Header>.contentLength(): Long? =
+  header(Header.ContentLength)?.let(String::toLongOrNull)

@@ -6,13 +6,14 @@ import com.fortysevendegrees.thool.DecodeResult
 import com.fortysevendegrees.thool.DecodeResult.Failure.Multiple
 import com.fortysevendegrees.thool.EndpointIO
 import com.fortysevendegrees.thool.EndpointInput
-import com.fortysevendegrees.thool.ServerRequest
 import com.fortysevendegrees.thool.basicInputSortIndex
 import com.fortysevendegrees.thool.headAndTailOrNull
 import com.fortysevendegrees.thool.initAndLastOrNull
 import com.fortysevendegrees.thool.updated
 import com.fortysevendegrees.thool.model.Method
 import com.fortysevendegrees.thool.model.QueryParams
+import com.fortysevendegrees.thool.model.ServerRequest
+import com.fortysevendegrees.thool.model.headers
 
 public sealed interface DecodeBasicInputsResult {
 
@@ -47,6 +48,7 @@ public sealed interface DecodeBasicInputsResult {
 
 internal data class DecodeInputsContext(val request: ServerRequest, val pathSegments: List<String>) {
   fun method(): Method = request.method
+
   fun nextPathSegment(): Pair<String?, DecodeInputsContext> =
     when {
       pathSegments.isEmpty() -> Pair(null, this)
@@ -54,7 +56,7 @@ internal data class DecodeInputsContext(val request: ServerRequest, val pathSegm
     }
 
   fun header(name: String): List<String> =
-    request.headers(name)
+    request.headers.headers(name)
 
   fun headers(): List<Pair<String, String>> =
     request.headers.map { h -> Pair(h.name, h.value) }
@@ -62,8 +64,7 @@ internal data class DecodeInputsContext(val request: ServerRequest, val pathSegm
   fun queryParameter(name: String): List<String> =
     queryParameters.getMulti(name) ?: emptyList()
 
-  val queryParameters: QueryParams =
-    request.queryParameters()
+  val queryParameters: QueryParams = request.queryParameters
 }
 
 object DecodeBasicInputs {
@@ -80,7 +81,7 @@ object DecodeBasicInputs {
    */
   // TODO rename
   fun apply(input: EndpointInput<*>, request: ServerRequest): DecodeBasicInputsResult =
-    apply(input, DecodeInputsContext(request, request.pathSegments()))
+    apply(input, DecodeInputsContext(request, request.pathSegments))
 
   // TODO rename
   private fun apply(input: EndpointInput<*>, ctx: DecodeInputsContext): DecodeBasicInputsResult {

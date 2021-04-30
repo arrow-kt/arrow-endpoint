@@ -9,8 +9,8 @@ import com.fortysevendegrees.thool.EndpointOutput
 import com.fortysevendegrees.thool.Mapping
 import com.fortysevendegrees.thool.Params
 import com.fortysevendegrees.thool.client.requestInfo
+import com.fortysevendegrees.thool.model.Body
 import com.fortysevendegrees.thool.model.StatusCode
-import com.fortysevendegrees.thool.server.interpreter.Body
 import io.ktor.client.HttpClient
 import io.ktor.client.call.receive
 import io.ktor.client.request.cookie
