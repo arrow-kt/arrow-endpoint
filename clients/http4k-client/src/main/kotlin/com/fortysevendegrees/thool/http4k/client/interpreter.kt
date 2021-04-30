@@ -9,6 +9,7 @@ import com.fortysevendegrees.thool.EndpointOutput
 import com.fortysevendegrees.thool.Mapping
 import com.fortysevendegrees.thool.Params
 import com.fortysevendegrees.thool.client.requestInfo
+import com.fortysevendegrees.thool.model.Body
 import com.fortysevendegrees.thool.model.Method.Companion.GET
 import com.fortysevendegrees.thool.model.Method.Companion.HEAD
 import com.fortysevendegrees.thool.model.Method.Companion.POST
@@ -19,7 +20,6 @@ import com.fortysevendegrees.thool.model.Method.Companion.PATCH
 import com.fortysevendegrees.thool.model.Method.Companion.CONNECT
 import com.fortysevendegrees.thool.model.Method.Companion.TRACE
 import com.fortysevendegrees.thool.model.StatusCode
-import com.fortysevendegrees.thool.server.interpreter.Body
 import org.http4k.core.HttpHandler
 import org.http4k.core.MemoryBody
 import org.http4k.core.Method

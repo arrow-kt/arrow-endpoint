@@ -1,41 +1,41 @@
 package com.fortysevendegrees.thool.model
 
 public sealed interface CodecFormat {
-  val mediaType: MediaType
+  public val mediaType: MediaType
 
-  object Json : CodecFormat {
-    override val mediaType = MediaType.ApplicationJson
+  public object Json : CodecFormat {
+    override val mediaType: MediaType = MediaType.ApplicationJson
   }
 
-  object Xml : CodecFormat {
-    override val mediaType = MediaType.ApplicationXml
+  public object Xml : CodecFormat {
+    override val mediaType: MediaType = MediaType.ApplicationXml
   }
 
-  object TextPlain : CodecFormat {
-    override val mediaType = MediaType.TextPlain
+  public object TextPlain : CodecFormat {
+    override val mediaType: MediaType = MediaType.TextPlain
   }
 
-  object TextHtml : CodecFormat {
-    override val mediaType = MediaType.TextHtml
+  public object TextHtml : CodecFormat {
+    override val mediaType: MediaType = MediaType.TextHtml
   }
 
-  object OctetStream : CodecFormat {
-    override val mediaType = MediaType.ApplicationOctetStream
+  public object OctetStream : CodecFormat {
+    override val mediaType: MediaType = MediaType.ApplicationOctetStream
   }
 
-  object XWwwFormUrlencoded : CodecFormat {
-    override val mediaType = MediaType.ApplicationXWwwFormUrlencoded
+  public object XWwwFormUrlencoded : CodecFormat {
+    override val mediaType: MediaType = MediaType.ApplicationXWwwFormUrlencoded
   }
 
-  object MultipartFormData : CodecFormat {
-    override val mediaType = MediaType.MultipartFormData
+  public object MultipartFormData : CodecFormat {
+    override val mediaType: MediaType = MediaType.MultipartFormData
   }
 
-  object Zip : CodecFormat {
-    override val mediaType = MediaType.ApplicationZip
+  public object Zip : CodecFormat {
+    override val mediaType: MediaType = MediaType.ApplicationZip
   }
 
-  object TextEventStream : CodecFormat {
-    override val mediaType = MediaType.TextEventStream
+  public object TextEventStream : CodecFormat {
+    override val mediaType: MediaType = MediaType.TextEventStream
   }
 }

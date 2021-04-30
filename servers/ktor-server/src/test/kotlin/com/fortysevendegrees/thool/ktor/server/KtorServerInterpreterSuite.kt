@@ -1,31 +1,30 @@
 package com.fortysevendegrees.thool.ktor.server
 
+import arrow.core.Either
+import com.fortysevendegrees.thool.DecodeResult
+import com.fortysevendegrees.thool.Endpoint
+import com.fortysevendegrees.thool.ktor.client.requestAndParse
 import com.fortysevendegrees.thool.server.ServerEndpoint
-import com.fortysevendegrees.thool.test.ServerIntepreterSuite
-import io.ktor.server.engine.applicationEngineEnvironment
-import io.ktor.server.engine.connector
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
-import io.ktor.server.netty.NettyApplicationEngine
+import com.fortysevendegrees.thool.test.CtxServerInterpreterSuite
+import io.ktor.server.testing.TestApplicationEngine
+import io.ktor.server.testing.withTestApplication
+import kotlinx.coroutines.runBlocking
 
-class KtorServerInterpreterSuite : ServerIntepreterSuite() {
-  var server: NettyApplicationEngine? = null
-
-  init {
-    beforeSpec {
-      val env = applicationEngineEnvironment {
-        connector {
-          host = "127.0.0.1"
-          port = 8080
-        }
-      }
-      server = embeddedServer(Netty, env).start(false)
-    }
-
-    afterSpec { server?.stop(1000, 1000) }
+class KtorServerInterpreterSuite : CtxServerInterpreterSuite<TestApplicationEngine>() {
+  override suspend fun <A> withEndpoint(
+    endpoint: ServerEndpoint<*, *, *>,
+    run: suspend TestApplicationEngine.(baseString: String) -> A
+  ): A = withTestApplication {
+    application.install(endpoint)
+    runBlocking { run("") }
   }
 
-  override fun <I, E, O> install(endpoint: ServerEndpoint<I, E, O>) {
-    server?.application?.install(endpoint)
+  override suspend fun <I, E, O> TestApplicationEngine.request(
+    endpoint: Endpoint<I, E, O>,
+    baseUrl: String,
+    input: I
+  ): DecodeResult<Either<E, O>> {
+    val f = endpoint.requestAndParse(baseUrl)
+    return client.config { expectSuccess = false }.f(input)
   }
 }

@@ -1,24 +1,22 @@
 package com.fortysevendegrees.thool.test
 
-import com.fortysevendegrees.thool.ConnectionInfo
+import arrow.core.Nullable
 import com.fortysevendegrees.thool.EndpointIO
-import com.fortysevendegrees.thool.ServerRequest
 import com.fortysevendegrees.thool.map
-import com.fortysevendegrees.thool.model.CodecFormat
-import com.fortysevendegrees.thool.model.HasHeaders
+import com.fortysevendegrees.thool.model.Address
+import com.fortysevendegrees.thool.model.Body
+import com.fortysevendegrees.thool.model.ConnectionInfo
 import com.fortysevendegrees.thool.model.Header
-import com.fortysevendegrees.thool.model.HeaderNames
 import com.fortysevendegrees.thool.model.Method
 import com.fortysevendegrees.thool.model.QueryParams
+import com.fortysevendegrees.thool.model.ServerRequest
+import com.fortysevendegrees.thool.model.ServerResponse
 import com.fortysevendegrees.thool.model.StatusCode
 import com.fortysevendegrees.thool.model.Uri
 import com.fortysevendegrees.thool.server.ServerEndpoint
-import com.fortysevendegrees.thool.server.interpreter.Body
 import com.fortysevendegrees.thool.server.interpreter.RequestBody
 import com.fortysevendegrees.thool.server.interpreter.ServerInterpreter
-import com.fortysevendegrees.thool.server.interpreter.ToResponseBody
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
@@ -29,22 +27,21 @@ import java.nio.ByteBuffer
 public fun <I, E, O> ServerEndpoint<I, E, O>.toDispatcher(): Dispatcher =
   object : Dispatcher() {
     override fun dispatch(request: RecordedRequest): MockResponse {
-      val serverRequest = ServerRequest(request)
+      val serverRequest = request.toServerRequest()
       val interpreter = ServerInterpreter(
         serverRequest,
         RequestBody(request),
-        ToResponseBody(),
         emptyList()
       )
 
       return runBlocking(Dispatchers.Default) {
         interpreter.invoke(this@toDispatcher)?.let {
-          when (val body = it.body) {
-            null -> MockResponse().setResponseCode(it.code.code)
-            else -> body.setResponseCode(it.code.code)
-          }.apply {
-            it.headers.forEach { (name, value) -> addHeader(name, value) }
-          }
+          MockResponse()
+            .setResponseCode(it.code.code)
+            .setBody(it)
+            .apply {
+              it.headers.forEach { (name, value) -> addHeader(name, value) }
+            }
         } ?: MockResponse().setResponseCode(StatusCode.NotFound.code)
       }
     }
@@ -59,51 +56,29 @@ internal class RequestBody(val ctx: RecordedRequest) : RequestBody {
       is EndpointIO.StringBody -> ctx.body.readByteArray().toString(bodyType.charset)
     } as R
   }
-
-  override fun toFlow(): Flow<Byte> = TODO()
 }
 
-internal typealias MockResponseBody = MockResponse
-
-internal class ServerRequest(val ctx: RecordedRequest) : ServerRequest {
-  override val protocol: String = "mocked-protocol"
-  override val connectionInfo: ConnectionInfo by lazy { ConnectionInfo(null, null, null) }
-  override val underlying: Any = ctx
-
-  override val uri: Uri // TODO seems that it can be constructed directly without parsing
-    get() = requireNotNull(Uri(ctx.requestUrl?.toUri().toString()))
-
-  override fun pathSegments(): List<String> =
-    ctx.requestUrl?.pathSegments.orEmpty()
-
-  override fun queryParameters(): QueryParams =
-    ctx.requestUrl?.queryParameterNames
+public fun RecordedRequest.toServerRequest(): ServerRequest =
+  ServerRequest(
+    protocol = "mocked-protocol",
+    connectionInfo = ConnectionInfo(Nullable.zip(requestUrl?.host, requestUrl?.port, ::Address), null, null),
+    method = Method(requireNotNull(method) { "No http method specified." }),
+    // TODO seems that it can be constructed directly without parsing
+    uri = requireNotNull(Uri(requestUrl?.toUri().toString())),
+    headers = headers.map { (n, v) -> Header(n, v) },
+    pathSegments = requestUrl?.pathSegments.orEmpty(),
+    queryParameters = requestUrl?.queryParameterNames
       .orEmpty()
-      .map { name -> Pair(name, ctx.requestUrl?.queryParameterValues(name)?.filterNotNull().orEmpty()) }
+      .map { name -> Pair(name, requestUrl?.queryParameterValues(name)?.filterNotNull().orEmpty()) }
       .toList()
       .let(::QueryParams)
+  )
 
-  override val method: Method =
-    Method(requireNotNull(ctx.method) { "No http method specified." })
-
-  override val headers: List<Header> =
-    ctx.headers.map { (n, v) -> Header(n, v) }
-}
-
-public class ToResponseBody : ToResponseBody<MockResponseBody> {
-
-  override fun fromRawValue(v: Body, headers: HasHeaders, format: CodecFormat): MockResponseBody =
-    rawValueToEntity(v, headers, format)
-
-  private fun rawValueToEntity(
-    r: Body,
-    headers: HasHeaders,
-    format: CodecFormat,
-  ): MockResponseBody =
-    when (r) {
-      is Body.ByteArray -> MockResponse().setBody(Buffer().apply { write(r.byteArray) })
-      is Body.ByteBuffer -> MockResponse().setBody(Buffer().apply { write(r.byteBuffer) })
-      is Body.InputStream -> MockResponse().setBody(Buffer().apply { readFrom(r.inputStream) })
-      is Body.String -> MockResponse().setBody(r.string)
-    }.addHeader(HeaderNames.ContentType, format.mediaType.toString())
-}
+public fun MockResponse.setBody(response: ServerResponse): MockResponse =
+  when (val r = response.body) {
+    is Body.ByteArray -> setBody(Buffer().apply { write(r.byteArray) })
+    is Body.ByteBuffer -> setBody(Buffer().apply { write(r.byteBuffer) })
+    is Body.InputStream -> setBody(Buffer().apply { readFrom(r.inputStream) })
+    is Body.String -> setBody(r.string)
+    else -> this
+  }

@@ -35,8 +35,8 @@ import kotlinx.coroutines.runBlocking
  *   - fixed query paths are used to name GraphQL fields (e.g. an endpoint /book/add will give a GraphQL field named bookAdd)
  *   - query parameters, headers, cookies and request body are used as GraphQL arguments
  */
-fun List<ServerEndpoint<*, Nothing, *>>.toSchema(): GraphQLSchema {
-  this as List<ServerEndpoint<Any?, Nothing, Any?>>
+fun List<ServerEndpoint<*, *, *>>.toSchema(): GraphQLSchema {
+  this as List<ServerEndpoint<Any?, Any?, Any?>>
   val builder = GraphQLSchema.Builder()
     .description(mapNotNull { it.endpoint.info.description }.joinToString(prefix = "- ", separator = "\n- "))
 
@@ -44,7 +44,12 @@ fun List<ServerEndpoint<*, Nothing, *>>.toSchema(): GraphQLSchema {
     val fetcher: DataFetcher<Any?> = DataFetcher {
       when (val input = server.endpoint.input.toInput(it)) {
         is DecodeResult.Value -> runBlocking {
-          server.logic(input.value.asAny).getOrHandle { it }
+          server.logic(input.value.asAny).getOrHandle {
+            when (it) {
+              is Throwable -> throw it
+              else -> throw RuntimeException(it.toString())
+            }
+          }
         }
         is DecodeResult.Failure -> TODO("Handle failures")
       }
@@ -80,13 +85,20 @@ fun List<ServerEndpoint<*, Nothing, *>>.toSchema(): GraphQLSchema {
  *   - fixed query paths are used to name GraphQL fields (e.g. an endpoint /book/add will give a GraphQL field named bookAdd)
  *   - query parameters, headers, cookies and request body are used as GraphQL arguments
  */
-fun <I, O> ServerEndpoint<I, Nothing, O>.toSchema(): GraphQLSchema {
+fun <I, E, O> ServerEndpoint<I, E, O>.toSchema(): GraphQLSchema {
   val builder = GraphQLSchema.Builder()
     .description(endpoint.info.description)
 
   val fetcher: DataFetcher<O> = DataFetcher {
     when (val input = endpoint.input.toInput(it)) {
-      is DecodeResult.Value -> runBlocking { logic(input.value.asAny as I).getOrHandle { it } }
+      is DecodeResult.Value -> runBlocking {
+        logic(input.value.asAny as I).getOrHandle {
+          when (it) {
+            is Throwable -> throw it
+            else -> throw RuntimeException(it.toString())
+          }
+        }
+      }
       is DecodeResult.Failure -> TODO("Handle failures")
     }
   }

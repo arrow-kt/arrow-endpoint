@@ -2,7 +2,7 @@ package com.fortysevendegrees.thool.model
 
 import arrow.core.Either
 
-public inline class StatusCode(public val code: Int) {
+public /*inline*/ class StatusCode(public val code: Int) {
   public fun isInformational(): Boolean = code / 100 == 1
   public fun isSuccess(): Boolean = code / 100 == 2
   public fun isRedirect(): Boolean = code / 100 == 3
@@ -10,6 +10,11 @@ public inline class StatusCode(public val code: Int) {
   public fun isServerError(): Boolean = code / 100 == 5
 
   override fun toString(): String = code.toString()
+  override fun equals(other: Any?): Boolean =
+    when {
+      other is StatusCode -> code == other.code
+      else -> false
+    }
 
   public companion object {
     /** @throws IllegalArgumentException If the status code is out of range.

@@ -1,87 +1,144 @@
 package com.fortysevendegrees.thool.ktor.server
 
 import com.fortysevendegrees.thool.EndpointIO
-import com.fortysevendegrees.thool.EndpointInput
+import com.fortysevendegrees.thool.model.Address
+import com.fortysevendegrees.thool.model.Authority
+import com.fortysevendegrees.thool.model.Body
+import com.fortysevendegrees.thool.model.CodecFormat
+import com.fortysevendegrees.thool.model.ConnectionInfo
+import com.fortysevendegrees.thool.model.Header
+import com.fortysevendegrees.thool.model.HostSegment
 import com.fortysevendegrees.thool.model.Method
+import com.fortysevendegrees.thool.model.PathSegments
+import com.fortysevendegrees.thool.model.QuerySegment
+import com.fortysevendegrees.thool.model.ServerRequest
+import com.fortysevendegrees.thool.model.ServerResponse
+import com.fortysevendegrees.thool.model.Uri
 import com.fortysevendegrees.thool.server.ServerEndpoint
+import com.fortysevendegrees.thool.server.interpreter.RequestBody
 import com.fortysevendegrees.thool.server.interpreter.ServerInterpreter
 import io.ktor.application.Application
+import io.ktor.application.ApplicationCall
+import io.ktor.application.ApplicationCallPipeline
 import io.ktor.application.call
-import io.ktor.http.HttpMethod
+import io.ktor.features.origin
+import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.RequestConnectionPoint
+import io.ktor.http.content.ByteArrayContent
+import io.ktor.http.content.OutgoingContent
+import io.ktor.http.content.OutputStreamContent
+import io.ktor.http.content.TextContent
+import io.ktor.http.withCharset
+import io.ktor.request.host
+import io.ktor.request.httpMethod
+import io.ktor.request.httpVersion
+import io.ktor.request.path
+import io.ktor.request.port
+import io.ktor.response.header
 import io.ktor.response.respond
-import io.ktor.routing.Routing
-import io.ktor.routing.route
-import io.ktor.routing.routing
+import io.ktor.util.flattenEntries
+import io.ktor.util.toByteArray
+import io.ktor.utils.io.jvm.javaio.toInputStream
+import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets
 
-fun <I, E, O> Application.install(ses: ServerEndpoint<I, E, O>): Routing =
+public fun <I, E, O> Application.install(ses: ServerEndpoint<I, E, O>): Unit =
   install(listOf(ses))
 
-fun <I, E, O> Application.install(ses: List<ServerEndpoint<I, E, O>>): Routing =
-  routing {
-    ses.forEach { endpoint ->
-      route(
-        endpoint.endpoint.input.path(),
-        endpoint.endpoint.input.toHttpMethod()
-      ) {
-        handle {
-          val serverRequest = KtorServerRequest(call)
-          val interpreter = ServerInterpreter(
-            serverRequest,
-            KtorRequestBody(call),
-            KtorToResponseBody(),
-            emptyList()
-          )
+public fun <I, E, O> Application.install(ses: List<ServerEndpoint<I, E, O>>): Unit =
+  intercept(ApplicationCallPipeline.ApplicationPhase.Call) {
+    val interpreter = ServerInterpreter(
+      call.toServerRequest(),
+      KtorRequestBody(call),
+      emptyList()
+    )
 
-          interpreter.invoke(ses)?.let {
-            when (it.body) {
-              null -> call.respond(HttpStatusCode.fromValue(it.code.code))
-              else -> call.respond(HttpStatusCode.fromValue(it.code.code), it.body as KtorResponseBody)
-            }
-          }
-        }
+    interpreter.invoke(ses)?.let {
+      it.headers.forEach { (name, value) ->
+        // Header(s) Content-Type are controlled by the engine and cannot be set explicitly
+        if (name != Header.ContentType) call.response.header(name, value)
+      }
+
+      when (val body = it.outgoingContent()) {
+        null -> call.respond(HttpStatusCode.fromValue(it.code.code))
+        else -> call.respond(HttpStatusCode.fromValue(it.code.code), body)
       }
     }
   }
 
-fun EndpointInput<*>.toHttpMethod(): HttpMethod =
-  HttpMethod((method() ?: Method.GET).value)
-
-fun EndpointInput<*>.path(): String =
-  when (this) {
-    is EndpointInput.FixedPath -> s
-    // TODO empty path capture == wildcard ?
-    is EndpointInput.PathCapture -> name?.let { "{$it}" } ?: TODO("path-capture without name ???")
-    is EndpointInput.PathsCapture -> "{...}"
-
-    // These don't influence baseUrl
-    is EndpointIO.Body<*, *> -> ""
-    is EndpointIO.Empty -> ""
-    is EndpointInput.FixedMethod -> ""
-    is EndpointIO.Header -> ""
-    is EndpointInput.Query -> ""
-    is EndpointInput.Cookie -> ""
-    is EndpointInput.QueryParams -> ""
-
-    // Recurse on composition of inputs.
-    is EndpointInput.Pair<*, *, *> -> handleInputPair(this.first, this.second)
-    is EndpointIO.Pair<*, *, *> -> handleInputPair(this.first, this.second)
-    is EndpointIO.MappedPair<*, *, *, *> -> handleInputPair(this.wrapped.first, this.wrapped.second)
-    is EndpointInput.MappedPair<*, *, *, *> -> handleInputPair(this.input.first, this.input.second)
+public fun ServerResponse.outgoingContent(): OutgoingContent? =
+  when (val body = body) {
+    is Body.ByteArray -> ByteArrayContent(
+      body.toByteArray(),
+      body.contentType(),
+      HttpStatusCode.fromValue(code.code)
+    )
+    is Body.ByteBuffer -> ByteArrayContent(
+      body.toByteArray(),
+      body.contentType(),
+      HttpStatusCode.fromValue(code.code)
+    )
+    is Body.String -> TextContent(
+      body.string,
+      body.contentType(),
+      HttpStatusCode.fromValue(code.code)
+    )
+    is Body.InputStream -> OutputStreamContent(
+      {
+        body.inputStream.copyTo(this)
+      },
+      body.contentType(),
+      HttpStatusCode.fromValue(code.code)
+    )
+    else -> null
   }
 
-fun handleInputPair(
-  left: EndpointInput<*>,
-  right: EndpointInput<*>,
-): String {
-  val left = (left as EndpointInput<Any?>).path()
-  val right = (right as EndpointInput<Any?>).path()
-  return createPath(left, right)
+private fun Body.contentType(): ContentType =
+  when (format) {
+    is CodecFormat.Json -> ContentType.Application.Json
+    is CodecFormat.TextPlain -> ContentType.Text.Plain.withCharset(charsetOrNull() ?: StandardCharsets.UTF_8)
+    is CodecFormat.TextHtml -> ContentType.Text.Html.withCharset(charsetOrNull() ?: StandardCharsets.UTF_8)
+    is CodecFormat.OctetStream -> ContentType.Application.OctetStream
+    is CodecFormat.Zip -> ContentType.Application.Zip
+    is CodecFormat.XWwwFormUrlencoded -> ContentType.Application.FormUrlEncoded
+    is CodecFormat.MultipartFormData -> ContentType.MultiPart.FormData
+    CodecFormat.TextEventStream -> ContentType.Text.EventStream
+    CodecFormat.Xml -> ContentType.Application.Xml
+  }
+
+public fun ApplicationCall.toServerRequest(): ServerRequest {
+  val uri = Uri(
+    request.origin.scheme,
+    Authority(null, HostSegment(request.host()), request.port()),
+    PathSegments.absoluteOrEmptyS(request.path().removePrefix("/").split("/")),
+    request.queryParameters.entries().flatMap { (name, values) ->
+      values.map { QuerySegment.KeyValue(name, it) }
+    },
+    null
+  )
+  return ServerRequest(
+    protocol = request.httpVersion,
+    connectionInfo = ConnectionInfo(request.origin.toAddress(), null, null),
+    method = Method(request.httpMethod.value),
+    uri = uri,
+    headers = request.headers.flattenEntries().map { (name, value) -> Header(name, value) },
+    pathSegments = uri.path(),
+    queryParameters = uri.params()
+  )
 }
 
-fun createPath(left: String, right: String): String =
-  when {
-    left.isBlank() -> right
-    right.isBlank() -> left
-    else -> "$left/$right"
+private fun RequestConnectionPoint.toAddress(): Address = Address(host, port)
+
+internal class KtorRequestBody(private val ctx: ApplicationCall) : RequestBody {
+  @Suppress("IMPLICIT_CAST_TO_ANY", "UNCHECKED_CAST")
+  override suspend fun <R> toRaw(bodyType: EndpointIO.Body<R, *>): R {
+    val body = ctx.request.receiveChannel()
+    return when (bodyType) {
+      is EndpointIO.ByteArrayBody -> body.toByteArray()
+      is EndpointIO.ByteBufferBody -> ByteBuffer.wrap(body.toByteArray())
+      is EndpointIO.InputStreamBody -> body.toInputStream()
+      is EndpointIO.StringBody -> body.toByteArray().toString(bodyType.charset)
+    } as R
   }
+}

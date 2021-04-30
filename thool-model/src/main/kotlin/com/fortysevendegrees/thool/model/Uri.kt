@@ -8,17 +8,15 @@ import com.fortysevendegrees.thool.model.Rfc3986.encode
 import java.net.URI
 
 /**
- * A [[https://en.wikipedia.org/wiki/Uniform_Resource_Identifier URI]]. Can represent both relative and absolute
- * URIs, hence in terms of [[https://tools.ietf.org/html/rfc3986]], this is a URI reference.
+ * A [https://en.wikipedia.org/wiki/Uniform_Resource_Identifier URI]. Can represent both relative and absolute
+ * URIs, hence in terms of [https://tools.ietf.org/html/rfc3986], this is a URI reference.
  *
  * All components (scheme, host, query, ...) are stored decoded, and become encoded upon serialization
- * (using [[toString]]).
+ * (using [toString]).
  *
- * Instances can be created using the uri interpolator: `uri"..."` (see [[UriInterpolator]]), or the factory methods
- * on the [[Uri]] public companion object.
+ * Instances can be created using the factory methods on the [Uri] public companion object.
  *
- * The `apply`/`safeApply`/`unsafeApply` methods create absolute URIs and require a host.
- * The `relative` methods creates a relative URI, given path/query/fragment components.
+ * The `invoke`/`parse` methods create absolute URIs and require a host.
  *
  * @param querySegments Either key-value pairs, single values, or plain
  * query segments. Key value pairs will be serialized as `k=v`, and blocks
@@ -42,13 +40,13 @@ public data class Uri(
     private val schemeSpecificPartPattern =
       Regex("^?(//(?<authority>((?<userinfo>[^/?#]*)@)?(?<host>(\\[[^\\]]*\\]|[^/?#:]*))(:(?<port>[^/?#]*))?))?(?<path>[^?#]*)(\\?(?<query>[^#]*))?(#(?<fragment>.*))?")
 
-    operator fun invoke(javaUri: URI): Uri? =
+    public operator fun invoke(javaUri: URI): Uri? =
       parse(javaUri.toString()).orNull()
 
-    operator fun invoke(url: String): Uri? =
+    public operator fun invoke(url: String): Uri? =
       parse(url).orNull()
 
-    fun parse(url: String): Either<UriError, Uri> {
+    public fun parse(url: String): Either<UriError, Uri> {
       val trimmedUrl = url.trimStart()
       val scheme = schemePattern.find(trimmedUrl)?.value?.substringBefore(':')?.toLowerCase() ?: ""
 
@@ -172,89 +170,89 @@ public data class Uri(
   }
 
   /** Replace the scheme. Does not validate the new scheme value. */
-  fun scheme(s: String): Uri = this.copy(scheme = s)
+  public fun scheme(s: String): Uri = this.copy(scheme = s)
 
   /** Replace the user info with a username only. Adds an empty host if one is absent. */
-  fun userInfo(username: String): Uri = userInfo(UserInfo(username, null))
+  public fun userInfo(username: String): Uri = userInfo(UserInfo(username, null))
 
   /** Replace the user info with username/password combination. Adds an empty host if one is absent. */
-  fun userInfo(username: String, password: String): Uri = userInfo(UserInfo(username, password))
+  public fun userInfo(username: String, password: String): Uri = userInfo(UserInfo(username, password))
 
   /** Replace the user info with username/password combination. Adds an empty host if one is absent, and user info
    * is defined.
    */
-  fun userInfo(ui: UserInfo?): Uri =
-    this.copy(authority = authority?.copy(userInfo = ui) ?: Authority.Empty.userInfo(ui))
+  public fun userInfo(ui: UserInfo?): Uri =
+    this.copy(authority = authority?.copy(userInfo = ui) ?: Authority(userInfo = ui))
 
-  fun userInfo(): UserInfo? = authority?.userInfo
+  public fun userInfo(): UserInfo? = authority?.userInfo
 
   /** Replace the host. Does not validate the new host value if it's nonempty. */
-  fun host(h: String): Uri =
+  public fun host(h: String): Uri =
     this.copy(authority = authority?.copy(hostSegment = HostSegment(h)))
 
-  fun host(): String? = authority?.hostSegment?.v
+  public fun host(): String? = authority?.hostSegment?.v
 
   /** Replace the port. Adds an empty host if one is absent, and port is defined. */
-  fun port(p: Int?): Uri =
-    this.copy(authority = authority?.copy(port = p) ?: Authority.Empty.port(p))
+  public fun port(p: Int?): Uri =
+    this.copy(authority = authority?.copy(port = p) ?: Authority(port = p))
 
-  fun port(): Int? = authority?.port
+  public fun port(): Int? = authority?.port
 
   /** Replace the authority. */
-  fun authority(a: Authority): Uri =
+  public fun authority(a: Authority): Uri =
     this.copy(authority = a)
 
-  fun addPath(p: String, vararg ps: String): Uri =
+  public fun addPath(p: String, vararg ps: String): Uri =
     addPathSegments(listOf(PathSegment(p)) + ps.map { PathSegment(it) })
 
-  fun addPathSegments(ss: List<PathSegment>): Uri = copy(pathSegments = pathSegments.addSegments(ss))
+  public fun addPathSegments(ss: List<PathSegment>): Uri = copy(pathSegments = pathSegments.addSegments(ss))
 
-  fun withPath(p: String, vararg ps: String): Uri =
+  public fun withPath(p: String, vararg ps: String): Uri =
     withPathSegments(listOf(PathSegment(p)) + ps.map { PathSegment(it) })
 
-  fun withPathSegments(ss: List<PathSegment>): Uri = copy(pathSegments = pathSegments.withSegments(ss))
+  public fun withPathSegments(ss: List<PathSegment>): Uri = copy(pathSegments = pathSegments.withSegments(ss))
 
   /** Replace the whole path with the given one. Leading `/` will be removed, if present, and the path will be
    * split into segments on `/`.
    */
-  fun withWholePath(p: String): Uri {
+  public fun withWholePath(p: String): Uri {
     // removing the leading slash, as it is added during serialization anyway
     val pWithoutLeadingSlash = if (p.startsWith("/")) p.substring(1) else p
     val ps = pWithoutLeadingSlash.split("/", limit = -1)
     return if (ps.isEmpty()) this else withPathSegments(ps.map { PathSegment(it) })
   }
 
-  fun path(): List<String> = pathSegments.segments.map { it.v }
+  public fun path(): List<String> = pathSegments.segments.map { it.v }
 
   //
 
-  fun addParam(k: String, v: String?): Uri = v?.let { addParams(listOf(Pair(k, v))) } ?: this
+  public fun addParam(k: String, v: String?): Uri = v?.let { addParams(listOf(Pair(k, v))) } ?: this
 
-  fun addParams(ps: Map<String, String>): Uri = addParams(ps.toList())
+  public fun addParams(ps: Map<String, String>): Uri = addParams(ps.toList())
 
-  fun addParams(mqp: QueryParams): Uri =
+  public fun addParams(mqp: QueryParams): Uri =
     this.copy(querySegments = querySegments + QuerySegment.fromQueryParams(mqp))
 
-  fun addParams(ps: List<Pair<String, String>>): Uri =
+  public fun addParams(ps: List<Pair<String, String>>): Uri =
     this.copy(querySegments = querySegments + ps.map { (k, v) -> QuerySegment.KeyValue(k, v) })
 
   /** Replace query with the given single optional parameter. */
-  fun withParam(k: String, v: String?): Uri = v?.let { withParams(listOf(Pair(k, v))) } ?: this
+  public fun withParam(k: String, v: String?): Uri = v?.let { withParams(listOf(Pair(k, v))) } ?: this
 
   /** Replace query with the given parameters. */
-  fun withParams(ps: Map<String, String>): Uri = withParams(ps.toList())
+  public fun withParams(ps: Map<String, String>): Uri = withParams(ps.toList())
 
   /** Replace query with the given parameters. */
-  fun withParams(mqp: QueryParams): Uri =
+  public fun withParams(mqp: QueryParams): Uri =
     this.copy(querySegments = QuerySegment.fromQueryParams(mqp).toList())
 
   /** Replace query with the given parameters. */
-  fun withParams(ps: List<Pair<String, String>>): Uri =
+  public fun withParams(ps: List<Pair<String, String>>): Uri =
     this.copy(querySegments = ps.map { (k, v) -> QuerySegment.KeyValue(k, v) })
 
-  fun paramsMap(): Map<String, String> = paramsSeq().toMap()
+  public fun paramsMap(): Map<String, String> = paramsSeq().toMap()
 
-  fun params(): QueryParams {
+  public fun params(): QueryParams {
     val m = linkedMapOf<String, List<String>>() // keeping parameter order
     querySegments.forEach {
       when (it) {
@@ -266,33 +264,33 @@ public data class Uri(
     return QueryParams(m.toList())
   }
 
-  fun paramsSeq(): List<Pair<String, String>> = params().toList()
+  public fun paramsSeq(): List<Pair<String, String>> = params().toList()
 
-  fun addQuerySegment(qf: QuerySegment): Uri = this.copy(querySegments = querySegments + listOf(qf))
+  public fun addQuerySegment(qf: QuerySegment): Uri = this.copy(querySegments = querySegments + listOf(qf))
 
   //
 
   /** Replace the fragment. */
-  fun fragment(f: String?): Uri =
+  public fun fragment(f: String?): Uri =
     fragmentSegment(f?.let { FragmentSegment(it) })
 
   /** Replace the fragment. */
-  fun fragmentSegment(s: FragmentSegment?): Uri = this.copy(fragmentSegment = s)
+  public fun fragmentSegment(s: FragmentSegment?): Uri = this.copy(fragmentSegment = s)
 
-  fun fragment(): String? = fragmentSegment?.v
-
-  //
-
-  fun toJavaUri(): URI = URI(toString())
-
-  suspend fun resolveOrNull(other: Uri): Uri? = Uri(toJavaUri().resolve(other.toJavaUri()))
+  public fun fragment(): String? = fragmentSegment?.v
 
   //
 
-  fun hostSegmentEncoding(encoding: Encoding): Uri =
+  public fun toJavaUri(): URI = URI(toString())
+
+  public suspend fun resolveOrNull(other: Uri): Uri? = Uri(toJavaUri().resolve(other.toJavaUri()))
+
+  //
+
+  public fun hostSegmentEncoding(encoding: Encoding): Uri =
     copy(authority = authority?.copy(hostSegment = authority.hostSegment.encoding(encoding)))
 
-  fun pathSegmentsEncoding(encoding: Encoding): Uri =
+  public fun pathSegmentsEncoding(encoding: Encoding): Uri =
     copy(
       pathSegments = when (pathSegments) {
         is PathSegments.EmptyPath -> PathSegments.EmptyPath
@@ -302,7 +300,7 @@ public data class Uri(
     )
 
   /** Replace encoding for query segments: applies to key-value, only-value and plain ones. */
-  fun querySegmentsEncoding(encoding: Encoding): Uri =
+  public fun querySegmentsEncoding(encoding: Encoding): Uri =
     copy(
       querySegments = querySegments.map {
         when (it) {
@@ -314,7 +312,7 @@ public data class Uri(
     )
 
   /** Replace encoding for the value part of key-value query segments and for only-value ones. */
-  fun queryValueSegmentsEncoding(valueEncoding: Encoding): Uri =
+  public fun queryValueSegmentsEncoding(valueEncoding: Encoding): Uri =
     copy(
       querySegments = querySegments.map {
         when (it) {
@@ -325,7 +323,7 @@ public data class Uri(
       }
     )
 
-  fun fragmentSegmentEncoding(encoding: Encoding): Uri =
+  public fun fragmentSegmentEncoding(encoding: Encoding): Uri =
     copy(fragmentSegment = fragmentSegment?.encoding(encoding))
 
   override fun toString(): String {
@@ -373,41 +371,34 @@ public data class Uri(
 public sealed interface UriError {
   public data class UnexpectedScheme(val errorMessage: String) : UriError
   public data class CantParse(val errorMessage: String) : UriError
-  object InvalidHost : UriError
-  object InvalidPort : UriError
+  public object InvalidHost : UriError
+  public object InvalidPort : UriError
   public data class IllegalArgument(val errorMessage: String) : UriError
 }
 
-public data class Authority(val userInfo: UserInfo?, val hostSegment: HostSegment, val port: Int?) {
-
-  public companion object {
-
-    val Empty: Authority = Authority(null, HostSegment(""), null)
-
-    operator fun invoke(host: String): Authority =
-      Authority(null, HostSegment(host), null)
-
-    operator fun invoke(userInfo: UserInfo?, host: String, port: Int?): Authority =
-      Authority(userInfo, HostSegment(host), port)
-  }
+public data class Authority(
+  val userInfo: UserInfo? = null,
+  val hostSegment: HostSegment = HostSegment(""),
+  val port: Int? = null
+) {
 
   /** Replace the user info with a username only. */
-  fun userInfo(username: String): Authority = this.copy(userInfo = UserInfo(username, null))
+  public fun userInfo(username: String): Authority = this.copy(userInfo = UserInfo(username, null))
 
   /** Replace the user info with username/password combination. */
-  fun userInfo(username: String, password: String): Authority =
+  public fun userInfo(username: String, password: String): Authority =
     this.copy(userInfo = UserInfo(username, password))
 
   /** Replace the user info. */
-  fun userInfo(ui: UserInfo?): Authority = this.copy(userInfo = ui)
+  public fun userInfo(ui: UserInfo?): Authority = this.copy(userInfo = ui)
 
   /** Replace the host. Does not validate the new host value if it's nonempty. */
-  fun host(h: String): Authority = this.copy(hostSegment = HostSegment(h))
+  public fun host(h: String): Authority = this.copy(hostSegment = HostSegment(h))
 
-  fun host(): String = hostSegment.v
+  public fun host(): String = hostSegment.v
 
   /** Replace the port. */
-  fun port(p: Int?): Authority = this.copy(port = p)
+  public fun port(p: Int?): Authority = this.copy(port = p)
 
   override fun toString(): String {
     fun encodeUserInfo(ui: UserInfo): String = buildString {
@@ -433,14 +424,14 @@ public data class UserInfo(val username: String, val password: String?) {
     "${username.encode(Rfc3986.UserInfo)}${password?.let { ":${it.encode(Rfc3986.UserInfo)}" } ?: ""}"
 }
 
-typealias Encoding = (String) -> String
+public typealias Encoding = (String) -> String
 
-sealed class Segment(
-  open val v: String,
-  open val encoding: Encoding
+public sealed class Segment(
+  public open val v: String,
+  public open val encoding: Encoding
 ) {
-  fun encoded(): String = encoding(v)
-  abstract fun encoding(e: Encoding): Segment
+  public fun encoded(): String = encoding(v)
+  public abstract fun encoding(e: Encoding): Segment
 }
 
 public data class HostSegment(
@@ -450,7 +441,7 @@ public data class HostSegment(
 
   public companion object {
     private val IpV6Pattern = "[0-9a-fA-F:]+".toRegex()
-    val Standard: Encoding = { s ->
+    public val Standard: Encoding = { s ->
       when {
         s.matches(IpV6Pattern) && s.count { it == ':' } >= 2 -> "[$s]"
         else -> UriCompatibility.encodeDNSHost(s)
@@ -467,7 +458,7 @@ public data class PathSegment(
 ) : Segment(v, encoding) {
 
   public companion object {
-    val Standard: Encoding = {
+    public val Standard: Encoding = {
       it.encode(Rfc3986.PathSegment)
     }
   }
@@ -477,36 +468,37 @@ public data class PathSegment(
 
 public sealed interface PathSegments {
 
-  val segments: List<PathSegment>
+  public val segments: List<PathSegment>
 
   public companion object {
-    fun absoluteOrEmptyS(segments: List<String>): PathSegments = absoluteOrEmpty(segments.map { PathSegment(it) })
+    public fun absoluteOrEmptyS(segments: List<String>): PathSegments =
+      absoluteOrEmpty(segments.map { PathSegment(it) })
 
-    fun absoluteOrEmpty(segments: List<PathSegment>): PathSegments =
+    public fun absoluteOrEmpty(segments: List<PathSegment>): PathSegments =
       if (segments.isEmpty()) EmptyPath else AbsolutePath(segments)
   }
 
-  fun add(p: String, vararg ps: String): PathSegments = add(listOf(p) + ps)
-  fun add(ps: List<String>): PathSegments = addSegments(ps.map { PathSegment(it) })
-  fun addSegment(s: PathSegment): PathSegments = addSegments(listOf(s))
-  fun addSegments(s1: PathSegment, s2: PathSegment, ss: List<PathSegment>): PathSegments =
+  public fun add(p: String, vararg ps: String): PathSegments = add(listOf(p) + ps)
+  public fun add(ps: List<String>): PathSegments = addSegments(ps.map { PathSegment(it) })
+  public fun addSegment(s: PathSegment): PathSegments = addSegments(listOf(s))
+  public fun addSegments(s1: PathSegment, s2: PathSegment, ss: List<PathSegment>): PathSegments =
     addSegments(listOf(s1, s2) + ss)
 
-  fun addSegments(ss: List<PathSegment>): PathSegments {
+  public fun addSegments(ss: List<PathSegment>): PathSegments {
     val base = if (segments.lastOrNull()?.v?.isEmpty() == true) emptyList() else segments
     return withSegments(base + ss)
   }
 
-  fun withS(p: String, ps: Sequence<String>): PathSegments = withS(listOf(p) + ps)
-  fun withS(ps: List<String>): PathSegments = withSegments(ps.map { PathSegment(it) })
+  public fun withS(p: String, ps: Sequence<String>): PathSegments = withS(listOf(p) + ps)
+  public fun withS(ps: List<String>): PathSegments = withSegments(ps.map { PathSegment(it) })
 
-  fun withSegment(s: PathSegment): PathSegments = withSegments(listOf(s))
-  fun withSegments(s1: PathSegment, s2: PathSegment, ss: List<PathSegment>): PathSegments =
+  public fun withSegment(s: PathSegment): PathSegments = withSegments(listOf(s))
+  public fun withSegments(s1: PathSegment, s2: PathSegment, ss: List<PathSegment>): PathSegments =
     withSegments(listOf(s1, s2) + ss)
 
-  fun withSegments(ss: List<PathSegment>): PathSegments
+  public fun withSegments(ss: List<PathSegment>): PathSegments
 
-  object EmptyPath : PathSegments {
+  public object EmptyPath : PathSegments {
     override val segments: List<PathSegment> = emptyList()
     override fun withSegments(ss: List<PathSegment>): PathSegments = AbsolutePath(ss)
     override fun toString(): String = ""
@@ -527,28 +519,28 @@ public sealed interface QuerySegment {
 
   public companion object {
     /** Encodes all reserved characters using [[java.net.URLEncoder.encode()]]. */
-    val All: Encoding = {
+    public val All: Encoding = {
       UriCompatibility.encodeQuery(it, "UTF-8")
     }
 
     /** Encodes only the `&` and `=` reserved characters, which are usually used to separate query parameter names and
      * values.
      */
-    val Standard: Encoding = {
+    public val Standard: Encoding = {
       it.encode(allowedCharacters = Rfc3986.Query - setOf('&', '='), spaceAsPlus = true, encodePlus = true)
     }
 
     /** Encodes only the `&` reserved character, which is usually used to separate query parameter names and values.
      * The '=' sign is allowed in values.
      */
-    val StandardValue: Encoding = {
+    public val StandardValue: Encoding = {
       it.encode(Rfc3986.Query - setOf('&'), spaceAsPlus = true, encodePlus = true)
     }
 
     /** Doesn't encode any of the reserved characters, leaving intact all
      * characters allowed in the query string as defined by RFC3986.
      */
-    val Relaxed: Encoding = {
+    public val Relaxed: Encoding = {
       it.encode(Rfc3986.Query, spaceAsPlus = true)
     }
 
@@ -559,11 +551,11 @@ public sealed interface QuerySegment {
      * https://stackoverflow.com/questions/11490326/is-array-syntax-using-square-brackets-in-url-query-strings-valid
      * for discussion.
      */
-    val RelaxedWithBrackets: Encoding = {
+    public val RelaxedWithBrackets: Encoding = {
       it.encode(Rfc3986.SegmentWithBrackets, spaceAsPlus = true)
     }
 
-    fun fromQueryParams(mqp: QueryParams): Iterable<QuerySegment> =
+    public fun fromQueryParams(mqp: QueryParams): Iterable<QuerySegment> =
       mqp.toMultiList().flatMap { (k: String, vs: List<String>) ->
         when {
           vs.isEmpty() -> listOf(Value(k))
@@ -582,7 +574,7 @@ public sealed interface QuerySegment {
     val keyEncoding: Encoding = Standard,
     val valueEncoding: Encoding = Standard
   ) : QuerySegment {
-    override fun toString() = "KeyValue($k, $v)"
+    override fun toString(): String = "KeyValue($k, $v)"
   }
 
   /** A query fragment which contains only the value, without a key. */
@@ -590,7 +582,7 @@ public sealed interface QuerySegment {
     val v: String,
     val encoding: Encoding = StandardValue
   ) : QuerySegment {
-    override fun toString() = "Value($v)"
+    override fun toString(): String = "Value($v)"
   }
 
   /** A query fragment which will be inserted into the query, without and
@@ -610,7 +602,7 @@ public sealed interface QuerySegment {
     val v: String,
     val encoding: Encoding = StandardValue
   ) : QuerySegment {
-    override fun toString() = "Plain($v)"
+    override fun toString(): String = "Plain($v)"
   }
 }
 
@@ -620,11 +612,11 @@ public data class FragmentSegment(
 ) : Segment(v, encoding) {
 
   public companion object {
-    val Standard: Encoding = {
+    public val Standard: Encoding = {
       it.encode(Rfc3986.Fragment)
     }
 
-    val RelaxedWithBrackets: Encoding = {
+    public val RelaxedWithBrackets: Encoding = {
       it.encode(Rfc3986.SegmentWithBrackets, spaceAsPlus = true)
     }
   }
