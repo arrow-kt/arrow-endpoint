@@ -2,7 +2,6 @@ package com.fortysevendegrees.thool.model
 
 import arrow.core.Either
 import arrow.core.left
-import arrow.core.nonFatalOrThrow
 import arrow.core.right
 import java.lang.IllegalStateException
 
