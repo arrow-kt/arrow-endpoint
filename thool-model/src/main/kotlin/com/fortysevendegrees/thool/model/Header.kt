@@ -171,11 +171,4 @@ public fun List<Header>.contentType(): String? =
   header(Header.ContentType)
 
 public fun List<Header>.contentLength(): Long? =
-  header(Header.ContentLength)?.let { cl ->
-    try {
-      cl.toLong()
-    } catch (e: Throwable) {
-      e.nonFatalOrThrow()
-      null
-    }
-  }
+  header(Header.ContentLength)?.let(String::toLongOrNull)
