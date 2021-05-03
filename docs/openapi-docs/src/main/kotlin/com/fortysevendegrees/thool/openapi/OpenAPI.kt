@@ -1,33 +1,34 @@
 package com.fortysevendegrees.thool.openapi
 
 import com.fortysevendegrees.thool.openapi.schema.Schema
+import kotlinx.serialization.Serializable
 
-typealias SecurityRequirement = Map<String, List<String>>
+//typealias SecurityRequirement = Map<String, List<String>>
+//
+//data class SecurityScheme(
+//  val type: String,
+//  val description: String?,
+//  val name: String?,
+//  val input: String?,
+//  val scheme: String?,
+//  val bearerFormat: String?,
+//  val flows: OAuthFlows?,
+//  val openIdConnectUrl: String?
+//)
 
-data class SecurityScheme(
-  val type: String,
-  val description: String?,
-  val name: String?,
-  val input: String?,
-  val scheme: String?,
-  val bearerFormat: String?,
-  val flows: OAuthFlows?,
-  val openIdConnectUrl: String?
-)
+//data class OAuthFlows(
+//  val implicit: OAuthFlow? = null,
+//  val password: OAuthFlow? = null,
+//  val clientCredentials: OAuthFlow? = null,
+//  val authorizationCode: OAuthFlow? = null
+//)
 
-data class OAuthFlows(
-  val implicit: OAuthFlow? = null,
-  val password: OAuthFlow? = null,
-  val clientCredentials: OAuthFlow? = null,
-  val authorizationCode: OAuthFlow? = null
-)
-
-data class OAuthFlow(
-  val authorizationUrl: String,
-  val tokenUrl: String?,
-  val refreshUrl: String?,
-  val scopes: Map<String, String>
-)
+//data class OAuthFlow(
+//  val authorizationUrl: String,
+//  val tokenUrl: String?,
+//  val refreshUrl: String?,
+//  val scopes: Map<String, String>
+//)
 
 data class OpenAPI(
   val openapi: String = "3.0.3",
@@ -36,7 +37,7 @@ data class OpenAPI(
   val servers: List<Server>,
   val paths: Map<String, PathItem>,
   val components: Components?,
-  val security: List<SecurityRequirement>
+//  val security: List<SecurityRequirement>
 ) {
   fun addPathItem(path: String, pathItem: PathItem): OpenAPI {
     val pathItem2 = when (val existing = paths[path]) {
@@ -52,6 +53,7 @@ data class OpenAPI(
   fun tags(t: List<Tag>): OpenAPI = copy(tags = t)
 }
 
+@Serializable
 data class Info(
   val title: String,
   val version: String,
@@ -61,9 +63,12 @@ data class Info(
   val license: License? = null,
 )
 
+@Serializable
 data class Contact(val name: String?, val email: String?, val url: String?)
+@Serializable
 data class License(val name: String, val url: String?)
 
+@Serializable
 data class Server(
   val url: String,
   val description: String? = null,
@@ -73,6 +78,7 @@ data class Server(
   fun variables(vararg vars: Pair<String, ServerVariable>): Server = copy(variables = vars.toMap())
 }
 
+@Serializable
 data class ServerVariable(val enum: List<String>?, val default: String, val description: String?) {
   init {
     require(enum?.contains(default) ?: true) {
@@ -84,7 +90,7 @@ data class ServerVariable(val enum: List<String>?, val default: String, val desc
 // todo: responses, parameters, examples, requestBodies, headers, links, callbacks
 data class Components(
   val schemas: Map<String, ReferenceOr<Schema>>,
-  val securitySchemes: Map<String, ReferenceOr<SecurityScheme>>
+//  val securitySchemes: Map<String, ReferenceOr<SecurityScheme>>
 )
 
 // todo: $ref
@@ -129,7 +135,7 @@ data class Operation(
   val requestBody: ReferenceOr<RequestBody>?,
   val responses: Map<ResponsesKey, ReferenceOr<Response>>,
   val deprecated: Boolean?,
-  val security: List<SecurityRequirement>,
+//  val security: List<SecurityRequirement>,
   val servers: List<Server>
 )
 
@@ -149,8 +155,10 @@ data class Parameter(
   val content: Map<String, MediaType>
 )
 
+@Serializable
 enum class ParameterIn { Query, Header, Path, Cookie; }
 
+@Serializable
 enum class ParameterStyle {
   Simple,
   Form,
@@ -179,7 +187,9 @@ data class Encoding(
 )
 
 sealed interface ResponsesKey
+@Serializable
 object ResponsesDefaultKey : ResponsesKey
+@Serializable
 inline class ResponsesCodeKey(val code: Int) : ResponsesKey
 
 // todo: links
@@ -193,6 +203,7 @@ data class Response(
     Response(description, headers + other.headers, content + other.content)
 }
 
+@Serializable
 data class Example(
   val summary: String?,
   val description: String?,

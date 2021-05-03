@@ -4,6 +4,7 @@ import arrow.core.Either
 import arrow.core.Option
 import com.fortysevendegrees.thool.Codec
 import com.fortysevendegrees.thool.Schema
+import kotlinx.serialization.Serializable
 
 public typealias ReferenceOr<T> = Either<Reference, T>
 
