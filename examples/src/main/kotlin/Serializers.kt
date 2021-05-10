@@ -2,12 +2,27 @@ import arrow.core.NonEmptyList
 import arrow.core.getOrElse
 import com.fortysevendegrees.thool.model.StatusCode
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.descriptors.*
+import kotlinx.serialization.descriptors.PolymorphicKind
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.SerialKind
+import kotlinx.serialization.descriptors.StructureKind
+import kotlinx.serialization.descriptors.buildClassSerialDescriptor
+import kotlinx.serialization.descriptors.buildSerialDescriptor
+import kotlinx.serialization.descriptors.element
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonDecoder
+import kotlinx.serialization.json.JsonEncoder
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import java.math.BigDecimal
 
 internal object StatusCodeAsIntSerializer : KSerializer<StatusCode> {
@@ -88,6 +103,42 @@ internal class NelSerializer<T>(private val elementSerializer: KSerializer<T>) :
       builder
     }
     compositeDecoder.endStructure(descriptor)
-    return NonEmptyList.fromList(list).getOrElse { throw SerializationException("Found empty list but expected NonEmptyList") }
+    return NonEmptyList.fromList(list)
+      .getOrElse { throw SerializationException("Found empty list but expected NonEmptyList") }
+  }
+}
+
+internal class ReferencedSerializer<T>(private val dataSerializer: KSerializer<T>) : KSerializer<Referenced<T>> {
+
+  @InternalSerializationApi
+  override val descriptor: SerialDescriptor = buildSerialDescriptor("Referenced", PolymorphicKind.SEALED) {
+    element("Ref", buildClassSerialDescriptor("Reference") {
+      element<String>(RefKey)
+    })
+//    element("Ref", buildClassSerialDescriptor("Ref") {
+//      element("value", buildClassSerialDescriptor("Reference") {
+//        element<String>(RefKey)
+//      })
+//    })
+//    element("Ref", Reference.serializer().descriptor)
+//    element(RefKey, Reference.serializer().descriptor)
+    element("Other", dataSerializer.descriptor)
+  }
+
+  override fun serialize(encoder: Encoder, value: Referenced<T>) {
+    require(encoder is JsonEncoder)
+    val jsonElement = when (value) {
+      is Referenced.Ref -> buildJsonObject { put(RefKey, JsonPrimitive(value.value.ref)) }
+      is Referenced.Other -> encoder.json.encodeToJsonElement(dataSerializer, value.value)
+    }
+    encoder.encodeJsonElement(jsonElement)
+  }
+
+  override fun deserialize(decoder: Decoder): Referenced<T> {
+    require(decoder is JsonDecoder)
+    val jsonElement = decoder.decodeJsonElement()
+    if (jsonElement is JsonObject && RefKey in jsonElement)
+      return Referenced.Ref(Reference(jsonElement[RefKey]!!.jsonPrimitive.content))
+    return Referenced.Other(decoder.json.decodeFromJsonElement(dataSerializer, jsonElement))
   }
 }

@@ -1,9 +1,15 @@
-@file:UseSerializers(BigDecimalAsStringSerializer::class, NelSerializer::class, StatusCodeAsIntSerializer::class)
+@file:UseSerializers(
+  BigDecimalAsStringSerializer::class,
+  NelSerializer::class,
+  StatusCodeAsIntSerializer::class,
+  ReferencedSerializer::class
+)
 
 import arrow.core.NonEmptyList
 import com.fortysevendegrees.thool.model.StatusCode
-import kotlinx.serialization.*
-import kotlinx.serialization.descriptors.*
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
 import java.math.BigDecimal
 
 /** A list of definitions that can be used in references. **/
@@ -510,9 +516,11 @@ public data class License(
   public val url: String?
 )
 
+internal const val RefKey = "\$ref"
+
 @Serializable
 public data class Reference(
-  @SerialName("\$ref")
+  @SerialName(RefKey)
   val ref: String
 )
 
@@ -606,33 +614,39 @@ public data class Schema(
 public sealed class ExampleValue {
   @Serializable
   public /*inline*/ class Single(public val value: String) : ExampleValue()
+
   @Serializable
   public /*inline*/ class Multiple(public val values: List<String>) : ExampleValue()
+
   @Serializable
-  public data class Tag(public val name: String, public val description: String? = null, public val externalDocs: ExternalDocumentation? = null): ExampleValue()
+  public data class Tag(
+    public val name: String,
+    public val description: String? = null,
+    public val externalDocs: ExternalDocumentation? = null
+  ) : ExampleValue()
+
   @Serializable
-  public data class ExternalDocumentation(public val url: String, public val description: String? = null): ExampleValue()
+  public data class ExternalDocumentation(public val url: String, public val description: String? = null) :
+    ExampleValue()
 }
 
 /**
  * Defines Union: [A] | [Reference] type of OpenAPI.
  * Defined here instead of using Either since it's more convenient to define a KotlinX serializer here.
  */
-@Serializable
+@Serializable(with = ReferencedSerializer::class)
 public sealed class Referenced<out A> {
-  @Serializable
   public data class Ref(public val value: Reference) : Referenced<Nothing>()
-  @Serializable
   public data class Other<A>(val value: A) : Referenced<A>()
 }
 
-//@Serializable
+// @Serializable
 public sealed interface ExpressionOrValue {
   public inline class Expression(public val value: String) : ExpressionOrValue
   public inline class Value(public val value: Any?) : ExpressionOrValue
 }
 
-//@Serializable
+// @Serializable
 public sealed interface AdditionalProperties {
   @Serializable
   public inline class AdditionalPropertiesAllowed(public val value: Boolean) : AdditionalProperties

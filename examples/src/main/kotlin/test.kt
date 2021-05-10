@@ -1,9 +1,8 @@
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fortysevendegrees.thool.model.StatusCode
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.openapi4j.schema.validator.v3.SchemaValidator
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.subclass
 
 fun main() {
 
@@ -24,18 +23,22 @@ fun main() {
           summary = "List API versions",
           responses = Responses(
             responses = linkedMapOf(
-              StatusCode.Ok to Referenced.Other(Response(
-                description = "200 response",
-                content = linkedMapOf(
-                  "application/json" to MediaType(
-                    examples = linkedMapOf(
-                      "foo" to Referenced.Other(Example(
-                        value = ExampleValue.Single("")
-                      ))
+              StatusCode.Ok to Referenced.Other(
+                Response(
+                  description = "200 response",
+                  content = linkedMapOf(
+                    "application/json" to MediaType(
+                      examples = linkedMapOf(
+                        "foo" to Referenced.Other(
+                          Example(
+                            value = ExampleValue.Single("")
+                          )
+                        )
+                      )
                     )
-                  )
-                ),
-              ))
+                  ),
+                )
+              )
             )
           )
         ),
@@ -50,6 +53,28 @@ fun main() {
   )
 
   val string = json.encodeToString(api)
-
   println(string)
+
+  val response: Referenced<Response> = Referenced.Other(
+    Response(
+      description = "200 response",
+      content = linkedMapOf(
+        "application/json" to MediaType(
+          examples = linkedMapOf(
+            "foo" to Referenced.Other(
+              Example(
+                value = ExampleValue.Single("")
+              )
+            )
+          )
+        )
+      ),
+    )
+  )
+  val responseString = json.encodeToString(response)
+  println("Referenced.Other = $responseString")
+
+  val ref: Referenced<Nothing> = Referenced.Ref(Reference("#/components/schemas/user"))
+  val refString = json.encodeToString(ref)
+  println("Referenced.Ref = $refString")
 }
