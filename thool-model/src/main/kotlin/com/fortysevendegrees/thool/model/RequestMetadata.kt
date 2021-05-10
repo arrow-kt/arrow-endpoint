@@ -1,10 +1,10 @@
 package com.fortysevendegrees.thool.model
 
 import java.nio.charset.Charset
+import java.io.InputStream as JInputStream
 import java.nio.ByteBuffer as JByteBuffer
 import kotlin.ByteArray as KByteArray
 import kotlin.String as KString
-import java.io.InputStream as JInputStream
 
 public data class Address(val hostname: KString, val port: Int)
 public data class ConnectionInfo(val local: Address?, val remote: Address?, val secure: Boolean?)

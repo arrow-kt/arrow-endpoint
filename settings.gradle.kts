@@ -5,4 +5,4 @@ include("thool-model", "core", "graphql", "examples", "schema-reflect", "test")
 include("clients", ":clients:ktor-client", ":clients:http4k-client", ":clients:spring-web-client", ":clients:spring-web-flux-client")
 
 // servers
-include("servers", ":servers:ktor-server")
+include("servers", ":servers:ktor-server", ":servers:spring-web-server")

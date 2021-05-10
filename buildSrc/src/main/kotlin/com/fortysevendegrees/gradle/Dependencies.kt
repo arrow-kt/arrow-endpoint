@@ -7,6 +7,8 @@ object Version {
   const val ktor: String = "1.5.3"
   const val logbackClassic: String = "1.2.3"
   const val spring: String = "2.4.5"
+  const val reactorKotlinExtensions: String = "1.1.3"
+  const val undertow: String = "2.2.7.Final"
   const val kotest: String = "4.4.3"
   const val graphQL: String = "16.2"
   const val kotlinGraphQL: String = "4.0.0-alpha.17"
@@ -54,6 +56,8 @@ object Libs {
 
   const val springBootStarterWeb = "org.springframework.boot:spring-boot-starter-web:${Version.spring}"
   const val springBootStarterWebflux = "org.springframework.boot:spring-boot-starter-webflux:${Version.spring}"
+  const val reactorKotlinExtensions = "io.projectreactor.kotlin:reactor-kotlin-extensions:${Version.reactorKotlinExtensions}"
+  const val undertow = "io.undertow:undertow-core:${Version.undertow}"
   const val nettyTransportNativeKqueue = "io.netty:netty-transport-native-kqueue:${Version.nettyTransport}"
 
   const val kotestRunner: String = "io.kotest:kotest-runner-junit5:${Version.kotest}"
