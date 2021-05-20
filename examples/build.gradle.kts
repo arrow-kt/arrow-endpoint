@@ -12,7 +12,6 @@ dependencies {
   implementation(Libs.ktorServerNetty)
   implementation(Libs.logbackClassic)
   implementation(Libs.kotlinxSerializationJson)
-  implementation("org.openapi4j:openapi-operation-validator:1.0.7")
 }
 
 application {

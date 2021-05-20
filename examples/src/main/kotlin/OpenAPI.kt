@@ -1,8 +1,8 @@
 @file:UseSerializers(
+  ReferencedSerializer::class,
   BigDecimalAsStringSerializer::class,
   NelSerializer::class,
   StatusCodeAsIntSerializer::class,
-  ReferencedSerializer::class
 )
 
 import arrow.core.NonEmptyList
@@ -304,7 +304,7 @@ public data class RequestBody(
  * since they may not be known in advance.
  * However, it is expected from the documentation to cover a successful operation response and any known errors.
  */
-@Serializable
+@Serializable(with = ResponsesSerializer::class)
 public data class Responses(
   /**
    * The documentation of responses other than the ones declared for specific HTTP response codes.
@@ -350,20 +350,25 @@ public data class MediaType(
  */
 @Serializable
 public data class Link(
-  /** A relative or absolute URI reference to an OAS operation.
-  This field is mutually exclusive of the '_linkOperationId' field,
-  and MUST point to an 'Operation' Object. Relative '_linkOperationRef'
-  values MAY be used to locate an existing 'Operation' Object in the OpenAPI definition.*/
+  /**
+   * A relative or absolute URI reference to an OAS operation.
+   * This field is mutually exclusive of the '_linkOperationId' field,
+   * and MUST point to an 'Operation' Object. Relative '_linkOperationRef'
+   * values MAY be used to locate an existing 'Operation' Object in the OpenAPI definition.
+   */
   public val operationRef: String?,
-  /**  The name of an /existing/, resolvable OAS operation, as defined with a unique
-  '_operationOperationId'. This field is mutually exclusive of the '_linkOperationRef' field.*/
+  /**
+   * The name of an /existing/, resolvable OAS operation, as defined with a unique
+   * '_operationOperationId'. This field is mutually exclusive of the '_linkOperationRef' field.
+   */
   public val operationId: String?,
   /**
-  A map representing parameters to pass to an operation as specified with '_linkOperationId'
-  or identified via '_linkOperationRef'. The key is the parameter name to be used, whereas
-  the value can be a constant or an expression to be evaluated and passed to the linked operation.
-  The parameter name can be qualified using the parameter location @[{in}.]{name}@
-  for operations that use the same parameter name in different locations (e.g. path.id).*/
+   * A map representing parameters to pass to an operation as specified with '_linkOperationId'
+   * or identified via '_linkOperationRef'. The key is the parameter name to be used, whereas
+   * the value can be a constant or an expression to be evaluated and passed to the linked operation.
+   * The parameter name can be qualified using the parameter location @[{in}.]{name}@
+   * for operations that use the same parameter name in different locations (e.g. path.id).
+   */
   public val parameters: LinkedHashMap<String, ExpressionOrValue>,
   /** A literal value or @{expression}@ to use as a request body when calling the target operation.*/
   public val requestBody: ExpressionOrValue,

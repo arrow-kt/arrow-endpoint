@@ -5,24 +5,17 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.descriptors.PolymorphicKind
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.SerialKind
 import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.descriptors.buildClassSerialDescriptor
-import kotlinx.serialization.descriptors.buildSerialDescriptor
 import kotlinx.serialization.descriptors.element
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonDecoder
-import kotlinx.serialization.json.JsonEncoder
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import java.math.BigDecimal
 
 internal object StatusCodeAsIntSerializer : KSerializer<StatusCode> {
@@ -108,37 +101,132 @@ internal class NelSerializer<T>(private val elementSerializer: KSerializer<T>) :
   }
 }
 
-internal class ReferencedSerializer<T>(private val dataSerializer: KSerializer<T>) : KSerializer<Referenced<T>> {
+internal class ReferencedSerializer<T>(
+  private val dataSerializer: KSerializer<T>
+) : KSerializer<Referenced<T>> {
+
+  private val refDescriptor = buildClassSerialDescriptor("Reference") {
+    element<String>(RefKey)
+  }
 
   @InternalSerializationApi
-  override val descriptor: SerialDescriptor = buildSerialDescriptor("Referenced", PolymorphicKind.SEALED) {
-    element("Ref", buildClassSerialDescriptor("Reference") {
-      element<String>(RefKey)
-    })
-//    element("Ref", buildClassSerialDescriptor("Ref") {
-//      element("value", buildClassSerialDescriptor("Reference") {
-//        element<String>(RefKey)
-//      })
-//    })
-//    element("Ref", Reference.serializer().descriptor)
-//    element(RefKey, Reference.serializer().descriptor)
-    element("Other", dataSerializer.descriptor)
-  }
-
-  override fun serialize(encoder: Encoder, value: Referenced<T>) {
-    require(encoder is JsonEncoder)
-    val jsonElement = when (value) {
-      is Referenced.Ref -> buildJsonObject { put(RefKey, JsonPrimitive(value.value.ref)) }
-      is Referenced.Other -> encoder.json.encodeToJsonElement(dataSerializer, value.value)
+  // TODO review SerialDescriptor. Should it describe the actual type or the json model
+  override val descriptor: SerialDescriptor =
+    buildClassSerialDescriptor("Referenced") {
+      element("Ref", refDescriptor, isOptional = true)
+      element("description", dataSerializer.descriptor, isOptional = true)
     }
-    encoder.encodeJsonElement(jsonElement)
+
+  @InternalSerializationApi
+  override fun serialize(encoder: Encoder, value: Referenced<T>) {
+    when (value) {
+      is Referenced.Other -> encoder.encodeSerializableValue(dataSerializer, value.value)
+      is Referenced.Ref -> {
+        val encoder = encoder.beginStructure(descriptor)
+        encoder.encodeStringElement(refDescriptor, 0, value.value.ref)
+        encoder.endStructure(descriptor)
+      }
+    }
   }
 
-  override fun deserialize(decoder: Decoder): Referenced<T> {
-    require(decoder is JsonDecoder)
-    val jsonElement = decoder.decodeJsonElement()
-    if (jsonElement is JsonObject && RefKey in jsonElement)
-      return Referenced.Ref(Reference(jsonElement[RefKey]!!.jsonPrimitive.content))
-    return Referenced.Other(decoder.json.decodeFromJsonElement(dataSerializer, jsonElement))
+  @InternalSerializationApi
+  override fun deserialize(decoder: Decoder): Referenced<T> =
+    TODO(
+      """
+      Impossible atm since we cannot detect (peek) if it's a reference or not.
+      However, we don't support parsing OpenAPI into Endpoint atm.
+      """.trimIndent()
+    )
+}
+
+internal class ResponsesSerializer : KSerializer<Responses> {
+  override val descriptor: SerialDescriptor = ResponsesDescriptor
+  private val elementSerializer = Referenced.serializer(Response.serializer())
+
+  override fun deserialize(decoder: Decoder): Responses {
+    val decoder = decoder.beginStructure(descriptor)
+    val size = decoder.decodeCollectionSize(descriptor)
+    var default: Referenced<Response>? = null
+    val responses = LinkedHashMap<StatusCode, Referenced<Response>>(size)
+    while (true) {
+      val index = decoder.decodeElementIndex(descriptor)
+      if (index == CompositeDecoder.DECODE_DONE) break
+      val key: String = decoder.decodeSerializableElement(descriptor, index, String.serializer())
+      if (key == "default") {
+        default = decoder.decodeSerializableElement(descriptor, index + 1, elementSerializer)
+      } else {
+        val code = StatusCode(key.toInt())
+        responses[code] = decoder.decodeSerializableElement(descriptor, index + 1, elementSerializer)
+      }
+    }
+
+    return Responses(default, responses)
   }
+
+  override fun serialize(encoder: Encoder, value: Responses) {
+    val size = value.responses.size + (value.default?.let { 1 } ?: 0)
+    val composite = encoder.beginCollection(descriptor, size)
+    var index = 0
+    value.default?.let {
+      composite.encodeStringElement(descriptor, index++, "default")
+      composite.encodeSerializableElement(descriptor, index++, elementSerializer, it)
+    }
+    value.responses.forEach { (k, v) ->
+      composite.encodeSerializableElement(descriptor, index++, StatusCodeAsIntSerializer, k)
+      composite.encodeSerializableElement(descriptor, index++, elementSerializer, v)
+    }
+    composite.endStructure(descriptor)
+  }
+}
+
+@ExperimentalSerializationApi
+object ResponsesDescriptor : SerialDescriptor {
+  override val serialName: String = "Responses"
+  override val kind: SerialKind = StructureKind.MAP
+  override val elementsCount: Int = 2
+  private val valueDescriptor: SerialDescriptor =
+    Referenced.serializer(Response.serializer()).descriptor
+  private val keyDescriptor: SerialDescriptor =
+    StatusCodeAsIntSerializer.descriptor
+
+  override fun getElementName(index: Int): String = index.toString()
+  override fun getElementIndex(name: String): Int =
+    name.toIntOrNull() ?: throw IllegalArgumentException("$name is not a valid list index")
+
+  override fun isElementOptional(index: Int): Boolean {
+    require(index >= 0) { "Illegal index $index, $serialName expects only non-negative indices" }
+    return false
+  }
+
+  override fun getElementAnnotations(index: Int): List<Annotation> {
+    require(index >= 0) { "Illegal index $index, $serialName expects only non-negative indices" }
+    return emptyList()
+  }
+
+  override fun getElementDescriptor(index: Int): SerialDescriptor {
+    require(index >= 0) { "Illegal index $index, $serialName expects only non-negative indices" }
+    return when (index % 2) {
+      0 -> StatusCodeAsIntSerializer.descriptor
+      1 -> valueDescriptor
+      else -> error("Unreached")
+    }
+  }
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is ResponsesDescriptor) return false
+    if (serialName != other.serialName) return false
+    if (keyDescriptor != other.keyDescriptor) return false
+    if (valueDescriptor != other.valueDescriptor) return false
+    return true
+  }
+
+  override fun hashCode(): Int {
+    var result = serialName.hashCode()
+    result = 31 * result + keyDescriptor.hashCode()
+    result = 31 * result + valueDescriptor.hashCode()
+    return result
+  }
+
+  override fun toString(): String = "$serialName($keyDescriptor, $valueDescriptor)"
 }
