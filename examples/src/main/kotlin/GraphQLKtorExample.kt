@@ -33,16 +33,30 @@ import io.ktor.routing.post
 import io.ktor.routing.routing
 import java.io.IOException
 
-val helloWorld: Endpoint<Pair<String, String>, Unit, Project> =
+public val helloWorld: Endpoint<Pair<String, String>, Unit, Project> =
   Endpoint
     .get()
-    .input(fixedPath("hello"))
-    .input(fixedPath("world"))
-    .input(query("project", Codec.string))
-    .input(query("language", Codec.string))
-    .output(anyJsonBody(Project.jsonCodec))
+    .input(fixedPath("project"))
+    .input(fixedPath("json"))
+    .input(
+      query("project", Codec.string)
+        .description("The name of the project")
+        .example("Arrow Fx Coroutines")
+    )
+    .input(
+      query("language", Codec.string)
+        .description("The primary programming language of the project")
+        .default("kotlin")
+        .example("java")
+    )
+    .output(
+      anyJsonBody(Project.jsonCodec)
+        .description("The project transformed into json format")
+        .default(Project("", "Kotlin"))
+        .example(Project("Arrow Fx Coroutines", "Kotlin"))
+    )
 
-val post: Endpoint<Pair<String, String>, Unit, Int> =
+public val post: Endpoint<Pair<String, String>, Unit, Int> =
   Endpoint
     .post()
     .input(fixedPath("test"))
@@ -51,17 +65,17 @@ val post: Endpoint<Pair<String, String>, Unit, Int> =
     .input(query("language", Codec.string))
     .output(plainBody(stringCodec(Schema.int) { it.toInt() }))
 
-val schema: GraphQLSchema = listOf(
+public val schema: GraphQLSchema = listOf(
   ServerEndpoint(helloWorld) { (project, language) -> Project(project, language).right() },
   ServerEndpoint(post) { (name, language) -> 1.right() }
 ).toSchema()
 
-val ql: GraphQL = GraphQL.newGraphQL(schema).build()
+public val ql: GraphQL = GraphQL.newGraphQL(schema).build()
 
 private val mapper = jacksonObjectMapper()
 private val ktorGraphQLServer = getGraphQLServer(ql, mapper)
 
-fun Application.graphQLModule() {
+public fun Application.graphQLModule() {
   routing {
     post("graphql") {
       // Execute the query against the schema
@@ -102,7 +116,7 @@ public data class AuthorizedContext(
 /**
  * Custom logic for how this example app should create its context given the [ApplicationRequest]
  */
-class KtorGraphQLContextFactory : GraphQLContextFactory<AuthorizedContext, ApplicationRequest> {
+public class KtorGraphQLContextFactory : GraphQLContextFactory<AuthorizedContext, ApplicationRequest> {
   override suspend fun generateContext(request: ApplicationRequest): AuthorizedContext {
     val loggedInUser =
       User(email = "fake@site.com", firstName = "Someone", lastName = "You Don't know", universityId = 4)
@@ -115,7 +129,7 @@ class KtorGraphQLContextFactory : GraphQLContextFactory<AuthorizedContext, Appli
 /**
  * Custom logic for how Ktor parses the incoming [ApplicationRequest] into the [GraphQLServerRequest]
  */
-class KtorGraphQLRequestParser(private val mapper: ObjectMapper) : GraphQLRequestParser<ApplicationRequest> {
+public class KtorGraphQLRequestParser(private val mapper: ObjectMapper) : GraphQLRequestParser<ApplicationRequest> {
   @Suppress("BlockingMethodInNonBlockingContext")
   override suspend fun parseRequest(request: ApplicationRequest): GraphQLServerRequest = try {
     val rawRequest = request.call.receiveText()
@@ -129,13 +143,13 @@ class KtorGraphQLRequestParser(private val mapper: ObjectMapper) : GraphQLReques
  * Helper method for how this Ktor example creates the common [GraphQLServer] object that
  * can handle requests.
  */
-class KtorGraphQLServer(
+public class KtorGraphQLServer(
   requestParser: KtorGraphQLRequestParser,
   contextFactory: KtorGraphQLContextFactory,
   requestHandler: GraphQLRequestHandler
 ) : GraphQLServer<ApplicationRequest>(requestParser, contextFactory, requestHandler)
 
-fun getGraphQLServer(ql: GraphQL, mapper: ObjectMapper): KtorGraphQLServer {
+public fun getGraphQLServer(ql: GraphQL, mapper: ObjectMapper): KtorGraphQLServer {
   val requestParser = KtorGraphQLRequestParser(mapper)
   val contextFactory = KtorGraphQLContextFactory()
   val requestHandler = GraphQLRequestHandler(ql)

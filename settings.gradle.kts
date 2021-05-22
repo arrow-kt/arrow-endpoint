@@ -6,3 +6,5 @@ include("clients", ":clients:ktor-client", ":clients:http4k-client", ":clients:s
 
 // servers
 include("servers", ":servers:ktor-server")
+
+include("docs", ":docs:openapi-docs")

@@ -1,3 +1,5 @@
+package com.fortysevendegrees.thool.docs.openapi
+
 import arrow.core.NonEmptyList
 import arrow.core.getOrElse
 import com.fortysevendegrees.thool.model.StatusCode
@@ -5,14 +7,9 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.SerialKind
-import kotlinx.serialization.descriptors.StructureKind
-import kotlinx.serialization.descriptors.buildClassSerialDescriptor
-import kotlinx.serialization.descriptors.element
+import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
@@ -110,9 +107,9 @@ internal class ReferencedSerializer<T>(
   }
 
   @InternalSerializationApi
-  // TODO review SerialDescriptor. Should it describe the actual type or the json model
+  // TODO review SerialDescriptor. Should it describe the actual type or the com.fortysevendegrees.thool.docs.openapi.json model
   override val descriptor: SerialDescriptor =
-    buildClassSerialDescriptor("Referenced") {
+    buildClassSerialDescriptor("com.fortysevendegrees.thool.docs.openapi.Referenced") {
       element("Ref", refDescriptor, isOptional = true)
       element("description", dataSerializer.descriptor, isOptional = true)
     }
@@ -131,6 +128,32 @@ internal class ReferencedSerializer<T>(
 
   @InternalSerializationApi
   override fun deserialize(decoder: Decoder): Referenced<T> =
+    TODO(
+      """
+      Impossible atm since we cannot detect (peek) if it's a reference or not.
+      However, we don't support parsing OpenAPI into Endpoint atm.
+      """.trimIndent()
+    )
+}
+
+internal class ExampleValueSerializer : KSerializer<ExampleValue> {
+
+  @InternalSerializationApi
+  override val descriptor: SerialDescriptor =
+    buildSerialDescriptor(
+      "com.fortysevendegrees.thool.docs.openapi.ExampleValueSerializer",
+      SerialKind.CONTEXTUAL
+    ) {}
+
+  override fun serialize(encoder: Encoder, value: ExampleValue) {
+    when (value) {
+      is ExampleValue.Single -> encoder.encodeString(value.value)
+      is ExampleValue.Multiple ->
+        encoder.encodeSerializableValue(ListSerializer(String.serializer()), value.values)
+    }
+  }
+
+  override fun deserialize(decoder: Decoder): ExampleValue =
     TODO(
       """
       Impossible atm since we cannot detect (peek) if it's a reference or not.
@@ -181,7 +204,7 @@ internal class ResponsesSerializer : KSerializer<Responses> {
 
 @ExperimentalSerializationApi
 object ResponsesDescriptor : SerialDescriptor {
-  override val serialName: String = "Responses"
+  override val serialName: String = "com.fortysevendegrees.thool.docs.openapi.Responses"
   override val kind: SerialKind = StructureKind.MAP
   override val elementsCount: Int = 2
   private val valueDescriptor: SerialDescriptor =
@@ -215,9 +238,9 @@ object ResponsesDescriptor : SerialDescriptor {
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is ResponsesDescriptor) return false
-    if (serialName != other.serialName) return false
-    if (keyDescriptor != other.keyDescriptor) return false
-    if (valueDescriptor != other.valueDescriptor) return false
+    if (serialName != serialName) return false
+    if (keyDescriptor != keyDescriptor) return false
+    if (valueDescriptor != valueDescriptor) return false
     return true
   }
 

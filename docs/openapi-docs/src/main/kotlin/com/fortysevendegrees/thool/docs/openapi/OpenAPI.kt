@@ -5,22 +5,33 @@
   StatusCodeAsIntSerializer::class,
 )
 
+package com.fortysevendegrees.thool.docs.openapi
+
 import arrow.core.NonEmptyList
+import arrow.core.Option
+import com.fortysevendegrees.thool.Codec
 import com.fortysevendegrees.thool.model.StatusCode
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.math.BigDecimal
 
 /** A list of definitions that can be used in references. **/
-public typealias Definitions<A> = LinkedHashMap<String, A>
+public typealias Definitions<A> = Map<String, Referenced<A>>
 
 /**
  * Lists the required security schemes to execute this operation.
  * The object can have multiple security schemes declared in it which are all required
  * (that is, there is a logical AND between the schemes).
  */
-public typealias SecurityRequirement = LinkedHashMap<String, List<String>>
+public typealias SecurityRequirement = Map<String, List<String>>
+
+private val json: Json = Json {
+  encodeDefaults = false
+  prettyPrint = true
+}
 
 /** This is the root document object for the API specification. **/
 @Serializable
@@ -31,15 +42,15 @@ public data class OpenApi(
    */
   public val info: Info,
   /**
-   * An array of Server Objects, which provide connectivity information
+   * An array of com.fortysevendegrees.thool.docs.openapi.Server Objects, which provide connectivity information
    * to a target server. If the servers property is not provided, or is an empty array,
-   * the default value would be a 'Server' object with a url value of @/@.
+   * the default value would be a 'com.fortysevendegrees.thool.docs.openapi.Server' object with a url value of @/@.
    */
   public val servers: List<Server>,
   /** The available paths and operations for the API. */
-  public val paths: LinkedHashMap<String, PathItem>,
+  public val paths: Map<String, PathItem>,
   /** An element to hold various schemas for the specification. */
-  public val components: Components,
+  public val components: Components? = null,
   /**
    * A declaration of which security mechanisms can be used across the API.
    * The list of values includes alternative security requirement objects that can be used.
@@ -51,9 +62,9 @@ public data class OpenApi(
   /**
    * A list of tags used by the specification with additional metadata.
    * The order of the tags can be used to reflect on their order by the parsing tools.
-   * Not all tags that are used by the 'Operation' Object must be declared.
+   * Not all tags that are used by the 'com.fortysevendegrees.thool.docs.openapi.Operation' Object must be declared.
    * The tags that are not declared MAY be organized randomly or based on the tools' logic.
-   * Each tag name in the list MUST be unique.
+   * Each tag name in the list MUST be com.fortysevendegrees.thool.docs.openapi.unique.
    */
   public val tags: LinkedHashSet<Tag>,
   /** Additional external documentation. */
@@ -67,6 +78,24 @@ public data class OpenApi(
   init {
     openapi = "3.0.3"
   }
+
+  public fun addPathItem(path: String, pathItem: PathItem): OpenApi {
+    val pathItem2 = when (val existing = paths[path]) {
+      null -> pathItem
+      else -> existing.mergeWith(pathItem)
+    }
+
+    return copy(paths = paths + Pair(path, pathItem2))
+  }
+
+  public fun servers(s: List<Server>): OpenApi =
+    copy(servers = s)
+
+  public fun tags(t: LinkedHashSet<Tag>): OpenApi =
+    copy(tags = t)
+
+  public fun toJson(): String =
+    json.encodeToString(this)
 }
 
 /**
@@ -96,10 +125,10 @@ public data class Info(
   public val version: String
 )
 
-/** An object representing a Server. */
+/** An object representing a com.fortysevendegrees.thool.docs.openapi.Server. */
 @Serializable
 public data class Server(
-  /** A URL to the target host. This URL supports Server Variables and MAY be relative, to indicate that the host location is relative to the location where the OpenAPI document is being served. Variable substitutions will be made when a variable is named in {brackets}.*/
+  /** A URL to the target host. This URL supports com.fortysevendegrees.thool.docs.openapi.Server Variables and MAY be relative, to indicate that the host location is relative to the location where the OpenAPI document is being served. Variable substitutions will be made when a variable is named in {brackets}.*/
   public val url: String,
   /** An optional string describing the host designated by the URL. CommonMark syntax MAY be used for rich text representation.*/
   public val description: String?,
@@ -107,7 +136,7 @@ public data class Server(
   public val variables: Map<String, ServerVariable>?
 )
 
-/** An object representing a Server Variable for server URL template substitution. */
+/** An object representing a com.fortysevendegrees.thool.docs.openapi.Server Variable for server URL template substitution. */
 @Serializable
 public data class ServerVariable(
   /** An enumeration of string values to be used if the substitution options are from a limited set. */
@@ -123,8 +152,8 @@ public data class ServerVariable(
 )
 
 /**
- * Allows adding meta data to a single tag that is used by @Operation@.
- * It is not mandatory to have a @Tag@ per tag used there.
+ * Allows adding meta data to a single tag that is used by @com.fortysevendegrees.thool.docs.openapi.Operation@.
+ * It is not mandatory to have a @com.fortysevendegrees.thool.docs.openapi.Tag@ per tag used there.
  */
 @Serializable
 public data class Tag(
@@ -136,20 +165,22 @@ public data class Tag(
   public val externalDocs: ExternalDocs?
 )
 
-/** Holds a set of reusable objects for different aspects of the OAS.
-All objects defined within the components object will have no effect on the API
-unless they are explicitly referenced from properties outside the components object.*/
+/**
+ * Holds a set of reusable objects for different aspects of the OAS.
+ * All objects defined within the components object will have no effect on the API
+ * unless they are explicitly referenced from properties outside the components object.
+ */
 @Serializable
 public data class Components(
-  public val schemas: Definitions<Schema> = LinkedHashMap(),
-  public val responses: Definitions<Response> = LinkedHashMap(),
-  public val parameters: Definitions<Parameter> = LinkedHashMap(),
-  public val examples: Definitions<Example> = LinkedHashMap(),
-  public val requestBodies: Definitions<RequestBody> = LinkedHashMap(),
-  public val headers: Definitions<Header> = LinkedHashMap(),
-//  val securitySchemes: Definitions<SecurityScheme>,
-  public val links: Definitions<Link> = LinkedHashMap(),
-  public val callbacks: Definitions<Callback> = LinkedHashMap(),
+  public val schemas: Definitions<Schema> = emptyMap(),
+  public val responses: Definitions<Response> = emptyMap(),
+  public val parameters: Definitions<Parameter> = emptyMap(),
+  public val examples: Definitions<Example> = emptyMap(),
+  public val requestBodies: Definitions<RequestBody> = emptyMap(),
+  public val headers: Definitions<Header> = emptyMap(),
+//  val securitySchemes: com.fortysevendegrees.thool.docs.openapi.Definitions<SecurityScheme>,
+  public val links: Map<String, Link> = emptyMap(),
+  public val callbacks: Map<String, Callback> = emptyMap(),
 )
 
 @Serializable
@@ -182,16 +213,32 @@ public data class PathItem(
   public val trace: Operation? = null,
   /** An alternative server array to service all operations in this path.*/
   public val servers: List<Server>,
-  /** A list of parameters that are applicable for all the operations described under this path. These parameters can be overridden at the operation level, but cannot be removed there. The list MUST NOT include duplicated parameters. A unique parameter is defined by a combination of a name and location. The list can use the Reference Object to link to parameters that are defined at the OpenAPI Object's components/parameters.*/
+  /** A list of parameters that are applicable for all the operations described under this path. These parameters can be overridden at the operation level, but cannot be removed there. The list MUST NOT include duplicated parameters. A com.fortysevendegrees.thool.docs.openapi.unique parameter is defined by a combination of a name and location. The list can use the Reference Object to link to parameters that are defined at the OpenAPI Object's components/parameters.*/
   public val parameters: List<Referenced<Parameter>>
-)
+) {
+  public fun mergeWith(other: PathItem): PathItem =
+    PathItem(
+      null,
+      null,
+      get = get ?: other.get,
+      put = put ?: other.put,
+      post = post ?: other.post,
+      delete = delete ?: other.delete,
+      options = options ?: other.options,
+      head = head ?: other.head,
+      patch = patch ?: other.patch,
+      trace = trace ?: other.trace,
+      servers = emptyList(),
+      parameters = emptyList()
+    )
+}
 
 /**
  * Describes a single operation parameter.
  *
- * A unique parameter is defined by a combination of a [name] and [location].
+ * A com.fortysevendegrees.thool.docs.openapi.unique parameter is defined by a combination of a [name] and [location].
  *
- * Parameter Locations
+ * com.fortysevendegrees.thool.docs.openapi.Parameter Locations
  * There are four possible parameter locations specified by the in field:
  *
  * path - Used together with Path Templating, where the parameter value is actually part of the operation's URL. This does not include the host or base path of the API. For example, in /items/{itemId}, the path parameter is itemId.
@@ -202,24 +249,38 @@ public data class PathItem(
 @Serializable
 public data class Parameter(
   /**
-   * The name of the parameter. Parameter names are case sensitive.
+   * The name of the parameter. com.fortysevendegrees.thool.docs.openapi.Parameter names are case sensitive.
    * If in is "path", the name field MUST correspond to a template expression occurring within the path field in the Paths Object. See [Path Templating](https://swagger.io/specification/#path-templating) for further information.
    * If in is "header" and the name field is "Accept", "Content-Type" or "Authorization", the parameter definition SHALL be ignored.
    * For all other cases, the name corresponds to the parameter name used by the in property.
    */
   public val name: String,
   @SerialName("in")
-  /** The location of the parameter. Possible values are "query", "header", "path" or "cookie".*/
-  public val input: String,
+  /** The location of the parameter..*/
+  public val input: ParameterIn,
   /** A brief description of the parameter. This could contain examples of use. CommonMark syntax MAY be used for rich text representation.*/
-  public val description: String?,
+  public val description: String? = null,
   /** Determines whether this parameter is mandatory. If the parameter location is "path", this property is REQUIRED and its value MUST be true. Otherwise, the property MAY be included and its default value is false.*/
   public val required: Boolean = false,
   /** Specifies that a parameter is deprecated and SHOULD be transitioned out of usage. Default value is false.*/
   public val deprecated: Boolean = false,
   /** Sets the ability to pass empty-valued parameters. This is valid only for query parameters and allows sending a parameter with an empty value. Default value is false. If style is used, and if behavior is n/a (cannot be serialized), the value of allowEmptyValue SHALL be ignored. Use of this property is NOT RECOMMENDED, as it is likely to be removed in a later revision.*/
-  public val allowEmptyValue: Boolean = false
+  public val allowEmptyValue: Boolean = false,
+  /** Determines whether the parameter value SHOULD allow reserved characters, as defined by RFC3986 :/?#[]@!$&'()*+,;= to be included without percent-encoding. This property only applies to parameters with an in value of query. The default value is false. */
+  public val allowReserved: Boolean = false,
+  /** The schema defining the type used for the parameter. */
+  public val schema: Referenced<Schema>? = null,
+  /** Describes how the parameter value will be serialized depending on the type of the parameter value. Default values (based on value of _paramIn): for ParamQuery - StyleForm; for ParamPath - StyleSimple; for ParamHeader - StyleSimple; for ParamCookie - StyleForm. */
+  public val style: Style? = null,
+  public val explode: Boolean? = null,
+  /** com.fortysevendegrees.thool.docs.openapi.Example of the parameter's potential value. The example SHOULD match the specified schema and encoding properties if present. The example field is mutually exclusive of the examples field. Furthermore, if referencing a schema that contains an example, the example value SHALL override the example provided by the schema. To represent examples of media types that cannot naturally be represented in JSON or YAML, a string value can contain the example with escaping where necessary. */
+  public val example: ExampleValue? = null,
+  /** com.fortysevendegrees.thool.docs.openapi.Examples of the parameter's potential value. Each example SHOULD contain a value in the correct format as specified in the parameter encoding. The _paramExamples field is mutually exclusive of the _paramExample field. Furthermore, if referencing a schema that contains an example, the examples value SHALL override the example provided by the schema. */
+  public val examples: Map<String, Referenced<Example>>? = emptyMap()
 )
+
+@Serializable
+public enum class ParameterIn { query, header, path, cookie; }
 
 @Serializable
 public data class Operation(
@@ -239,7 +300,7 @@ public data class Operation(
   public val externalDocs: ExternalDocs? = null,
   /**
    * Unique string used to identify the operation.
-   * The id MUST be unique among all operations described in the API.
+   * The id MUST be com.fortysevendegrees.thool.docs.openapi.unique among all operations described in the API.
    * The operationId value is case-sensitive.
    * Tools and libraries MAY use the operationId to uniquely identify an operation, therefore, it is RECOMMENDED to follow common programming naming conventions.
    */
@@ -248,7 +309,7 @@ public data class Operation(
    * A list of parameters that are applicable for this operation.
    * If a parameter is already defined at the Path Item, the new definition will override it but can never remove it.
    * The list MUST NOT include duplicated parameters.
-   * A unique parameter is defined by a combination of a name and location.
+   * A com.fortysevendegrees.thool.docs.openapi.unique parameter is defined by a combination of a name and location.
    * The list can use the Reference Object to link to parameters that are defined at the OpenAPI Object's components/parameters.*/
   public val parameters: List<Referenced<Parameter>> = emptyList(),
   /**
@@ -261,10 +322,10 @@ public data class Operation(
   public val responses: Responses,
   /**
    * A map of possible out-of band callbacks related to the parent operation.
-   * The key is a unique identifier for the Callback Object.
-   * Each value in the map is a Callback Object that describes a request that may be initiated by the API provider and the expected responses.
+   * The key is a com.fortysevendegrees.thool.docs.openapi.unique identifier for the com.fortysevendegrees.thool.docs.openapi.Callback Object.
+   * Each value in the map is a com.fortysevendegrees.thool.docs.openapi.Callback Object that describes a request that may be initiated by the API provider and the expected responses.
    */
-  public val callbacks: LinkedHashMap<String, Referenced<Callback>> = LinkedHashMap(),
+  public val callbacks: Map<String, Referenced<Callback>> = emptyMap(),
   /** Declares this operation to be deprecated. Consumers SHOULD refrain from usage of the declared operation. Default value is false.*/
   public val deprecated: Boolean = false,
   /**
@@ -292,7 +353,7 @@ public data class RequestBody(
    * The key is a media type or media type range and the value describes it.
    * For requests that match multiple keys, only the most specific key is applicable. e.g. text/plain overrides text
    */
-  public val content: LinkedHashMap<String, MediaType>,
+  public val content: Map<String, MediaType>,
   /** Determines if the request body is required in the request. Defaults to false.*/
   public val required: Boolean = false
 )
@@ -315,20 +376,26 @@ public data class Responses(
    * Any HTTP status code can be used as the property name (one property per HTTP status code).
    * Describes the expected response for those HTTP status codes.
    */
-  public val responses: LinkedHashMap<StatusCode, Referenced<Response>>
-)
+  public val responses: Map<StatusCode, Referenced<Response>>
+) {
+  public operator fun plus(other: Responses): Responses =
+    Responses(other.default ?: default, responses + other.responses)
+}
 
 @Serializable
 public data class Response(
   /** A short description of the response. CommonMark syntax MAY be used for rich text representation.*/
   public val description: String,
   /** Maps a header name to its definition. RFC7230 states header names are case insensitive. If a response header is defined with the name "Content-Type", it SHALL be ignored.*/
-  public val headers: LinkedHashMap<String, Referenced<Header>> = LinkedHashMap(),
+  public val headers: Map<String, Referenced<Header>> = emptyMap(),
   /** A map containing descriptions of potential response payloads. The key is a media type or media type range and the value describes it. For responses that match multiple keys, only the most specific key is applicable. e.g. text/plain overrides text */
-  public val content: LinkedHashMap<String, MediaType> = LinkedHashMap(),
+  public val content: Map<String, MediaType> = emptyMap(),
   /** A map of operations links that can be followed from the response. The key of the map is a short name for the link, following the naming constraints of the names for Component Objects.*/
-  public val links: LinkedHashMap<String, Referenced<Link>> = LinkedHashMap()
-)
+  public val links: Map<String, Referenced<Link>> = emptyMap()
+) {
+  public operator fun plus(other: Response): Response =
+    Response(description, headers + other.headers, content + other.content)
+}
 
 /** Each Media Type Object provides schema and examples for the media type identified by its key. */
 @Serializable
@@ -336,15 +403,15 @@ public data class MediaType(
   public val schema: Referenced<Schema>? = null,
   /** The schema defining the content of the request, response, or parameter.*/
   public val example: ExampleValue? = null,
-  /** Example of the media type. The example object SHOULD be in the correct format as specified by the media type. The example field is mutually exclusive of the examples field. Furthermore, if referencing a schema which contains an example, the example value SHALL override the example provided by the schema.*/
-  public val examples: LinkedHashMap<String, Referenced<Example>> = LinkedHashMap(),
-  /** Examples of the media type. Each example object SHOULD match the media type and specified schema if present. The examples field is mutually exclusive of the example field. Furthermore, if referencing a schema which contains an example, the examples value SHALL override the example provided by the schema.*/
-  public val encoding: LinkedHashMap<String, Encoding> = LinkedHashMap()
+  /** com.fortysevendegrees.thool.docs.openapi.Example of the media type. The example object SHOULD be in the correct format as specified by the media type. The example field is mutually exclusive of the examples field. Furthermore, if referencing a schema which contains an example, the example value SHALL override the example provided by the schema.*/
+  public val examples: Map<String, Referenced<Example>> = emptyMap(),
+  /** com.fortysevendegrees.thool.docs.openapi.Examples of the media type. Each example object SHOULD match the media type and specified schema if present. The examples field is mutually exclusive of the example field. Furthermore, if referencing a schema which contains an example, the examples value SHALL override the example provided by the schema.*/
+  public val encoding: Map<String, Encoding> = emptyMap()
   /** A map between a property name and its encoding information. The key, being the property name, MUST exist in the schema as a property. The encoding object SHALL only apply to requestBody objects when the media type is multipart or application/x-www-form-urlencoded.*/
 )
 
 /**
- * The Link object represents a possible design-time link for a response.
+ * The com.fortysevendegrees.thool.docs.openapi.Link object represents a possible design-time link for a response.
  * The presence of a link does not guarantee the caller's ability to successfully invoke it,
  * rather it provides a known relationship and traversal mechanism between responses and other operations.
  */
@@ -353,12 +420,12 @@ public data class Link(
   /**
    * A relative or absolute URI reference to an OAS operation.
    * This field is mutually exclusive of the '_linkOperationId' field,
-   * and MUST point to an 'Operation' Object. Relative '_linkOperationRef'
-   * values MAY be used to locate an existing 'Operation' Object in the OpenAPI definition.
+   * and MUST point to an 'com.fortysevendegrees.thool.docs.openapi.Operation' Object. Relative '_linkOperationRef'
+   * values MAY be used to locate an existing 'com.fortysevendegrees.thool.docs.openapi.Operation' Object in the OpenAPI definition.
    */
   public val operationRef: String?,
   /**
-   * The name of an /existing/, resolvable OAS operation, as defined with a unique
+   * The name of an /existing/, resolvable OAS operation, as defined with a com.fortysevendegrees.thool.docs.openapi.unique
    * '_operationOperationId'. This field is mutually exclusive of the '_linkOperationRef' field.
    */
   public val operationId: String?,
@@ -369,7 +436,7 @@ public data class Link(
    * The parameter name can be qualified using the parameter location @[{in}.]{name}@
    * for operations that use the same parameter name in different locations (e.g. path.id).
    */
-  public val parameters: LinkedHashMap<String, ExpressionOrValue>,
+  public val parameters: Map<String, ExpressionOrValue>,
   /** A literal value or @{expression}@ to use as a request body when calling the target operation.*/
   public val requestBody: ExpressionOrValue,
   /** A description of the link.*/
@@ -386,11 +453,11 @@ public data class Encoding(
    * Default value depends on the property type:
    *   - for string with format being binary – application/octet-stream;
    *   - for other primitive types – text/plain
-   *   - for object - application/json
+   *   - for object - application/com.fortysevendegrees.thool.docs.openapi.json
    *   - for array – the default is defined based on the inner type.
-   * The value can be a specific media type (e.g. application/json), a wildcard media type (e.g. image&#47;&#42;), or a comma-separated list of the two types.
+   * The value can be a specific media type (e.g. application/com.fortysevendegrees.thool.docs.openapi.json), a wildcard media type (e.g. image&#47;&#42;), or a comma-separated list of the two types.
    */
-  public val contentType: String, // Could be com.fortysevendegrees.thool.model.MediaType
+  public val contentType: String, // Could be com.fortysevendegrees.thool.model.com.fortysevendegrees.thool.docs.openapi.MediaType
   /**
    * A map allowing additional information to be provided as headers, for example Content-Disposition.
    * Content-Type is described separately and SHALL be ignored in this section. This property SHALL be ignored if the request body media type is not a multipart
@@ -408,7 +475,7 @@ public data class Encoding(
    * When style is form, the default value is true.
    * For all other styles, the default value is false.
    * This property SHALL be ignored if the request body media type is not application/x-www-form-urlencoded.*/
-  public val explode: Boolean, // = style?.let { it == Style.form.name } ?: false,
+  public val explode: Boolean, // = style?.let { it == com.fortysevendegrees.thool.docs.openapi.Style.form.name } ?: false,
   /**
    * Determines whether the parameter value SHOULD allow reserved characters, as defined by RFC3986 :/?#[]@!$&'()*+,;= to be included without percent-encoding.
    * The default value is false. This property SHALL be ignored if the request body media type is not application/x-www-form-urlencoded.
@@ -417,8 +484,8 @@ public data class Encoding(
 )
 
 /**
- * Header fields have the same meaning as for 'Param'.
- * Style is always treated as [Style.simple], as it is the only value allowed for headers.
+ * com.fortysevendegrees.thool.docs.openapi.Header fields have the same meaning as for 'Param'.
+ * com.fortysevendegrees.thool.docs.openapi.Style is always treated as [Style.simple], as it is the only value allowed for headers.
  */
 @Serializable
 public data class Header(
@@ -429,7 +496,7 @@ public data class Header(
   public val allowEmptyValue: Boolean?,
   public val explode: Boolean?,
   public val example: ExampleValue?,
-  public val examples: LinkedHashMap<String, Referenced<Example>>,
+  public val examples: Map<String, Referenced<Example>>,
   public val schema: Referenced<Schema>?
 )
 
@@ -441,10 +508,10 @@ public data class Header(
  * that identifies a URL to use for the callback operation.
  */
 @Serializable
-public inline class Callback(public val value: LinkedHashMap<String, PathItem>)
+public inline class Callback(public val value: Map<String, PathItem>)
 
 @Serializable
-public data class Discriminator(val propertyName: String, val mapping: LinkedHashMap<String, String>?)
+public data class Discriminator(val propertyName: String, val mapping: Map<String, String>?)
 
 @Serializable
 public enum class OpenApiType {
@@ -456,17 +523,16 @@ public enum class OpenApiType {
   integer
 }
 
-@Serializable
-public enum class Format {
-  int32,
-  int64,
-  float,
-  double,
-  byte,
-  binary,
-  date,
-  datetime,
-  password
+public object Format {
+  public val int32: String = "int32"
+  public val int64: String = "int64"
+  public val float: String = "float"
+  public val double: String = "double"
+  public val byte: String = "byte"
+  public val binary: String = "binary"
+  public val date: String = "date"
+  public val datetime: String = "datetime"
+  public val password: String = "password"
 }
 
 @Serializable
@@ -501,7 +567,7 @@ public data class ExternalDocs(
   public val url: String
 )
 
-/** Contact information for the exposed API. */
+/** com.fortysevendegrees.thool.docs.openapi.Contact information for the exposed API. */
 @Serializable
 public data class Contact(
   /** The identifying name of the contact person/organization. */
@@ -527,7 +593,12 @@ internal const val RefKey = "\$ref"
 public data class Reference(
   @SerialName(RefKey)
   val ref: String
-)
+) {
+  public companion object {
+    public operator fun invoke(prefix: String, ref: String): Reference =
+      Reference("$prefix$ref")
+  }
+}
 
 @Serializable
 public data class Xml(
@@ -565,31 +636,31 @@ public data class Xml(
 /**
  * The Schema Object allows the definition of input and output data types.
  * These types can be objects, but also primitives and arrays.
- * This object is an extended subset of the [JSON Schema Specification Wright Draft 00](https://json-schema.org/).
- * For more information about the properties, see [JSON Schema Core](https://tools.ietf.org/html/draft-wright-json-schema-00) and [JSON Schema Validation](https://tools.ietf.org/html/draft-wright-json-schema-validation-00).
+ * This object is an extended subset of the [JSON Schema Specification Wright Draft 00](https://com.fortysevendegrees.thool.docs.openapi.json-schema.org/).
+ * For more information about the properties, see [JSON Schema Core](https://tools.ietf.org/html/draft-wright-com.fortysevendegrees.thool.docs.openapi.json-schema-00) and [JSON Schema Validation](https://tools.ietf.org/html/draft-wright-com.fortysevendegrees.thool.docs.openapi.json-schema-validation-00).
  * Unless stated otherwise, the property definitions follow the JSON Schema.
  */
 @Serializable
 public data class Schema(
-  val title: String?,
-  val description: String?,
-  val required: List<String>,
-  val nullable: Boolean?,
-  val allOf: Referenced<Schema>?,
-  val oneOf: Referenced<Schema>?,
-  val not: Referenced<Schema>?,
-  val anyOf: Referenced<Schema>?,
-  val properties: LinkedHashMap<String, Referenced<Schema>>,
-  val additionalProperties: AdditionalProperties?,
-  val discriminator: Discriminator?,
-  val readOnly: Boolean?,
-  val writeOnly: Boolean?,
-  val xml: Xml?,
-  val externalDocs: ExternalDocs?,
-  val example: ExampleValue?,
-  val deprecated: Boolean?,
-  val maxProperties: Int?,
-  val minProperties: Int?,
+  val title: String? = null,
+  val description: String? = null,
+  val required: List<String> = emptyList(),
+  val nullable: Boolean? = null,
+  val allOf: List<Referenced<Schema>>? = null,
+  val oneOf: List<Referenced<Schema>>? = null,
+  val not: Referenced<Schema>? = null,
+  val anyOf: List<Referenced<Schema>>? = null,
+  val properties: Map<String, Referenced<Schema>> = emptyMap(),
+  val additionalProperties: AdditionalProperties? = null,
+  val discriminator: Discriminator? = null,
+  val readOnly: Boolean? = null,
+  val writeOnly: Boolean? = null,
+  val xml: Xml? = null,
+  val externalDocs: ExternalDocs? = null,
+  val example: ExampleValue? = null,
+  val deprecated: Boolean? = null,
+  val maxProperties: Int? = null,
+  val minProperties: Int? = null,
   /**
    * Declares the value of the parameter that the server will use if none is provided,
    * for example a @"count"@ to control the number of results per page might default to @100@
@@ -597,42 +668,48 @@ public data class Schema(
    * (Note: "default" has no meaning for required parameters.)
    * Unlike JSON Schema this value MUST conform to the defined type for this parameter.
    */
-  val default: ExampleValue?,
-  val type: OpenApiType?,
-  val format: Format?,
-  val items: Referenced<Schema>?,
-  val maximum: BigDecimal?,
-  val exclusiveMaximum: Boolean?,
-  val minimum: BigDecimal?,
-  val exclusiveMinimum: Boolean?,
-  val maxLength: Int?,
-  val minLength: Int?,
-  val pattern: String?,
-  val maxItems: Int?,
-  val minItems: Int?,
-  val uniqueItems: Boolean?,
-  val enum: List<String>,
-  val multipleOf: BigDecimal?
+  val default: ExampleValue? = null,
+  val type: OpenApiType? = null,
+  val format: String? = null,
+  val items: Referenced<Schema>? = null,
+  val maximum: BigDecimal? = null,
+  val exclusiveMaximum: Boolean? = null,
+  val minimum: BigDecimal? = null,
+  val exclusiveMinimum: Boolean? = null,
+  val maxLength: Int? = null,
+  val minLength: Int? = null,
+  val pattern: String? = null,
+  val maxItems: Int? = null,
+  val minItems: Int? = null,
+  val uniqueItems: Boolean? = null,
+  val enum: List<String> = emptyList(),
+  val multipleOf: BigDecimal? = null
 )
 
-@Serializable
+public data class ExternalDocumentation(public val url: String, public val description: String? = null)
+
+@Serializable(with = ExampleValueSerializer::class)
 public sealed class ExampleValue {
-  @Serializable
-  public /*inline*/ class Single(public val value: String) : ExampleValue()
 
-  @Serializable
-  public /*inline*/ class Multiple(public val values: List<String>) : ExampleValue()
+  public data class Single(public val value: String) : ExampleValue()
+  public data class Multiple(public val values: List<String>) : ExampleValue()
 
-  @Serializable
-  public data class Tag(
-    public val name: String,
-    public val description: String? = null,
-    public val externalDocs: ExternalDocumentation? = null
-  ) : ExampleValue()
+  public companion object {
+    public operator fun invoke(v: String): ExampleValue = Single(v)
+    public operator fun invoke(codec: Codec<*, *, *>, e: Any?): ExampleValue? =
+      invoke(codec.schema(), (codec as Codec<*, Any?, *>).encode(e))
 
-  @Serializable
-  public data class ExternalDocumentation(public val url: String, public val description: String? = null) :
-    ExampleValue()
+    public operator fun invoke(schema: com.fortysevendegrees.thool.Schema<*>, raw: Any?): ExampleValue? =
+      when (raw) {
+        is Iterable<*> -> when (schema) {
+          is com.fortysevendegrees.thool.Schema.List -> Multiple(raw.map(Any?::toString))
+          else -> raw.firstOrNull()?.let { Single(it.toString()) }
+        }
+        is Option<*> -> raw.fold({ null }) { Single(it.toString()) }
+        null -> null
+        else -> Single(raw.toString())
+      }
+  }
 }
 
 /**
@@ -643,19 +720,20 @@ public sealed class ExampleValue {
 public sealed class Referenced<out A> {
   public data class Ref(public val value: Reference) : Referenced<Nothing>()
   public data class Other<A>(val value: A) : Referenced<A>()
+
+  public fun <B> map(f: (A) -> B): Referenced<B> =
+    when (this) {
+      is Other -> Other(f(value))
+      is Ref -> this
+    }
 }
 
-// @Serializable
 public sealed interface ExpressionOrValue {
   public inline class Expression(public val value: String) : ExpressionOrValue
   public inline class Value(public val value: Any?) : ExpressionOrValue
 }
 
-// @Serializable
 public sealed interface AdditionalProperties {
-  @Serializable
-  public inline class AdditionalPropertiesAllowed(public val value: Boolean) : AdditionalProperties
-
-  @Serializable
-  public inline class AdditionalPropertiesSchema(public val value: Referenced<Schema>) : AdditionalProperties
+  public inline class Allowed(public val value: Boolean) : AdditionalProperties
+  public inline class PSchema(public val value: Referenced<Schema>) : AdditionalProperties
 }
