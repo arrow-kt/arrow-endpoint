@@ -149,12 +149,13 @@ public abstract class CtxServerInterpreterSuite<Ctx> : FreeSpec() {
     ) { (fruit, amount) -> "$fruit: $amount".right() }
 
 //  TODO fix URL encoding => expected: "apple/red: 20" but was: "apple%2Fred: 20"
-//  test(
-//    TestEndpoint.in_path_path_out_string,
-//    Pair("apple/red", 20),
-//    "apple/red: 20".right(),
-//    "URL encoding"
-//  ) { (fruit, amount) -> "$fruit: $amount".right() }
+//  this one works for the Spring interpreter
+//    test(
+//      in_path_path_out_string,
+//      Pair("apple/red", 20),
+//      "apple/red: 20".right(),
+//      "URL encoding"
+//    ) { (fruit, amount) -> "$fruit: $amount".right() }
 
     test(
       in_two_path_capture,
