@@ -177,7 +177,8 @@ object PathSyntax {
   operator fun <A> EndpointInput<A>.div(other: String): EndpointInput<A> =
     and(Thool.fixedPath(other))
 
-  operator fun <A> EndpointInput<Unit>.div(other: EndpointInput.PathCapture<A>): EndpointInput<A> =
+  @JvmName("andLeftUnit")
+  operator fun <A> EndpointInput<Unit>.div(other: EndpointInput<A>): EndpointInput<A> =
     this.and(other)
 
   operator fun <A, B> EndpointInput<A>.div(other: EndpointInput<B>): EndpointInput<Pair<A, B>> =

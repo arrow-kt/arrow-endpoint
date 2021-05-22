@@ -4,24 +4,93 @@ import arrow.core.Either
 import arrow.core.Tuple4
 import arrow.core.Tuple5
 import com.fortysevendegrees.thool.dsl.MethodSyntax
-import com.fortysevendegrees.thool.dsl.PathSyntax
 import com.fortysevendegrees.thool.server.ServerEndpoint
 
 /**
- * @param I Input parameter types.
- * @param E Error output parameter types.
- * @param O Output parameter types.
+ * An `Endpoint<Input, Error, Output>` for shape `suspend (Input) -> Either<Error, Output>` defines
+ * how an endpoint receives [Input], and returns its [output] als in the case of an [errorOutput].
+ * An [Endpoint] is considered to return an error when the [StatusCode] is not in the `2xx` range.
+ *
+ * As an example lets define a very simply endpoint: `GET /hello/world/{name}`
+ *
+ * ```kotlin
+ * import com.fortysevendegrees.thool.*
+ *
+ * val helloWorld: Endpoint<String, Unit, String> =
+ *   Endpoint
+ *     .get { "hello" / "world" / path("name", Codec.string) }
+ *     .output(stringBody())
+ * ```
+ *
+ * Here the path variable "name" is received as a simple `String`, and we the returned result is also `String`.
+ * We can turn this into a [ServerEndpoint] by wiring it with `suspend (String) -> Either<Unit, String>`,
+ * and we can immediately derive a client or docs from it without having to define ``suspend (String) -> Either<Unit, String>`.
+ *
+ * Let's see a slightly more advanced example where we want to receive `Person` and return a `User`.
+ *   POST /register/person/{name}/{age}`
+ *
+ * ```kotlin
+ * import com.fortysevendegrees.thool.*
+ * import kotlinx.serialization.Serializable
+ * import kotlinx.serialization.decodeFromString
+ * import kotlinx.serialization.encodeToString
+ * import kotlinx.serialization.json.Json
+ *
+ * data class Person(val name: String, val age: Int)
+ *
+ * @Serializable data class User(val name: String, val age: Int) {
+ *   companion object {
+ *     val schema: Schema<User> = Schema.product(User::name to Schema.string, User::age to Schema.int)
+ *     val jsonCodec = Codec.json(schema, { DecodeResult.Value(Json.decodeFromString(it)) }) { Json.encodeToString(it) }
+ *   }
+ * }
+ *
+ * val register: Endpoint<Person, Unit, User> =
+ *   Endpoint
+ *     .post { "register" / "person" }
+ *     .input(
+ *       path { path("name", Codec.string) / path("age", Codec.int) }
+ *         .map({ (name, age) -> Person(name, age) }, { (name, age) -> Pair(name, age) })
+ *     ).output(anyJsonBody(User.jsonCodec))
+ * ```
+ *
+ * Here the inputs `name` and `age` are also path variables, but instead of working with `Pair<String, Int>` we map it into `Person`.
+ * As output we've now defined a Json body instead of a simpler `String` body,
+ * which requires us to pass `Codec` which can transform `User` into Json and back.
+ * We leverage KotlinX Serialization in the example to do the Json parsing for us.
+ *
+ * We can now turn this into a [ServerEndpoint] by wiring it to `suspend (Person) -> Either<Unit, User>`,
+ * and we can immediately derive a client or docs from it without having to define `suspend (Person) -> Either<Unit, User>`.
+ *
+ * Defining errors is as simple as defining an `output`, we can compose with our above defined endpoint:
+ *
+ * ```kotlin
+ * @Serializable data class UserRegistrationFailed(val message: String) {
+ *   companion object {
+ *     val schema: Schema<UserRegistrationFailed> = Schema.product(UserRegistrationFailed::message to Schema.string)
+ *     val jsonCodec = Codec.json(schema, { DecodeResult.Value(Json.decodeFromString(it)) }) { Json.encodeToString(it) }
+ *   }
+ * }
+ *
+ * val registerWithError: Endpoint<Person, UserRegistrationFailed, User> =
+ *   registerPerson.errorOutput(anyJsonBody(UserRegistrationFailed.jsonCodec))
+ * ```
+ *
+ * @param [input] defines how [Input] is defined in the http `Request` entity
+ * @param [errorOutput] defines how [Error] will be defined in the http `Response` if the status code outside of the `2xx` range.
+ * @param [output] defines how [Output] will be defined in http `Response` if the status code is within the `2xx` range.
  */
-public data class Endpoint<I, E, O>(
-  val input: EndpointInput<I>,
-  val errorOutput: EndpointOutput<E>,
-  val output: EndpointOutput<O>,
+public data class Endpoint<Input, Error, Output>(
+  val input: EndpointInput<Input>,
+  val errorOutput: EndpointOutput<Error>,
+  val output: EndpointOutput<Output>,
   val info: EndpointInfo
 ) {
 
-  public fun name(n: String): Endpoint<I, E, O> = this.copy(info = info.copy(name = n))
+  public fun name(n: String): Endpoint<Input, Error, Output> =
+    this.copy(info = info.copy(name = n))
 
-  public fun logic(f: suspend (I) -> Either<E, O>): ServerEndpoint<I, E, O> =
+  public fun logic(f: suspend (Input) -> Either<Error, Output>): ServerEndpoint<Input, Error, Output> =
     ServerEndpoint(this, f)
 
   /**
@@ -81,17 +150,14 @@ public data class Endpoint<I, E, O>(
 
   public companion object : MethodSyntax {
 
-    public fun <I> input(input: EndpointInput<I>): Endpoint<I, Unit, Unit> =
+    public fun <Input> input(input: EndpointInput<Input>): Endpoint<Input, Unit, Unit> =
       Endpoint(input, EndpointOutput.empty(), EndpointOutput.empty(), EndpointInfo.empty())
 
-    public fun <E> error(output: EndpointOutput<E>): Endpoint<Unit, E, Unit> =
+    public fun <Error> error(output: EndpointOutput<Error>): Endpoint<Unit, Error, Unit> =
       Endpoint(EndpointInput.empty(), output, EndpointOutput.empty(), EndpointInfo.empty())
 
-    public fun <O> output(output: EndpointOutput<O>): Endpoint<Unit, Unit, O> =
+    public fun <Output> output(output: EndpointOutput<Output>): Endpoint<Unit, Unit, Output> =
       Endpoint(EndpointInput.empty(), EndpointOutput.empty(), output, EndpointInfo.empty())
-
-    public fun <I> path(path: PathSyntax.() -> EndpointInput<I>): EndpointInput<I> =
-      path(PathSyntax)
   }
 }
 

@@ -52,4 +52,6 @@ public /*inline*/ class Method private constructor(public val value: String) {
     private val safe: Set<Method> =
       setOf(HEAD, GET, OPTIONS)
   }
+
+  override fun toString(): String = "Method($value)"
 }

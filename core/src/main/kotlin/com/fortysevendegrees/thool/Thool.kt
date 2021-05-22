@@ -1,5 +1,6 @@
 package com.fortysevendegrees.thool
 
+import com.fortysevendegrees.thool.dsl.PathSyntax
 import com.fortysevendegrees.thool.model.CodecFormat
 import com.fortysevendegrees.thool.model.Cookie
 import com.fortysevendegrees.thool.model.Header
@@ -23,6 +24,9 @@ object Thool {
 
   fun queryParams(): EndpointInput.QueryParams<QueryParams> =
     EndpointInput.QueryParams(Codec.idPlain(), EndpointIO.Info.empty())
+
+  public fun <Input> path(path: PathSyntax.() -> EndpointInput<Input>): EndpointInput<Input> =
+    path(PathSyntax)
 
   fun <A> path(name: String, codec: PlainCodec<A>): EndpointInput.PathCapture<A> =
     EndpointInput.PathCapture(name, codec, EndpointIO.Info.empty())
