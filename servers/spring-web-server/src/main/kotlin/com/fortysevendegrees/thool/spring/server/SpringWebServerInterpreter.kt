@@ -33,7 +33,7 @@ import org.springframework.web.reactive.function.server.ServerResponse as Spring
 public fun <I, E, O> routerFunction(ses: ServerEndpoint<I, E, O>): RouterFunction<SpringServerResponse> =
   routerFunction(listOf(ses))
 
-public fun <I, E, O> routerFunction(ses: List<ServerEndpoint<I, E, O>>): RouterFunction<SpringServerResponse> =
+public fun routerFunction(ses: List<ServerEndpoint<*, *, *>>): RouterFunction<SpringServerResponse> =
   router {
     ses.forEach { endpoint -> add(endpoint.toRouterFunction()) }
   }

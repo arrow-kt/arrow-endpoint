@@ -46,7 +46,7 @@ import java.nio.charset.StandardCharsets
 public fun <I, E, O> Application.install(ses: ServerEndpoint<I, E, O>): Unit =
   install(listOf(ses))
 
-public fun <I, E, O> Application.install(ses: List<ServerEndpoint<I, E, O>>): Unit =
+public fun Application.install(ses: List<ServerEndpoint<*, *, *>>): Unit =
   intercept(ApplicationCallPipeline.ApplicationPhase.Call) {
     val interpreter = ServerInterpreter(
       call.toServerRequest(),

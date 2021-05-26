@@ -21,7 +21,7 @@ public class ServerInterpreter(
   public val interceptors: List<EndpointInterceptor>
 ) {
 
-  public tailrec suspend operator fun <I, E, O> invoke(ses: List<ServerEndpoint<I, E, O>>): ServerResponse? =
+  public tailrec suspend operator fun invoke(ses: List<ServerEndpoint<*, *, *>>): ServerResponse? =
     if (ses.isEmpty()) null
     else {
       invoke(ses.first()) ?: invoke(ses.tail())

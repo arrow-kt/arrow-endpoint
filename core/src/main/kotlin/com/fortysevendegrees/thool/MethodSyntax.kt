@@ -160,6 +160,7 @@ public interface MethodSyntax {
     )
 }
 
+// TODO split into interface/object if you want users to not be able to globally import `div`
 object PathSyntax {
 
   operator fun String.div(other: String): EndpointInput<Unit> =
