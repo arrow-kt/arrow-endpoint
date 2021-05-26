@@ -36,7 +36,6 @@ allprojects {
     kotlinOptions {
       jvmTarget = "1.8"
       freeCompilerArgs = listOf("-Xjsr305=strict")
-      languageVersion = "1.5"
     }
   }
 
