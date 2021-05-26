@@ -1,9 +1,9 @@
 import arrow.core.Either
-import com.fortysevendegrees.thool.DecodeResult
-import com.fortysevendegrees.thool.Endpoint
-import com.fortysevendegrees.thool.Thool
-import com.fortysevendegrees.thool.ktor.client.requestAndParse
-import com.fortysevendegrees.thool.output
+import com.fortysevendeg.thool.DecodeResult
+import com.fortysevendeg.thool.Endpoint
+import com.fortysevendeg.thool.Thool
+import com.fortysevendeg.thool.ktor.client.requestAndParse
+import com.fortysevendeg.thool.output
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.ktor.client.HttpClient
