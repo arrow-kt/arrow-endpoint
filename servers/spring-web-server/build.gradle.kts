@@ -1,13 +1,16 @@
 apply(from = "https://raw.githubusercontent.com/arrow-kt/arrow/main/arrow-libs/gradle/publication.gradle")
 
 dependencies {
-  implementation(project(Libs.core))
+  compileOnly(project(Libs.thoolModel))
+  compileOnly(project(Libs.core))
   implementation(Libs.kotlinxCoroutinesReactive)
   implementation(Libs.kotlinxCoroutinesReactor)
   implementation(Libs.springBootStarterWebflux)
   implementation(Libs.reactorKotlinExtensions)
   implementation(Libs.nettyTransportNativeKqueue)
 
+  testImplementation(project(Libs.thoolModel))
+  testImplementation(project(Libs.core))
   testImplementation(project(Libs.test))
   testImplementation(project(Libs.springClientWebFlux))
   testImplementation(Libs.undertow)
