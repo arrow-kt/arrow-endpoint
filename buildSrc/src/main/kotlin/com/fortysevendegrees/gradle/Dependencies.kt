@@ -27,6 +27,7 @@ object Libs {
   const val htt4kClient: String = ":clients:http4k-client"
   const val springClientWeb: String = ":clients:spring-web-client"
   const val springClientWebFlux: String = ":clients:spring-web-flux-client"
+  const val openApiDocs: String = ":docs:openapi-docs"
   const val test: String = ":test"
   const val kotlinStdlib: String = "org.jetbrains.kotlin:kotlin-stdlib:${Version.kotlin}"
 

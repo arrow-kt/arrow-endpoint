@@ -236,11 +236,18 @@ public sealed interface Schema<A> {
     override fun toString(): kotlin.String = "$element?"
   }
 
+  public sealed interface Object<A> : Schema<A> {
+    public val objectInfo: ObjectInfo
+  }
+
   public data class Either<A>(
     val left: Schema<*>,
     val right: Schema<*>,
     override val info: SchemaInfo<A> = SchemaInfo()
-  ) : Schema<A> {
+  ) : Object<A> {
+    override val objectInfo: ObjectInfo =
+      ObjectInfo("arrow.core.Either", listOf(left.toString(), right.toString()))
+
     override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> =
       Either(left, right, transform(info))
 
@@ -259,11 +266,11 @@ public sealed interface Schema<A> {
    *   )
    */
   public data class Map<A>(
-    val objectInfo: ObjectInfo,
+    override val objectInfo: ObjectInfo,
     val keySchema: Schema<*>,
     val valueSchema: Schema<*>,
     override val info: SchemaInfo<A> = SchemaInfo()
-  ) : Schema<A> {
+  ) : Object<A> {
     override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> =
       Map(objectInfo, keySchema, valueSchema, transform(info))
 
@@ -281,10 +288,10 @@ public sealed interface Schema<A> {
    *   )
    */
   public data class OpenProduct<A>(
-    val objectInfo: ObjectInfo,
+    override val objectInfo: ObjectInfo,
     val valueSchema: Schema<*>,
     override val info: SchemaInfo<A> = SchemaInfo()
-  ) : Schema<A> {
+  ) : Object<A> {
     override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> =
       OpenProduct(objectInfo, valueSchema, transform(info))
 
@@ -307,10 +314,10 @@ public sealed interface Schema<A> {
    *   )
    */
   public data class Product<A>(
-    val objectInfo: ObjectInfo,
+    override val objectInfo: ObjectInfo,
     val fields: kotlin.collections.List<Pair<FieldName, Schema<*>>>,
     override val info: SchemaInfo<A> = SchemaInfo()
-  ) : Schema<A> {
+  ) : Object<A> {
     fun required(): kotlin.collections.List<FieldName> =
       fields.mapNotNull { (f, s) -> if (!s.isOptional()) f else null }
 
@@ -348,10 +355,10 @@ public sealed interface Schema<A> {
    *   )
    */
   public data class Enum<A>(
-    val objectInfo: ObjectInfo,
+    override val objectInfo: ObjectInfo,
     val values: kotlin.collections.List<EnumValue>,
     override val info: SchemaInfo<A> = SchemaInfo()
-  ) : Schema<A> {
+  ) : Object<A> {
     override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> =
       Enum(objectInfo, values, transform(info))
 
@@ -374,10 +381,10 @@ public sealed interface Schema<A> {
    *   )
    */
   public data class Coproduct<A>(
-    val objectInfo: ObjectInfo,
+    override val objectInfo: ObjectInfo,
     val schemas: arrow.core.NonEmptyList<Schema<*>>,
     override val info: SchemaInfo<A> = SchemaInfo()
-  ) : Schema<A> {
+  ) : Object<A> {
     override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> =
       Coproduct(objectInfo, schemas, transform(info))
 
