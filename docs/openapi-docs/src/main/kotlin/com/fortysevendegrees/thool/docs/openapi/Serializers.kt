@@ -2,7 +2,7 @@ package com.fortysevendegrees.thool.docs.openapi
 
 import arrow.core.NonEmptyList
 import arrow.core.getOrElse
-import com.fortysevendegrees.thool.model.StatusCode
+import com.fortysevendeg.thool.model.StatusCode
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer

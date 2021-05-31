@@ -1,8 +1,8 @@
 package com.fortysevendegrees.thool.docs.openapi
 
-import com.fortysevendegrees.thool.Codec
-import com.fortysevendegrees.thool.FieldName
-import com.fortysevendegrees.thool.Schema as TSchema
+import com.fortysevendeg.thool.Codec
+import com.fortysevendeg.thool.FieldName
+import com.fortysevendeg.thool.Schema as TSchema
 
 internal fun Map<TSchema.ObjectInfo, String>.getReference(objectInfo: TSchema.ObjectInfo): Reference =
   Reference(

@@ -1,8 +1,8 @@
 package com.fortysevendegrees.thool.docs.openapi
 
-import com.fortysevendegrees.thool.Codec
-import com.fortysevendegrees.thool.EndpointIO
-import com.fortysevendegrees.thool.Schema
+import com.fortysevendeg.thool.Codec
+import com.fortysevendeg.thool.EndpointIO
+import com.fortysevendeg.thool.Schema
 
 public fun Codec<*, *, *>.toMediaTypeMap(
   schemas: Map<Schema.ObjectInfo, String>,

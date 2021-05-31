@@ -1,6 +1,6 @@
 package com.fortysevendegrees.thool.docs.openapi
 
-import com.fortysevendegrees.thool.Endpoint
+import com.fortysevendeg.thool.Endpoint
 
 public fun <I, E, O> Endpoint<I, E, O>.toOpenAPI(
   title: String,

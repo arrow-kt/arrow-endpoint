@@ -1,11 +1,11 @@
 package com.fortysevendegrees.thool.docs.openapi
 
 import arrow.core.Either
-import com.fortysevendegrees.thool.Endpoint
-import com.fortysevendegrees.thool.EndpointIO
-import com.fortysevendegrees.thool.EndpointInput
-import com.fortysevendegrees.thool.Schema
-import com.fortysevendegrees.thool.model.Method
+import com.fortysevendeg.thool.Endpoint
+import com.fortysevendeg.thool.EndpointIO
+import com.fortysevendeg.thool.EndpointInput
+import com.fortysevendeg.thool.Schema
+import com.fortysevendeg.thool.model.Method
 
 internal class PathCreator(
   private val schemas: Map<Schema.ObjectInfo, String>,

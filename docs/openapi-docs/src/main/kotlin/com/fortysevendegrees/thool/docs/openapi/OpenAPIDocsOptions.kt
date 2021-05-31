@@ -1,7 +1,7 @@
 package com.fortysevendegrees.thool.docs.openapi
 
-import com.fortysevendegrees.thool.Schema
-import com.fortysevendegrees.thool.model.Method
+import com.fortysevendeg.thool.Schema
+import com.fortysevendeg.thool.model.Method
 
 public data class OpenAPIDocsOptions(
   val operationIdGenerator: (List<String>, Method) -> String = Companion::defaultOperationIdGenerator,

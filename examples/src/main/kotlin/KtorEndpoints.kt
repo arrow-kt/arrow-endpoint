@@ -1,18 +1,20 @@
 import arrow.core.Either
 import arrow.core.right
-import com.fortysevendegrees.thool.Codec
-import com.fortysevendegrees.thool.Endpoint
-import com.fortysevendegrees.thool.Thool
-import com.fortysevendegrees.thool.server.ServerEndpoint
+import com.fortysevendeg.thool.Codec
+import com.fortysevendeg.thool.Endpoint
+import com.fortysevendeg.thool.Thool
+import com.fortysevendeg.thool.server.ServerEndpoint
 import io.ktor.application.Application
-import com.fortysevendegrees.thool.DecodeResult
-import com.fortysevendegrees.thool.Schema
+import com.fortysevendeg.thool.DecodeResult
+import com.fortysevendeg.thool.JsonCodec
+import com.fortysevendeg.thool.Schema
+import com.fortysevendeg.thool.Thool.fixedPath
+import com.fortysevendeg.thool.Thool.stringBody
 import com.fortysevendegrees.thool.docs.openapi.toOpenAPI
-import com.fortysevendegrees.thool.input
-import com.fortysevendegrees.thool.ktor.server.install
-import com.fortysevendegrees.thool.model.CodecFormat
-import com.fortysevendegrees.thool.output
-import com.fortysevendegrees.thool.product
+import com.fortysevendeg.thool.input
+import com.fortysevendeg.thool.ktor.server.install
+import com.fortysevendeg.thool.output
+import com.fortysevendeg.thool.product
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -29,15 +31,15 @@ public data class Project(
       Project::language to Schema.string.default("kotlin")
     )
 
-    public val jsonCodec: Codec<String, Project, CodecFormat.Json> =
+    public val jsonCodec: JsonCodec<Project> =
       Codec.json(schema, { DecodeResult.Value(Json.decodeFromString(it)) }) { Json.encodeToString(it) }
   }
 }
 
 public val pong: Endpoint<Unit, Unit, String> = Endpoint
   .get()
-  .input(Thool.fixedPath("ping"))
-  .output(Thool.stringBody())
+  .input(fixedPath("ping"))
+  .output(stringBody())
 
 public val openApiServerEndpoint: ServerEndpoint<Unit, Unit, String> =
   Endpoint

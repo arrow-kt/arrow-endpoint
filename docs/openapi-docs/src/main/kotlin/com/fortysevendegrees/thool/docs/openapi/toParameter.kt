@@ -1,7 +1,7 @@
 package com.fortysevendegrees.thool.docs.openapi
 
-import com.fortysevendegrees.thool.EndpointIO
-import com.fortysevendegrees.thool.EndpointInput
+import com.fortysevendeg.thool.EndpointIO
+import com.fortysevendeg.thool.EndpointInput
 
 public fun <T> EndpointInput.Query<T>.toParameter(schema: Referenced<Schema>): Parameter {
   val examples = info.examples.toExamples(codec)

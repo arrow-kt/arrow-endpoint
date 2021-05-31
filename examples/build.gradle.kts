@@ -1,3 +1,4 @@
+
 plugins {
   id(Plugins.kotlinSerialization)
   application
@@ -5,6 +6,7 @@ plugins {
 
 dependencies {
   implementation(project(Libs.core))
+  implementation(project(Libs.thoolModel))
   implementation(project(Libs.graphQL))
   implementation(project(Libs.ktorServer))
   implementation(project(Libs.openApiDocs))

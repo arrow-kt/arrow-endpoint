@@ -1,13 +1,13 @@
 package com.fortysevendegrees.thool.docs.openapi
 
 import arrow.core.prependTo
-import com.fortysevendegrees.thool.Codec
-import com.fortysevendegrees.thool.Endpoint
-import com.fortysevendegrees.thool.EndpointIO
-import com.fortysevendegrees.thool.EndpointInput
-import com.fortysevendegrees.thool.EndpointOutput
-import com.fortysevendegrees.thool.FieldName
-import com.fortysevendegrees.thool.Schema as TSchema
+import com.fortysevendeg.thool.Codec
+import com.fortysevendeg.thool.Endpoint
+import com.fortysevendeg.thool.EndpointIO
+import com.fortysevendeg.thool.EndpointInput
+import com.fortysevendeg.thool.EndpointOutput
+import com.fortysevendeg.thool.FieldName
+import com.fortysevendeg.thool.Schema as TSchema
 
 public fun Iterable<Endpoint<*, *, *>>.toSchemas(
   schemaName: (TSchema.ObjectInfo) -> String

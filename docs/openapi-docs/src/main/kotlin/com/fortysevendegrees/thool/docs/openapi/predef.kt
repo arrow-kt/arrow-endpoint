@@ -1,10 +1,10 @@
 package com.fortysevendegrees.thool.docs.openapi
 
 import arrow.core.Either
-import com.fortysevendegrees.thool.EndpointIO
-import com.fortysevendegrees.thool.EndpointOutput
-import com.fortysevendegrees.thool.Schema
-import com.fortysevendegrees.thool.model.StatusCode
+import com.fortysevendeg.thool.EndpointIO
+import com.fortysevendeg.thool.EndpointOutput
+import com.fortysevendeg.thool.Schema
+import com.fortysevendeg.thool.model.StatusCode
 
 private data class Assignment<A>(val nameToT: Map<String, A>, val tToKey: Map<A, String>)
 

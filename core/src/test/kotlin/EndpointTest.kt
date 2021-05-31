@@ -1,8 +1,8 @@
-import com.fortysevendegrees.thool.Codec
-import com.fortysevendegrees.thool.Endpoint
-import com.fortysevendegrees.thool.Thool
-import com.fortysevendegrees.thool.and
-import com.fortysevendegrees.thool.input
+import com.fortysevendeg.thool.Codec
+import com.fortysevendeg.thool.Endpoint
+import com.fortysevendeg.thool.Thool
+import com.fortysevendeg.thool.and
+import com.fortysevendeg.thool.input
 import io.kotest.core.spec.style.StringSpec
 
 @Suppress("UNUSED_VARIABLE")

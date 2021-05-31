@@ -9,8 +9,8 @@ package com.fortysevendegrees.thool.docs.openapi
 
 import arrow.core.NonEmptyList
 import arrow.core.Option
-import com.fortysevendegrees.thool.Codec
-import com.fortysevendegrees.thool.model.StatusCode
+import com.fortysevendeg.thool.Codec
+import com.fortysevendeg.thool.model.StatusCode
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
@@ -699,10 +699,10 @@ public sealed class ExampleValue {
     public operator fun invoke(codec: Codec<*, *, *>, e: Any?): ExampleValue? =
       invoke(codec.schema(), (codec as Codec<*, Any?, *>).encode(e))
 
-    public operator fun invoke(schema: com.fortysevendegrees.thool.Schema<*>, raw: Any?): ExampleValue? =
+    public operator fun invoke(schema: com.fortysevendeg.thool.Schema<*>, raw: Any?): ExampleValue? =
       when (raw) {
         is Iterable<*> -> when (schema) {
-          is com.fortysevendegrees.thool.Schema.List -> Multiple(raw.map(Any?::toString))
+          is com.fortysevendeg.thool.Schema.List -> Multiple(raw.map(Any?::toString))
           else -> raw.firstOrNull()?.let { Single(it.toString()) }
         }
         is Option<*> -> raw.fold({ null }) { Single(it.toString()) }

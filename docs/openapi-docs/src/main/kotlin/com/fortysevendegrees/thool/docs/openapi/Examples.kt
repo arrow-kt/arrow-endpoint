@@ -1,7 +1,7 @@
 package com.fortysevendegrees.thool.docs.openapi
 
-import com.fortysevendegrees.thool.Codec
-import com.fortysevendegrees.thool.EndpointIO
+import com.fortysevendeg.thool.Codec
+import com.fortysevendeg.thool.EndpointIO
 
 internal data class Examples(val singleExample: ExampleValue?, val multipleExamples: Map<String, Referenced<Example>>)
 

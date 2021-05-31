@@ -1,10 +1,10 @@
 package com.fortysevendegrees.thool.docs.openapi
 
-import com.fortysevendegrees.thool.Endpoint
-import com.fortysevendegrees.thool.EndpointIO
-import com.fortysevendegrees.thool.EndpointOutput
-import com.fortysevendegrees.thool.Schema
-import com.fortysevendegrees.thool.model.StatusCode
+import com.fortysevendeg.thool.Endpoint
+import com.fortysevendeg.thool.EndpointIO
+import com.fortysevendeg.thool.EndpointOutput
+import com.fortysevendeg.thool.Schema
+import com.fortysevendeg.thool.model.StatusCode
 
 public fun Endpoint<*, *, *>.toOperationResponses(schemas: Map<Schema.ObjectInfo, String>): Responses {
   // There always needs to be at least a 200 empty response
