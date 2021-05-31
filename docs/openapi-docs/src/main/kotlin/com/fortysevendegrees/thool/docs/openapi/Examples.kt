@@ -1,4 +1,4 @@
-package com.fortysevendegrees.thool.docs.openapi
+package com.fortysevendeg.thool.docs.openapi
 
 import com.fortysevendeg.thool.Codec
 import com.fortysevendeg.thool.EndpointIO
@@ -13,7 +13,7 @@ private fun <A> List<EndpointIO.Info.Example<A>>.convertExamples(exampleValue: (
     1 -> Examples(exampleValue(first().value), linkedMapOf())
     else -> {
       val exampleValues = mapIndexed { index, example ->
-        val name = example.name ?: "${com.fortysevendegrees.thool.docs.openapi.Example::class.java.canonicalName}$index"
+        val name = example.name ?: "${com.fortysevendeg.thool.docs.openapi.Example::class.java.canonicalName}$index"
         val example: Referenced<Example> = Referenced.Other(
           Example(
             summary = example.summary,

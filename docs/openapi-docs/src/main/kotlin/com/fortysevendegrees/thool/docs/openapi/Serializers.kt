@@ -1,4 +1,4 @@
-package com.fortysevendegrees.thool.docs.openapi
+package com.fortysevendeg.thool.docs.openapi
 
 import arrow.core.NonEmptyList
 import arrow.core.getOrElse
@@ -114,9 +114,9 @@ internal class ReferencedSerializer<T>(
   }
 
   @InternalSerializationApi
-  // TODO review SerialDescriptor. Should it describe the actual type or the com.fortysevendegrees.thool.docs.openapi.json model
+  // TODO review SerialDescriptor. Should it describe the actual type or the com.fortysevendeg.thool.docs.openapi.json model
   override val descriptor: SerialDescriptor =
-    buildClassSerialDescriptor("com.fortysevendegrees.thool.docs.openapi.Referenced") {
+    buildClassSerialDescriptor("com.fortysevendeg.thool.docs.openapi.Referenced") {
       element("Ref", refDescriptor, isOptional = true)
       element("description", dataSerializer.descriptor, isOptional = true)
     }
@@ -148,7 +148,7 @@ internal class ExampleValueSerializer : KSerializer<ExampleValue> {
   @InternalSerializationApi
   override val descriptor: SerialDescriptor =
     buildSerialDescriptor(
-      "com.fortysevendegrees.thool.docs.openapi.ExampleValueSerializer",
+      "com.fortysevendeg.thool.docs.openapi.ExampleValueSerializer",
       SerialKind.CONTEXTUAL
     ) {}
 
@@ -211,7 +211,7 @@ internal class ResponsesSerializer : KSerializer<Responses> {
 
 @ExperimentalSerializationApi
 object ResponsesDescriptor : SerialDescriptor {
-  override val serialName: String = "com.fortysevendegrees.thool.docs.openapi.Responses"
+  override val serialName: String = "com.fortysevendeg.thool.docs.openapi.Responses"
   override val kind: SerialKind = StructureKind.MAP
   override val elementsCount: Int = 2
   private val valueDescriptor: SerialDescriptor =

@@ -1,4 +1,4 @@
-package com.fortysevendegrees.thool.docs.openapi
+package com.fortysevendeg.thool.docs.openapi
 
 import com.fortysevendeg.thool.Schema
 import com.fortysevendeg.thool.model.Method

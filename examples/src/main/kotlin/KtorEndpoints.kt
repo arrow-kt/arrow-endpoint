@@ -10,7 +10,7 @@ import com.fortysevendeg.thool.JsonCodec
 import com.fortysevendeg.thool.Schema
 import com.fortysevendeg.thool.Thool.fixedPath
 import com.fortysevendeg.thool.Thool.stringBody
-import com.fortysevendegrees.thool.docs.openapi.toOpenAPI
+import com.fortysevendeg.thool.docs.openapi.toOpenAPI
 import com.fortysevendeg.thool.input
 import com.fortysevendeg.thool.ktor.server.install
 import com.fortysevendeg.thool.output

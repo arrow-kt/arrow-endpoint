@@ -1,4 +1,4 @@
-package com.fortysevendegrees.thool.docs.openapi
+package com.fortysevendeg.thool.docs.openapi
 
 import com.fortysevendeg.thool.Endpoint
 import com.fortysevendeg.thool.EndpointIO
@@ -62,7 +62,7 @@ private fun outputsToResponse(
             schema = schemas.referenceOr(it.codec),
             example = it.info.example()?.let { any -> ExampleValue(it.codec, any) },
 
-            // TODO Fix showing Map<String, com.fortysevendegrees.thool.docs.openapi.ExampleValue>
+            // TODO Fix showing Map<String, com.fortysevendeg.thool.docs.openapi.ExampleValue>
             examples = emptyMap() // it.info.examples.map { example -> .ExampleValue(it.codec, example.value) }
           )
         )

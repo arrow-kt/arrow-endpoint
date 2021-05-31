@@ -5,7 +5,7 @@
   StatusCodeAsIntSerializer::class,
 )
 
-package com.fortysevendegrees.thool.docs.openapi
+package com.fortysevendeg.thool.docs.openapi
 
 import arrow.core.NonEmptyList
 import arrow.core.Option
@@ -457,7 +457,7 @@ public data class Encoding(
    *   - for array – the default is defined based on the inner type.
    * The value can be a specific media type (e.g. application/json), a wildcard media type (e.g. image&#47;&#42;), or a comma-separated list of the two types.
    */
-  public val contentType: String, // Could be com.fortysevendegrees.thool.model.MediaType
+  public val contentType: String, // Could be com.fortysevendeg.thool.model.MediaType
   /**
    * A map allowing additional information to be provided as headers, for example Content-Disposition.
    * Content-Type is described separately and SHALL be ignored in this section. This property SHALL be ignored if the request body media type is not a multipart

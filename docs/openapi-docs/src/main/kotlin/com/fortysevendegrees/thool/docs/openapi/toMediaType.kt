@@ -1,4 +1,4 @@
-package com.fortysevendegrees.thool.docs.openapi
+package com.fortysevendeg.thool.docs.openapi
 
 import com.fortysevendeg.thool.Codec
 import com.fortysevendeg.thool.EndpointIO
