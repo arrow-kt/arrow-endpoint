@@ -6,12 +6,12 @@ import com.fortysevendegrees.thool.EndpointOutput
 import com.fortysevendegrees.thool.Schema
 import com.fortysevendegrees.thool.model.StatusCode
 
-private data class Assigment<A>(val nameToT: Map<String, A>, val tToKey: Map<A, String>)
+private data class Assignment<A>(val nameToT: Map<String, A>, val tToKey: Map<A, String>)
 
 internal fun <A> Iterable<A>.calculateUniqueKeys(toName: (A) -> String): Map<A, String> =
-  fold(Assigment<A>(linkedMapOf(), linkedMapOf())) { (nameToT, tToKey), t ->
+  fold(Assignment<A>(linkedMapOf(), linkedMapOf())) { (nameToT, tToKey), t ->
     val key = uniqueName(toName(t)) { name -> !nameToT.contains(name) || nameToT[name] == t }
-    Assigment(
+    Assignment(
       nameToT + Pair(key, t),
       tToKey + Pair(t, key)
     )

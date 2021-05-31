@@ -9,7 +9,7 @@ public data class OpenAPIDocsOptions(
 ) {
   public companion object {
     public fun defaultOperationIdGenerator(pathComponents: List<String>, method: Method): String {
-      val components = if (pathComponents.isEmpty()) listOf("root") else pathComponents
+      val components = pathComponents.ifEmpty { listOf("root") }
       // converting to camelCase
       return method.value.toLowerCase() + components.joinToString("") { it.toLowerCase().capitalize() }
     }
