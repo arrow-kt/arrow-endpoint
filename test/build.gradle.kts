@@ -3,7 +3,6 @@ plugins {
 }
 
 dependencies {
-  compileOnly(project(Libs.thoolModel))
   compileOnly(project(Libs.core))
   implementation(project(Libs.htt4kClient))
   implementation(project(Libs.springClientWeb))
