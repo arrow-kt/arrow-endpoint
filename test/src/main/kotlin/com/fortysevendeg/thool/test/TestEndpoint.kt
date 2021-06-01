@@ -1,9 +1,11 @@
 package com.fortysevendeg.thool.test
 
+import arrow.core.Either
 import com.fortysevendeg.thool.Codec
 import com.fortysevendeg.thool.DecodeResult
 import com.fortysevendeg.thool.Endpoint
 import com.fortysevendeg.thool.EndpointInput
+import com.fortysevendeg.thool.EndpointOutput
 import com.fortysevendeg.thool.Schema
 import com.fortysevendeg.thool.Thool.anyJsonBody
 import com.fortysevendeg.thool.Thool.byteArrayBody
@@ -13,13 +15,17 @@ import com.fortysevendeg.thool.Thool.fixedPath
 import com.fortysevendeg.thool.Thool.formBody
 import com.fortysevendeg.thool.Thool.header
 import com.fortysevendeg.thool.Thool.inputStreamBody
+import com.fortysevendeg.thool.Thool.oneOf
 import com.fortysevendeg.thool.Thool.path
 import com.fortysevendeg.thool.Thool.paths
+import com.fortysevendeg.thool.Thool.plainBody
 import com.fortysevendeg.thool.Thool.query
 import com.fortysevendeg.thool.Thool.queryParams
 import com.fortysevendeg.thool.Thool.statusCode
+import com.fortysevendeg.thool.Thool.statusMapping
 import com.fortysevendeg.thool.Thool.stringBody
 import com.fortysevendeg.thool.and
+import com.fortysevendeg.thool.errorOutput
 import com.fortysevendeg.thool.input
 import com.fortysevendeg.thool.model.CodecFormat
 import com.fortysevendeg.thool.model.MediaType
@@ -241,4 +247,40 @@ object TestEndpoint {
         .output(header("A", Codec.listFirst(Codec.string)))
         .output(header("B", Codec.listFirst(Codec.string)))
     )
+
+  public val not_existing_endpoint: Endpoint<Unit, String, Unit> =
+    Endpoint
+      .get { "api" / "not-existing" }
+      .errorOutput(oneOf(statusMapping(StatusCode.BadRequest, stringBody())))
+
+  public val in_string_out_status_from_string: Endpoint<String, Unit, Either<Int, String>> =
+    Endpoint
+      .input(fruitParam)
+      .output(
+        oneOf(
+          statusMapping(StatusCode.Accepted, plainBody(Codec.int).map({ Either.Left(it) }, { it.value })),
+          statusMapping(StatusCode.Ok, plainBody(Codec.string).map({ Either.Right(it) }, { it.value }))
+        )
+      )
+
+  public val in_int_out_value_form_exact_match: Endpoint<Int, Unit, String> =
+    Endpoint
+      .input(fixedPath("mapping"))
+      .input(query("num", Codec.int))
+      .output(
+        oneOf(
+          statusMapping(StatusCode.Accepted, stringBody(), "A"),
+          statusMapping(StatusCode.Ok, stringBody(), "B")
+        )
+      )
+
+  public val in_string_out_status_from_string_one_empty: Endpoint<String, Unit, Either<Unit, String>> =
+    Endpoint
+      .input(fruitParam)
+      .output(
+        oneOf(
+          statusMapping(StatusCode.Accepted, EndpointOutput.empty().map({ Either.Left(it) }, { it.value })),
+          statusMapping(StatusCode.Ok, stringBody().map({ Either.Right(it) }, { it.value }))
+        )
+      )
 }

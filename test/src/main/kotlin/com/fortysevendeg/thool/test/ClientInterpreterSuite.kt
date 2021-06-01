@@ -1,6 +1,7 @@
 package com.fortysevendeg.thool.test
 
 import arrow.core.Either
+import arrow.core.left
 import arrow.core.right
 import com.fortysevendeg.thool.DecodeResult
 import com.fortysevendeg.thool.Endpoint
@@ -13,6 +14,7 @@ import com.fortysevendeg.thool.test.TestEndpoint.in_byte_array_out_byte_array
 import com.fortysevendeg.thool.test.TestEndpoint.in_byte_buffer_out_byte_buffer
 import com.fortysevendeg.thool.test.TestEndpoint.in_header_out_string
 import com.fortysevendeg.thool.test.TestEndpoint.in_input_stream_out_input_stream
+import com.fortysevendeg.thool.test.TestEndpoint.in_int_out_value_form_exact_match
 import com.fortysevendeg.thool.test.TestEndpoint.in_json_out_json
 import com.fortysevendeg.thool.test.TestEndpoint.in_mapped_path_out_string
 import com.fortysevendeg.thool.test.TestEndpoint.in_mapped_path_path_out_string
@@ -28,6 +30,7 @@ import com.fortysevendeg.thool.test.TestEndpoint.in_query_out_string
 import com.fortysevendeg.thool.test.TestEndpoint.in_query_params_out_string
 import com.fortysevendeg.thool.test.TestEndpoint.in_query_query_out_string
 import com.fortysevendeg.thool.test.TestEndpoint.in_string_out_status
+import com.fortysevendeg.thool.test.TestEndpoint.in_string_out_status_from_string
 import com.fortysevendeg.thool.test.TestEndpoint.in_string_out_string
 import com.fortysevendeg.thool.test.TestEndpoint.in_unit_out_json_unit
 import io.kotest.core.spec.style.FreeSpec
@@ -36,6 +39,7 @@ import okhttp3.mockwebserver.MockWebServer
 import java.io.ByteArrayInputStream
 import java.nio.ByteBuffer
 
+// TODO add support to verify StatusCode
 public abstract class ClientInterpreterSuite : FreeSpec() {
   private val server = MockWebServer()
   private var baseUrl: String = ""
@@ -154,5 +158,11 @@ public abstract class ClientInterpreterSuite : FreeSpec() {
     ) { it.right() }
 
     test(in_unit_out_json_unit, Unit, Either.Right(Unit)) { it.right() }
+
+    test(in_string_out_status_from_string.name("status one of 1"), "apple", "fruit: apple".right().right()) { "fruit: $it".right().right() }
+    test(in_string_out_status_from_string.name("status one of 2"), "papaya", 29.left().right()) { 29.left().right() }
+
+    test(in_int_out_value_form_exact_match.name("first exact status of 2"), 1, "B".right()) { "B".right() }
+    test(in_int_out_value_form_exact_match.name("second exact status of 2"), 2, "A".right()) { "A".right() }
   }
 }
