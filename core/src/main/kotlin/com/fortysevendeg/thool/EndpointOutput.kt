@@ -60,16 +60,20 @@ public sealed interface EndpointOutput<A> : EndpointTransput<A> {
   }
 
   /**
-   * Specifies that for `statusCode`, the given `output` should be used.
-   * The `appliesTo` function should determine, whether a runtime value matches the type `O`.
-   * This check cannot be in general done by checking the run-time class of the value, due to type erasure (if `O` has
-   * type parameters).
+   * Specifies that for [statusCode], the given [output] should be used.
+   * The [appliesTo] function should determine, whether a runtime value matches the type [O].
+   * This check cannot be in general done by checking the runtime class of the value, due to type erasure (if `O` has type parameters).
    */
-  public data class StatusMapping<O> internal constructor(
-    val statusCode: MStatusCode?,
-    val output: EndpointOutput<O>,
-    val appliesTo: (Any?) -> Boolean
+  public class StatusMapping<O> internal constructor(
+    public val statusCode: MStatusCode?,
+    public val output: EndpointOutput<O>,
+    public val appliesTo: (Any?) -> Boolean
   )
+
+  public data class OneOf<O, T>(val mappings: List<StatusMapping<O>>, val codec: Mapping<O, T>) : Single<T> {
+    override fun <B> map(mapping: Mapping<T, B>): OneOf<O, B> = OneOf(mappings, codec.map(mapping))
+    override fun toString(): String = "status one of(${mappings.joinToString("|")})"
+  }
 
   class Void<A> : EndpointOutput<A> {
     override fun <B> map(mapping: Mapping<A, B>): Void<B> = Void()
@@ -116,6 +120,9 @@ fun <A, B> EndpointOutput<A>.reduce(
     is EndpointOutput.FixedStatusCode -> ifFixedStatuscode(this as EndpointOutput.FixedStatusCode<Any?>)
     is EndpointOutput.StatusCode -> ifStatusCode(this as EndpointOutput.StatusCode<Any?>)
     is EndpointOutput.Void -> ifVoid(this as EndpointOutput.Void<Any?>)
+    is EndpointOutput.OneOf<*, *> -> mappings.flatMap { statusMapping ->
+      statusMapping.output.reduce(ifBody, ifEmpty, ifHeader, ifFixedStatuscode, ifStatusCode, ifVoid)
+    }
 
     is EndpointOutput.Pair<*, *, *> ->
       first.reduce(ifBody, ifEmpty, ifHeader, ifFixedStatuscode, ifStatusCode, ifVoid) +

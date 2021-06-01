@@ -46,6 +46,7 @@ private fun forOutput(output: EndpointOutput<*>): List<Pair<TSchema.ObjectInfo, 
     is EndpointOutput.FixedStatusCode -> emptyList()
     is EndpointOutput.StatusCode -> emptyList()
     is EndpointOutput.Void -> emptyList()
+    is EndpointOutput.OneOf<*, *> -> output.mappings.flatMap { mapping -> forOutput(mapping.output) }
     is EndpointOutput.Pair<*, *, *> -> forOutput(output.first) + forOutput(output.second)
     is EndpointOutput.MappedPair<*, *, *, *> -> forOutput(output.output)
     is EndpointIO<*> -> forInput(output)

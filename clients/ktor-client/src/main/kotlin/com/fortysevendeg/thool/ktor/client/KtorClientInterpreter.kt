@@ -117,6 +117,10 @@ suspend fun EndpointOutput<*>.outputParams(
         is EndpointIO.Header -> codec.decode(headers.getAll(name).orEmpty())
         is EndpointOutput.FixedStatusCode -> codec.decode(Unit)
         is EndpointOutput.StatusCode -> codec.decode(code)
+        is EndpointOutput.OneOf<*, *> -> mappings.firstOrNull { it.statusCode == null || it.statusCode == code }
+          ?.let { mapping -> mapping.output.outputParams(response, headers, code).flatMap { p -> (codec as Mapping<Any?, Any?>).decode(p.asAny) } }
+          ?: DecodeResult.Failure.Error(response.status.description, IllegalArgumentException("Cannot find mapping for status code $code in outputs $this"))
+
         is EndpointOutput.MappedPair<*, *, *, *> ->
           output.outputParams(response, headers, code).flatMap { p ->
             (mapping as Mapping<Any?, Any?>).decode(p.asAny)

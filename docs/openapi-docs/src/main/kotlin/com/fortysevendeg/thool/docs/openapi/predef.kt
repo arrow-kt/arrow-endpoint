@@ -85,6 +85,15 @@ private fun <I> EndpointOutput<I>.asBasicOutputsOrList(): BasicOutputsOrList {
       val entries = documentedCodes.keys.map { code -> Pair(code, listOf(this)) }
       Either.Right(entries)
     } else Either.Left(emptyList())
+    is EndpointOutput.OneOf<*, *> -> Either.Right(
+      mappings.map { c ->
+        when (val outputs = c.output.asBasicOutputsOrList()) {
+          is Either.Left -> Pair(c.statusCode, outputs.value)
+          is Either.Right -> throwMultipleOneOfMappings()
+        }
+      }
+    )
+
     is EndpointIO.Empty -> Either.Left(emptyList())
   }
 }

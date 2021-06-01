@@ -111,13 +111,20 @@ internal data class OutputValues(
           val mapping = output.codec as Mapping<String, Any?>
           ov.withBody(Body.String(output.charset, mapping.encode(value.asAny), output.codec.format), output)
         }
-        is EndpointIO.MappedPair<*, *, *, *> -> {
-          val mapping = output.mapping as Mapping<Any?, Any?>
-          of(output.wrapped, Params.ParamsAsAny(mapping.encode(value.asAny)), ov)
-        }
         is EndpointOutput.StatusCode -> {
           val mapping = output.codec as Mapping<StatusCode, Any?>
           ov.withStatusCode(mapping.encode(value.asAny))
+        }
+        is EndpointOutput.OneOf<*, *> -> {
+          val encoded = (output.codec as Mapping<Any?, Any?>).encode(value.asAny)
+          val mapping = output.mappings
+            .firstOrNull { it.appliesTo(encoded) }
+            ?: throw IllegalArgumentException("No status code mapping for value: $encoded, in output: $output")
+          of(mapping.output, Params.ParamsAsAny(encoded), mapping.statusCode?.let(ov::withStatusCode) ?: ov)
+        }
+        is EndpointIO.MappedPair<*, *, *, *> -> {
+          val mapping = output.mapping as Mapping<Any?, Any?>
+          of(output.wrapped, Params.ParamsAsAny(mapping.encode(value.asAny)), ov)
         }
         is EndpointOutput.MappedPair<*, *, *, *> -> {
           val mapping = output.mapping as Mapping<Any?, Any?>

@@ -3,26 +3,20 @@
 package com.fortysevendeg.thool.spring.client
 
 import arrow.core.Either
-import com.fortysevendeg.thool.Codec
 import com.fortysevendeg.thool.CombineParams
 import com.fortysevendeg.thool.DecodeResult
 import com.fortysevendeg.thool.Endpoint
 import com.fortysevendeg.thool.EndpointIO
-import com.fortysevendeg.thool.EndpointInput
 import com.fortysevendeg.thool.EndpointOutput
 import com.fortysevendeg.thool.Mapping
 import com.fortysevendeg.thool.Params
-import com.fortysevendeg.thool.PlainCodec
-import com.fortysevendeg.thool.SplitParams
 import com.fortysevendeg.thool.client.RequestInfo
 import com.fortysevendeg.thool.client.requestInfo
-import com.fortysevendeg.thool.model.CodecFormat
 import com.fortysevendeg.thool.model.StatusCode
 import org.springframework.http.HttpMethod
 import org.springframework.web.reactive.function.client.ClientResponse
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitExchange
-import java.io.InputStream
 import java.net.URI
 import java.nio.ByteBuffer
 import reactor.core.publisher.Mono
@@ -72,118 +66,6 @@ private fun toRequest(
     }
   }
 }
-
-private fun EndpointInput<*>.buildUrl(
-  baseUrl: String,
-  params: Params
-): String =
-  when (this) {
-    is EndpointInput.FixedPath -> "$baseUrl/${this.s}"
-    is EndpointInput.PathCapture -> {
-      val v = (codec as PlainCodec<Any?>).encode(params.asAny)
-      "$baseUrl/$v"
-    }
-    is EndpointInput.PathsCapture -> {
-      val ps = (codec as Codec<List<String>, Any?, CodecFormat.TextPlain>).encode(params.asAny)
-      baseUrl + ps.joinToString(prefix = "/", separator = "/")
-    }
-    is EndpointInput.Query -> {
-      val ps = (codec as Codec<List<String>, Any?, CodecFormat.TextPlain>).encode(params.asAny)
-      baseUrl + ps.joinToString(prefix = "?", separator = "/")
-    }
-    is EndpointInput.QueryParams -> {
-      val ps = (codec as Codec<List<Pair<String, List<String>>>, Any?, CodecFormat.TextPlain>).encode(params.asAny)
-      baseUrl + ps.joinToString(prefix = "?", separator = "&")
-    }
-
-    // These don't influence baseUrl
-    is EndpointIO.Body<*, *> -> baseUrl
-    is EndpointIO.Empty -> baseUrl
-    is EndpointInput.FixedMethod -> baseUrl
-    is EndpointIO.Header -> baseUrl
-    is EndpointInput.Cookie -> baseUrl
-
-    // Recurse on composition of inputs.
-    is EndpointInput.Pair<*, *, *> -> handleInputPair(this.first, this.second, params, this.split, baseUrl)
-    is EndpointIO.Pair<*, *, *> -> handleInputPair(this.first, this.second, params, this.split, baseUrl)
-    is EndpointIO.MappedPair<*, *, *, *> -> handleMapped(this, this.mapping, params, baseUrl)
-    is EndpointInput.MappedPair<*, *, *, *> -> handleMapped(this, this.mapping, params, baseUrl)
-  }
-
-private fun handleInputPair(
-  left: EndpointInput<*>,
-  right: EndpointInput<*>,
-  params: Params,
-  split: SplitParams,
-  baseUrl: String
-): String {
-  val (leftParams, rightParams) = split(params)
-  val baseUrl2 = (left as EndpointInput<Any?>).buildUrl(baseUrl, leftParams)
-  return (right as EndpointInput<Any?>).buildUrl(baseUrl2, rightParams)
-}
-
-private fun handleMapped(
-  tuple: EndpointInput<*>,
-  codec: Mapping<*, *>,
-  params: Params,
-  baseUrl: String
-): String =
-  (tuple as EndpointInput<Any?>).buildUrl(
-    baseUrl,
-    Params.ParamsAsAny((codec::encode as (Any?) -> Any?)(params.asAny))
-  )
-
-private fun <I> EndpointInput<I>.setInputParams(
-  request: WebClient.RequestBodyUriSpec,
-  params: Params
-): WebClient.RequestBodyUriSpec =
-  (params.asAny as I).let { value ->
-    when (val input = this) {
-      is EndpointIO.Empty -> request
-      is EndpointIO.Header -> input.codec.encode(value).fold(request) { req, v -> req.apply { header(input.name, v) } }
-      is EndpointIO.ByteArrayBody -> request.apply { body((input.codec::encode)(value), ByteArray::class.java) }
-      is EndpointIO.ByteBufferBody -> request.apply { body((input.codec::encode)(value), ByteBuffer::class.java) }
-      is EndpointIO.InputStreamBody -> request.apply { body((input.codec::encode)(value), InputStream::class.java) }
-      is EndpointIO.StringBody -> request.apply { body((input.codec::encode)(value), String::class.java) }
-      is EndpointInput.Cookie -> input.codec.encode(value)?.let { v: String -> request.apply { cookie(input.name, v) } }
-        ?: request
-
-      // These inputs were inserted into baseUrl already
-      is EndpointInput.FixedMethod -> request
-      is EndpointInput.FixedPath -> request
-      is EndpointInput.PathCapture -> request
-      is EndpointInput.PathsCapture -> request
-      is EndpointInput.Query -> request
-      is EndpointInput.QueryParams -> request
-
-      // Recurse on composition
-      is EndpointIO.Pair<*, *, *> -> handleInputPair(input.first, input.second, params, input.split, request)
-      is EndpointInput.Pair<*, *, *> -> handleInputPair(input.first, input.second, params, input.split, request)
-      is EndpointIO.MappedPair<*, *, *, *> -> handleMapped(input, input.mapping, params, request)
-      is EndpointInput.MappedPair<*, *, *, *> -> handleMapped(input, input.mapping, params, request)
-    }
-  }
-
-private fun handleInputPair(
-  left: EndpointInput<*>,
-  right: EndpointInput<*>,
-  params: Params,
-  split: SplitParams,
-  req: WebClient.RequestBodyUriSpec
-): WebClient.RequestBodyUriSpec {
-  val (leftParams, rightParams) = split(params)
-  val req2 = (left as EndpointInput<Any?>).setInputParams(req, leftParams)
-  return (right as EndpointInput<Any?>).setInputParams(req2, rightParams)
-}
-
-private fun handleMapped(
-  tuple: EndpointInput<*>,
-  codec: Mapping<*, *>,
-  params: Params,
-  req: WebClient.RequestBodyUriSpec
-): WebClient.RequestBodyUriSpec =
-  (tuple as EndpointInput<Any?>)
-    .setInputParams(req, Params.ParamsAsAny((codec::encode as (Any?) -> Any?)(params.asAny)))
 
 // Functionality on how to go from Spring response to our domain
 private suspend fun <I, E, O> Endpoint<I, E, O>.parseResponse(
@@ -236,6 +118,9 @@ private suspend fun EndpointOutput<*>.getOutputParams(
       is EndpointOutput.FixedStatusCode -> single.codec.decode(Unit)
       is EndpointOutput.StatusCode -> single.codec.decode(code)
       is EndpointIO.Header -> single.codec.decode(headers[single.name].orEmpty())
+      is EndpointOutput.OneOf<*, *> -> single.mappings.firstOrNull { it.statusCode == null || it.statusCode == code }
+        ?.let { mapping -> mapping.output.getOutputParams(response, headers, code, statusText).flatMap { p -> (single.codec as Mapping<Any?, Any?>).decode(p.asAny) } }
+        ?: DecodeResult.Failure.Error(statusText, IllegalArgumentException("Cannot find mapping for status code $code in outputs $output"))
 
       is EndpointIO.MappedPair<*, *, *, *> ->
         single.wrapped.getOutputParams(response, headers, code, statusText).flatMap { p ->
