@@ -146,7 +146,7 @@ public sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
   }
 
   public data class MappedPair<A, B, C, D>(val wrapped: Pair<A, B, C>, val mapping: Mapping<C, D>) : Single<D> {
-    override fun <E> map(m: Mapping<D, E>): MappedPair<A, B, C, E> = MappedPair(wrapped, mapping.map(m))
+    override fun <E> map(mapping: Mapping<D, E>): MappedPair<A, B, C, E> = MappedPair(wrapped, this.mapping.map(mapping))
     override fun toString(): String = wrapped.toString()
   }
 
@@ -186,7 +186,7 @@ public fun <A> EndpointIO<A>.and(other: EndpointIO<Unit>): EndpointIO<A> =
   )
 
 @JvmName("andLeftUnit")
-public fun <A> EndpointIO<Unit>.and(other: EndpointIO<A>, dummy: Unit = Unit): EndpointIO<A> =
+public fun <A> EndpointIO<Unit>.and(other: EndpointIO<A>, @Suppress("UNUSED_PARAMETER") dummy: Unit = Unit): EndpointIO<A> =
   EndpointIO.Pair(
     this,
     other,

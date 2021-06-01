@@ -1,5 +1,7 @@
 package com.fortysevendeg.thool
 
+import arrow.core.Tuple4
+import arrow.core.Tuple5
 import com.fortysevendeg.thool.model.CodecFormat
 import com.fortysevendeg.thool.model.StatusCode as MStatusCode
 
@@ -39,7 +41,7 @@ public sealed interface EndpointOutput<A> : EndpointTransput<A> {
       StatusCode(documentedCodes, c, i)
 
     override fun toString(): String = "status code - possible codes ($documentedCodes)"
-    fun description(code: MStatusCode, d: String): StatusCode<A> {
+    public fun description(code: MStatusCode, d: String): StatusCode<A> {
       val updatedCodes = documentedCodes + Pair(code, EndpointIO.Info.empty<Unit>().description(d))
       return copy(documentedCodes = updatedCodes)
     }
@@ -50,18 +52,18 @@ public sealed interface EndpointOutput<A> : EndpointTransput<A> {
     override val codec: Codec<Unit, A, CodecFormat.TextPlain>,
     override val info: EndpointIO.Info<A>
   ) : Basic<Unit, A, CodecFormat.TextPlain> {
-    override fun <B> copyWith(
+    public override fun <B> copyWith(
       c: Codec<Unit, B, CodecFormat.TextPlain>,
       i: EndpointIO.Info<B>
     ): FixedStatusCode<B> =
       FixedStatusCode(statusCode, c, i)
 
-    override fun toString(): String = "status code ($statusCode)"
+    public override fun toString(): String = "status code ($statusCode)"
   }
 
   /**
    * Specifies that for `statusCode`, the given `output` should be used.
-   * The `appliesTo` function should determine, whether a runtime value matches the type `O`.
+   * The `appliesTo` fun should determine, whether a runtime value matches the type `O`.
    * This check cannot be in general done by checking the run-time class of the value, due to type erasure (if `O` has
    * type parameters).
    */
@@ -71,16 +73,16 @@ public sealed interface EndpointOutput<A> : EndpointTransput<A> {
     val appliesTo: (Any?) -> Boolean
   )
 
-  class Void<A> : EndpointOutput<A> {
-    override fun <B> map(mapping: Mapping<A, B>): Void<B> = Void()
-    override fun toString(): String = "void"
+  public class Void<A> : EndpointOutput<A> {
+    public override fun <B> map(mapping: Mapping<A, B>): Void<B> = Void()
+    public override fun toString(): String = "void"
   }
 
   public data class MappedPair<A, B, C, D>(val output: Pair<A, B, C>, val mapping: Mapping<C, D>) : Single<D> {
-    override fun <E> map(@Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE") m: Mapping<D, E>): EndpointTransput<E> =
+    public override fun <E> map(@Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE") m: Mapping<D, E>): EndpointTransput<E> =
       MappedPair(output, mapping.map(m))
 
-    override fun toString(): String = output.toString()
+    public override fun toString(): String = output.toString()
   }
 
   public data class Pair<A, B, C>(
@@ -89,19 +91,19 @@ public sealed interface EndpointOutput<A> : EndpointTransput<A> {
     override val combine: CombineParams,
     override val split: SplitParams
   ) : EndpointOutput<C>, EndpointTransput.Pair<C> {
-    override fun <D> map(mapping: Mapping<C, D>): EndpointOutput<D> = MappedPair(this, mapping)
-    override fun toString(): String = "EndpointOutput.Pair($first, $second)"
+    public override fun <D> map(mapping: Mapping<C, D>): EndpointOutput<D> = MappedPair(this, mapping)
+    public override fun toString(): String = "EndpointOutput.Pair($first, $second)"
   }
 
   public companion object {
     /** An empty output. Useful if one of `oneOf` branches should be mapped to the status code only. */
-    fun empty(): EndpointIO.Empty<Unit> =
+    public fun empty(): EndpointIO.Empty<Unit> =
       EndpointIO.Empty(Codec.idPlain(), EndpointIO.Info.empty())
   }
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <A, B> EndpointOutput<A>.reduce(
+public fun <A, B> EndpointOutput<A>.reduce(
   ifBody: (EndpointIO.Body<Any?, Any?>) -> List<B>,
   ifEmpty: (EndpointIO.Empty<Any?>) -> List<B>,
   ifHeader: (EndpointIO.Header<Any?>) -> List<B>,
@@ -131,12 +133,40 @@ fun <A, B> EndpointOutput<A>.reduce(
         output.second.reduce(ifBody, ifEmpty, ifHeader, ifFixedStatuscode, ifStatusCode, ifVoid)
   }
 
-fun EndpointOutput<*>.toList(): List<EndpointOutput<Any?>> =
-  reduce(::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf)
+// fun EndpointOutput<*>.toList(): List<EndpointOutput<Any?>> =
+//  reduce(::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf)
 
-// We need to support this Arity-22
-@JvmName("and")
-fun <A, B> EndpointOutput<A>.and(other: EndpointOutput<B>): EndpointOutput<Pair<A, B>> =
+@JvmName("andLeftUnit")
+public fun <A> EndpointOutput<Unit>.and(
+  other: EndpointOutput<A>,
+  @Suppress("UNUSED_PARAMETER") dummy: Unit = Unit
+): EndpointOutput<A> =
+  EndpointOutput.Pair(
+    this,
+    other,
+    { _, p2 -> p2 },
+    { p -> Pair(Params.Unit, p) }
+  )
+
+@JvmName("andRightUnit")
+public fun <A> EndpointOutput<A>.and(other: EndpointOutput<Unit>): EndpointOutput<A> =
+  EndpointOutput.Pair(
+    this,
+    other,
+    { p1, _ -> p1 },
+    { p -> Pair(p, Params.Unit) }
+  )
+
+@JvmName("andLeftRightUnit")
+public fun EndpointOutput<Unit>.and(other: EndpointOutput<Unit>): EndpointOutput<Unit> =
+  EndpointOutput.Pair(
+    this,
+    other,
+    { _, p2 -> p2 },
+    { p -> Pair(Params.Unit, p) }
+  )
+
+public fun <A, B> EndpointOutput<A>.and(other: EndpointOutput<B>): EndpointOutput<Pair<A, B>> =
   EndpointOutput.Pair(
     this,
     other,
@@ -149,29 +179,8 @@ fun <A, B> EndpointOutput<A>.and(other: EndpointOutput<B>): EndpointOutput<Pair<
     }
   )
 
-@JvmName("andLeftUnit")
-fun <A> EndpointOutput<Unit>.and(
-  other: EndpointOutput<A>,
-  @Suppress("UNUSED_PARAMETER") dummy: Unit = Unit
-): EndpointOutput<A> =
-  EndpointOutput.Pair(
-    this,
-    other,
-    { _, p2 -> p2 },
-    { p -> Pair(Params.Unit, p) }
-  )
-
-@JvmName("andRightUnit")
-fun <A> EndpointOutput<A>.and(other: EndpointOutput<Unit>): EndpointOutput<A> =
-  EndpointOutput.Pair(
-    this,
-    other,
-    { p1, _ -> p1 },
-    { p -> Pair(p, Params.Unit) }
-  )
-
-@JvmName("and3")
-fun <A, B, C> EndpointOutput<Pair<A, B>>.and(other: EndpointOutput<C>): EndpointOutput<Triple<A, B, C>> =
+@JvmName("and2")
+public fun <A, B, C> EndpointOutput<Pair<A, B>>.and(other: EndpointOutput<C>): EndpointOutput<Triple<A, B, C>> =
   EndpointOutput.Pair(
     this,
     other,
@@ -179,6 +188,34 @@ fun <A, B, C> EndpointOutput<Pair<A, B>>.and(other: EndpointOutput<C>): Endpoint
     { p ->
       Pair(
         Params.ParamsAsList(p.asList.take(2)),
+        Params.ParamsAsAny(p.asList.last())
+      )
+    }
+  )
+
+@JvmName("and3")
+public fun <A, B, C, D> EndpointOutput<Triple<A, B, C>>.and(other: EndpointOutput<D>): EndpointOutput<Tuple4<A, B, C, D>> =
+  EndpointOutput.Pair(
+    this,
+    other,
+    { p1, p2 -> Params.ParamsAsList(p1.asList + p2.asAny) },
+    { p ->
+      Pair(
+        Params.ParamsAsList(p.asList.take(3)),
+        Params.ParamsAsAny(p.asList.last())
+      )
+    }
+  )
+
+@JvmName("and4")
+public fun <A, B, C, D, E> EndpointOutput<Tuple4<A, B, C, D>>.and(other: EndpointOutput<E>): EndpointOutput<Tuple5<A, B, C, D, E>> =
+  EndpointOutput.Pair(
+    this,
+    other,
+    { p1, p2 -> Params.ParamsAsList(p1.asList + p2.asAny) },
+    { p ->
+      Pair(
+        Params.ParamsAsList(p.asList.take(4)),
         Params.ParamsAsAny(p.asList.last())
       )
     }

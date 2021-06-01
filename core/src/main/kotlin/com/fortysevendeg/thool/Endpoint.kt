@@ -4,6 +4,7 @@ import arrow.core.Either
 import arrow.core.Tuple4
 import arrow.core.Tuple5
 import com.fortysevendeg.thool.dsl.MethodSyntax
+import com.fortysevendeg.thool.model.StatusCode
 import com.fortysevendeg.thool.server.ServerEndpoint
 
 /**
@@ -76,6 +77,19 @@ import com.fortysevendeg.thool.server.ServerEndpoint
  *   registerPerson.errorOutput(anyJsonBody(UserRegistrationFailed.jsonCodec))
  * ```
  *
+ * You can add conveniently add additional document to your endpoints by using build-in named 'copy' methods.
+ * A couple examples below:
+ *
+ * ```kotlin
+ * val documented = registerWithError
+ *  .name("Register Person")
+ *  .description("Validates and registers a person into the system.")
+ *  .summary("""
+ *    Here you can add a longer description of what your register business logic might do.
+ *    Multi-line
+ *  """.trimIndent())
+ * ```
+ *
  * @param [input] defines how [Input] is defined in the http `Request` entity
  * @param [errorOutput] defines how [Error] will be defined in the http `Response` if the status code outside of the `2xx` range.
  * @param [output] defines how [Output] will be defined in http `Response` if the status code is within the `2xx` range.
@@ -84,11 +98,26 @@ public data class Endpoint<Input, Error, Output>(
   val input: EndpointInput<Input>,
   val errorOutput: EndpointOutput<Error>,
   val output: EndpointOutput<Output>,
-  val info: EndpointInfo
+  val info: Info
 ) {
 
   public fun name(n: String): Endpoint<Input, Error, Output> =
     this.copy(info = info.copy(name = n))
+
+  public fun summary(s: String): Endpoint<Input, Error, Output> =
+    this.copy(info = info.copy(summary = s))
+
+  public fun description(d: String): Endpoint<Input, Error, Output> =
+    this.copy(info = info.copy(description = d))
+
+  public fun tags(ts: List<String>): Endpoint<Input, Error, Output> =
+    this.copy(info = info.copy(tags = info.tags + ts))
+
+  public fun tag(t: String): Endpoint<Input, Error, Output> =
+    this.copy(info = info.copy(tags = info.tags + t))
+
+  public fun deprecated(deprecated: Boolean): Endpoint<Input, Error, Output> =
+    this.copy(info = info.copy(deprecated = deprecated))
 
   public fun logic(f: suspend (Input) -> Either<Error, Output>): ServerEndpoint<Input, Error, Output> =
     ServerEndpoint(this, f)
@@ -151,36 +180,49 @@ public data class Endpoint<Input, Error, Output>(
   public companion object : MethodSyntax {
 
     public fun <Input> input(input: EndpointInput<Input>): Endpoint<Input, Unit, Unit> =
-      Endpoint(input, EndpointOutput.empty(), EndpointOutput.empty(), EndpointInfo.empty())
+      Endpoint(input, EndpointOutput.empty(), EndpointOutput.empty(), Info.empty())
 
     public fun <Error> error(output: EndpointOutput<Error>): Endpoint<Unit, Error, Unit> =
-      Endpoint(EndpointInput.empty(), output, EndpointOutput.empty(), EndpointInfo.empty())
+      Endpoint(EndpointInput.empty(), output, EndpointOutput.empty(), Info.empty())
 
     public fun <Output> output(output: EndpointOutput<Output>): Endpoint<Unit, Unit, Output> =
-      Endpoint(EndpointInput.empty(), EndpointOutput.empty(), output, EndpointInfo.empty())
+      Endpoint(EndpointInput.empty(), EndpointOutput.empty(), output, Info.empty())
+  }
+
+  public data class Info(
+    val name: String?,
+    val summary: String?,
+    val description: String?,
+    val tags: List<String>,
+    val deprecated: Boolean
+  ) {
+    public companion object {
+      public fun empty(): Info =
+        Info(null, null, null, emptyList(), deprecated = false)
+    }
   }
 }
+
+@JvmName("inputLeftUnit")
+public fun <I, E, O> Endpoint<Unit, E, O>.input(input: EndpointInput<I>, @Suppress("UNUSED_PARAMETER") dummmy: Unit = Unit): Endpoint<I, E, O> =
+  Endpoint(this@input.input.and(input), errorOutput, output, info)
+
+@JvmName("inputRightUnit")
+public fun <I, E, O> Endpoint<I, E, O>.input(input: EndpointInput<Unit>, @Suppress("UNUSED_PARAMETER") dummmy: Unit = Unit): Endpoint<I, E, O> =
+  Endpoint(this@input.input.and(input), errorOutput, output, info)
+
+@JvmName("inputLeftRightUnit")
+public fun <E, O> Endpoint<Unit, E, O>.input(input: EndpointInput<Unit>, @Suppress("UNUSED_PARAMETER") dummmy: Unit = Unit): Endpoint<Unit, E, O> =
+  Endpoint(this@input.input.and(input), errorOutput, output, info)
 
 public fun <I, I2, E, O> Endpoint<I, E, O>.input(input: EndpointInput<I2>): Endpoint<Pair<I, I2>, E, O> =
   Endpoint(this@input.input.and(input), errorOutput, output, info)
 
-@JvmName("withInputLeftUnit")
-public fun <I, E, O> Endpoint<Unit, E, O>.input(input: EndpointInput<I>, dummmy: Unit = Unit): Endpoint<I, E, O> =
-  Endpoint(this@input.input.and(input), errorOutput, output, info)
-
-@JvmName("withInputRightUnit")
-public fun <I, E, O> Endpoint<I, E, O>.input(input: EndpointInput<Unit>, dummmy: Unit = Unit): Endpoint<I, E, O> =
-  Endpoint(this@input.input.and(input), errorOutput, output, info)
-
-@JvmName("withInputLeftRightUnit")
-public fun <E, O> Endpoint<Unit, E, O>.input(input: EndpointInput<Unit>, dummmy: Unit = Unit): Endpoint<Unit, E, O> =
-  Endpoint(this@input.input.and(input), errorOutput, output, info)
-
-@JvmName("withInput2")
+@JvmName("input2")
 public fun <I, I2, I3, E, O> Endpoint<Pair<I, I2>, E, O>.input(input: EndpointInput<I3>): Endpoint<Triple<I, I2, I3>, E, O> =
   Endpoint(this@input.input.and(input), errorOutput, output, info)
 
-@JvmName("withInput2Pair")
+@JvmName("input2Pair")
 public fun <I, I2, I3, I4, E, O> Endpoint<Pair<I, I2>, E, O>.input(input: EndpointInput<Pair<I3, I4>>): Endpoint<Tuple4<I, I2, I3, I4>, E, O> =
   Endpoint(this@input.input.and(input), errorOutput, output, info)
 
@@ -188,52 +230,56 @@ public fun <I, I2, I3, I4, E, O> Endpoint<Pair<I, I2>, E, O>.input(input: Endpoi
 public fun <I, I2, I3, I4, E, O> Endpoint<Triple<I, I2, I3>, E, O>.input(input: EndpointInput<I4>): Endpoint<Tuple4<I, I2, I3, I4>, E, O> =
   Endpoint(this@input.input.and(input), errorOutput, output, info)
 
-@JvmName("withInput4")
+@JvmName("input4")
 public fun <I, I2, I3, I4, I5, E, O> Endpoint<Tuple4<I, I2, I3, I4>, E, O>.input(input: EndpointInput<I5>): Endpoint<Tuple5<I, I2, I3, I4, I5>, E, O> =
   Endpoint(this@input.input.and(input), errorOutput, output, info)
 
-@JvmName("withInput2RightUnit")
-public fun <I, I2, E, O> Endpoint<Pair<I, I2>, E, O>.input(input: EndpointInput<Unit>): Endpoint<Pair<I, I2>, E, O> =
-  Endpoint(this@input.input.and(input), errorOutput, output, info)
+@JvmName("outputLeftUnit")
+public fun <I, E, O> Endpoint<I, E, Unit>.output(i: EndpointOutput<O>, @Suppress("UNUSED_PARAMETER") dummy: Unit = Unit): Endpoint<I, E, O> =
+  Endpoint(input, errorOutput, output.and(i), info)
+
+@JvmName("outputRightUnit")
+public fun <I, E, O> Endpoint<I, E, O>.output(i: EndpointOutput<Unit>, @Suppress("UNUSED_PARAMETER") dummy: Unit = Unit): Endpoint<I, E, O> =
+  Endpoint(input, errorOutput, output.and(i), info)
+
+@JvmName("outputLeftRightUnit")
+public fun <I, E> Endpoint<I, E, Unit>.output(i: EndpointOutput<Unit>, @Suppress("UNUSED_PARAMETER") dummy: Unit = Unit): Endpoint<I, E, Unit> =
+  Endpoint(input, errorOutput, output.and(i), info)
 
 public fun <I, E, O, O2> Endpoint<I, E, O>.output(i: EndpointOutput<O2>): Endpoint<I, E, Pair<O, O2>> =
   Endpoint(input, errorOutput, output.and(i), info)
 
-@JvmName("withOutputLeftUnit")
-public fun <I, E, O> Endpoint<I, E, Unit>.output(i: EndpointOutput<O>, dummy: Unit = Unit): Endpoint<I, E, O> =
-  Endpoint(input, errorOutput, output.and(i), info)
-
-@JvmName("withOutput3")
+@JvmName("output2")
 public fun <I, E, O, O2, O3> Endpoint<I, E, Pair<O, O2>>.output(i: EndpointOutput<O3>): Endpoint<I, E, Triple<O, O2, O3>> =
   Endpoint(input, errorOutput, output.and(i), info)
+
+@JvmName("output3")
+public fun <I, E, O, O2, O3, O4> Endpoint<I, E, Triple<O, O2, O3>>.output(i: EndpointOutput<O4>): Endpoint<I, E, Tuple4<O, O2, O3, O4>> =
+  Endpoint(input, errorOutput, output.and(i), info)
+
+@JvmName("output4")
+public fun <I, E, O, O2, O3, O4, O5> Endpoint<I, E, Tuple4<O, O2, O3, O4>>.output(i: EndpointOutput<O5>): Endpoint<I, E, Tuple5<O, O2, O3, O4, O5>> =
+  Endpoint(input, errorOutput, output.and(i), info)
+
+@JvmName("errorOutputLeftUnit")
+public fun <I, E, O> Endpoint<I, Unit, O>.errorOutput(i: EndpointOutput<E>, @Suppress("UNUSED_PARAMETER") dummy: Unit = Unit): Endpoint<I, E, O> =
+  Endpoint(input, errorOutput.and(i), output, info)
+
+@JvmName("errorOutputRightUnit")
+public fun <I, E, O> Endpoint<I, E, O>.errorOutput(i: EndpointOutput<Unit>, @Suppress("UNUSED_PARAMETER") dummy: Unit = Unit): Endpoint<I, E, O> =
+  Endpoint(input, errorOutput.and(i), output, info)
 
 public fun <I, E, E2, O> Endpoint<I, E, O>.errorOutput(i: EndpointOutput<E2>): Endpoint<I, Pair<E, E2>, O> =
   Endpoint(input, errorOutput.and(i), output, info)
 
-@JvmName("withErrorOutputLeftUnit")
-public fun <I, E, O> Endpoint<I, Unit, O>.errorOutput(i: EndpointOutput<E>, dummy: Unit = Unit): Endpoint<I, E, O> =
-  Endpoint(input, errorOutput.and(i), output, info)
-
-@JvmName("withErrorOutput3")
+@JvmName("errorOutput2")
 public fun <I, E, E2, E3, O> Endpoint<I, Pair<E, E2>, O>.output(i: EndpointOutput<E3>): Endpoint<I, Triple<E, E2, E3>, O> =
   Endpoint(input, errorOutput.and(i), output, info)
 
-public data class EndpointInfo(
-  val name: String?,
-  val summary: String?,
-  val description: String?,
-  val tags: List<String>,
-  val deprecated: Boolean
-) {
-  public fun name(n: String): EndpointInfo = this.copy(name = n)
-  public fun summary(s: String): EndpointInfo = copy(summary = s)
-  public fun description(d: String): EndpointInfo = copy(description = d)
-  public fun tags(ts: List<String>): EndpointInfo = copy(tags = tags + ts)
-  public fun tag(t: String): EndpointInfo = copy(tags = tags + t)
-  public fun deprecated(d: Boolean): EndpointInfo = copy(deprecated = d)
+@JvmName("errorOutput3")
+public fun <I, E, E2, E3, E4, O> Endpoint<I, Triple<E, E2, E3>, O>.output(i: EndpointOutput<E4>): Endpoint<I, Tuple4<E, E2, E3, E4>, O> =
+  Endpoint(input, errorOutput.and(i), output, info)
 
-  public companion object {
-    public fun empty(): EndpointInfo =
-      EndpointInfo(null, null, null, emptyList(), deprecated = false)
-  }
-}
+@JvmName("errorOutput4")
+public fun <I, E, E2, E3, E4, E5, O> Endpoint<I, Tuple4<E, E2, E3, E4>, O>.output(i: EndpointOutput<E5>): Endpoint<I, Tuple5<E, E2, E3, E4, E5>, O> =
+  Endpoint(input, errorOutput.and(i), output, info)

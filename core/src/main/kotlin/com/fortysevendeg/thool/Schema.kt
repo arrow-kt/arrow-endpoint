@@ -29,11 +29,11 @@ public data class SchemaInfo<A>(
 
 public sealed interface Schema<A> {
 
-  val info: SchemaInfo<A>
+  public val info: SchemaInfo<A>
 
-  fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B>
+  public fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B>
 
-  fun <B> map(f: (A) -> B?): Schema<B> =
+  public fun <B> map(f: (A) -> B?): Schema<B> =
     transformInfo {
       SchemaInfo(
         it.description,
@@ -49,20 +49,20 @@ public sealed interface Schema<A> {
   /**
    * Returns an optional version of this schema, with `isOptional` set to true.
    */
-  fun asOption(): Schema<Option<A>> =
+  public fun asOption(): Schema<Option<A>> =
     Nullable(this, SchemaInfo(info.description, null, info.format, info.encodedExample, info.deprecatedMessage))
 
   /**
    * Returns an optional version of this schema, with `isOptional` set to true.
    */
-  fun asNullable(): Schema<A?> =
+  public fun asNullable(): Schema<A?> =
     Nullable(this, SchemaInfo(info.description, null, info.format, info.encodedExample, info.deprecatedMessage))
 
   /**
    * Returns an array version of this schema, with the schema type wrapped in [SchemaType.List].
    * Sets `isOptional` to true as the collection might be empty.
    */
-  fun asArray(): Schema<Array<A>> =
+  public fun asArray(): Schema<Array<A>> =
     List(
       this,
       SchemaInfo(
@@ -74,7 +74,7 @@ public sealed interface Schema<A> {
   /** Returns a collection version of this schema, with the schema type wrapped in [SchemaType.List].
    * Sets `isOptional` to true as the collection might be empty.
    */
-  fun asList(): Schema<kotlin.collections.List<A>> =
+  public fun asList(): Schema<kotlin.collections.List<A>> =
     List(
       this,
       SchemaInfo(
@@ -83,28 +83,28 @@ public sealed interface Schema<A> {
       )
     )
 
-  fun default(t: A, raw: Any? = null): Schema<A> =
+  public fun default(t: A, raw: Any? = null): Schema<A> =
     transformInfo { it.copy(default = Pair(t, raw)) }
 
-  fun description(d: kotlin.String): Schema<A> =
+  public fun description(d: kotlin.String): Schema<A> =
     transformInfo { it.copy(description = d) }
 
-  fun encodedExample(e: Any): Schema<A> =
+  public fun encodedExample(e: Any): Schema<A> =
     transformInfo { it.copy(encodedExample = e) }
 
-  fun format(f: kotlin.String): Schema<A> =
+  public fun format(f: kotlin.String): Schema<A> =
     transformInfo { it.copy(format = f) }
 
-  fun deprecatedMessage(d: kotlin.String): Schema<A> =
+  public fun deprecatedMessage(d: kotlin.String): Schema<A> =
     transformInfo { it.copy(deprecatedMessage = d) }
 
   /**
    * Nullable & Collections are considered nullable. Collections because they can be empty.
    **/
-  fun isOptional(): kotlin.Boolean =
+  public fun isOptional(): kotlin.Boolean =
     this is Nullable || this is List
 
-  fun isNotOptional(): kotlin.Boolean = !isOptional()
+  public fun isNotOptional(): kotlin.Boolean = !isOptional()
 
   public data class String<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Schema<A> {
     override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = String(transform(info))
@@ -112,18 +112,18 @@ public sealed interface Schema<A> {
   }
 
   public sealed interface NumberModifier
-  object Signed : NumberModifier
-  object Unsigned : NumberModifier
+  public object Signed : NumberModifier
+  public object Unsigned : NumberModifier
 
   public sealed interface NumberSize
-  object _8 : NumberSize
-  object _16 : NumberSize
-  object _32 : NumberSize
-  object _64 : NumberSize
+  public object _8 : NumberSize
+  public object _16 : NumberSize
+  public object _32 : NumberSize
+  public object _64 : NumberSize
 
   public sealed interface Number<A> : Schema<A> {
-    val modifier: NumberModifier
-    val size: NumberSize
+    public val modifier: NumberModifier
+    public val size: NumberSize
 
     public data class Byte<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
       override val modifier: NumberModifier = Signed
@@ -318,7 +318,7 @@ public sealed interface Schema<A> {
     val fields: kotlin.collections.List<Pair<FieldName, Schema<*>>>,
     override val info: SchemaInfo<A> = SchemaInfo()
   ) : Object<A> {
-    fun required(): kotlin.collections.List<FieldName> =
+    public fun required(): kotlin.collections.List<FieldName> =
       fields.mapNotNull { (f, s) -> if (!s.isOptional()) f else null }
 
     override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> =
@@ -328,7 +328,7 @@ public sealed interface Schema<A> {
       "${objectInfo.fullName}(${fields.joinToString(",") { (f, s) -> "$f=$s" }})"
 
     public companion object {
-      val Empty = Product<Unit>(ObjectInfo.unit, emptyList())
+      public val Empty = Product<Unit>(ObjectInfo.unit, emptyList())
     }
   }
 
@@ -402,87 +402,87 @@ public sealed interface Schema<A> {
     val typeParameterShortNames: kotlin.collections.List<kotlin.String> = emptyList()
   ) {
     public companion object {
-      val unit: ObjectInfo = ObjectInfo(fullName = "Unit")
+      public val unit: ObjectInfo = ObjectInfo(fullName = "Unit")
     }
   }
 
   public companion object {
     /** Creates a schema for type `T`, where the low-level representation is a `String`. */
-    fun <T> string(): Schema<T> = String()
+    public fun <T> string(): Schema<T> = String()
 
     /** Creates a schema for type `T`, where the low-level representation is binary.*/
-    fun <T> binary(): Schema<T> = Binary()
+    public fun <T> binary(): Schema<T> = Binary()
 
-    val string: Schema<kotlin.String> = String()
-
-    @ExperimentalUnsignedTypes
-    val ubyte: Schema<UByte> = Number.UByte()
-
-    val byte: Schema<Byte> = Schema.Number.Byte()
+    public val string: Schema<kotlin.String> = String()
 
     @ExperimentalUnsignedTypes
-    val ushort: Schema<UShort> = Number.UShort()
+    public val ubyte: Schema<UByte> = Number.UByte()
 
-    val short: Schema<Short> = Schema.Number.Short()
-
-    @ExperimentalUnsignedTypes
-    val uint: Schema<UInt> = Number.UInt()
-
-    val int: Schema<Int> = Schema.Number.Int()
+    public val byte: Schema<Byte> = Schema.Number.Byte()
 
     @ExperimentalUnsignedTypes
-    val ulong: Schema<ULong> = Number.ULong()
+    public val ushort: Schema<UShort> = Number.UShort()
 
-    val long: Schema<Long> = Schema.Number.Long()
+    public val short: Schema<Short> = Schema.Number.Short()
 
-    val float: Schema<Float> = Number.Float()
+    @ExperimentalUnsignedTypes
+    public val uint: Schema<UInt> = Number.UInt()
 
-    val double: Schema<Double> = Number.Double()
+    public val int: Schema<Int> = Schema.Number.Int()
 
-    val boolean: Schema<kotlin.Boolean> = Boolean()
+    @ExperimentalUnsignedTypes
+    public val ulong: Schema<ULong> = Number.ULong()
 
-    val unit: Schema<Unit> = Schema.Product.Empty
+    public val long: Schema<Long> = Schema.Number.Long()
+
+    public val float: Schema<Float> = Number.Float()
+
+    public val double: Schema<Double> = Number.Double()
+
+    public val boolean: Schema<kotlin.Boolean> = Boolean()
+
+    public val unit: Schema<Unit> = Schema.Product.Empty
 
 //    val schemaForFile: Schema<ThoolFile> = Schema(SchemaType.Binary)
 
-    val byteArray: Schema<ByteArray> = Schema.binary()
+    public val byteArray: Schema<ByteArray> = Schema.binary()
 
-    fun <A : kotlin.Enum<A>> enum(name: kotlin.String, enumValues: Array<out A>): Schema<A> =
+    public fun <A : kotlin.Enum<A>> enum(name: kotlin.String, enumValues: Array<out A>): Schema<A> =
       Enum(
         Schema.ObjectInfo(name),
         enumValues.map { EnumValue(it.name, it.ordinal) }
       )
 
-    inline fun <reified A : kotlin.Enum<A>> enum(): Schema<A> =
+    public inline fun <reified A : kotlin.Enum<A>> enum(): Schema<A> =
       enum(requireNotNull(A::class.qualifiedName) { "Qualified name on KClass should never be null." }, enumValues())
 
     // JVM
     // Java NIO
-    val byteBuffer: Schema<ByteBuffer> = Schema.binary()
-    val inputStream: Schema<InputStream> = Schema.binary()
+    public val byteBuffer: Schema<ByteBuffer> = Schema.binary()
+    public val inputStream: Schema<InputStream> = Schema.binary()
 
     // Java Date
-    val instant: Schema<Instant> = Schema.DateTime()
-    val zonedDateTime: Schema<ZonedDateTime> = Schema.DateTime()
-    val offsetDateTime: Schema<OffsetDateTime> = Schema.DateTime()
-    val date: Schema<java.util.Date> = Schema.DateTime()
+    public val instant: Schema<Instant> = Schema.DateTime()
+    public val zonedDateTime: Schema<ZonedDateTime> = Schema.DateTime()
+    public val offsetDateTime: Schema<OffsetDateTime> = Schema.DateTime()
+    public val date: Schema<java.util.Date> = Schema.DateTime()
 
-    val localDateTime: Schema<LocalDateTime> = Schema.String()
-    val localDate: Schema<LocalDate> = Schema.String()
-    val zoneOffset: Schema<ZoneOffset> = Schema.String()
-    val javaDuration: Schema<Duration> = Schema.String()
-    val localTime: Schema<LocalTime> = Schema.String()
-    val offsetTime: Schema<OffsetTime> = Schema.String()
+    public val localDateTime: Schema<LocalDateTime> = Schema.String()
+    public val localDate: Schema<LocalDate> = Schema.String()
+    public val zoneOffset: Schema<ZoneOffset> = Schema.String()
+    public val javaDuration: Schema<Duration> = Schema.String()
+    public val localTime: Schema<LocalTime> = Schema.String()
+    public val offsetTime: Schema<OffsetTime> = Schema.String()
 
     // Java Util
-    val uuid: Schema<UUID> = Schema.string<UUID>().format("uuid")
+    public val uuid: Schema<UUID> = Schema.string<UUID>().format("uuid")
 
     // Java Math
-    val bigDecimal: Schema<BigDecimal> = Schema.string()
+    public val bigDecimal: Schema<BigDecimal> = Schema.string()
   }
 }
 
-inline fun <reified A> Schema<A>.asOpenProduct(): Schema<Map<String, A>> =
+public inline fun <reified A> Schema<A>.asOpenProduct(): Schema<Map<String, A>> =
   Schema.OpenProduct(
     Schema.ObjectInfo(
       "Map",
@@ -491,7 +491,7 @@ inline fun <reified A> Schema<A>.asOpenProduct(): Schema<Map<String, A>> =
     this
   )
 
-inline fun <reified A> Schema.Companion.product(
+public inline fun <reified A> Schema.Companion.product(
   vararg properties: Pair<KProperty1<A, *>, Schema<*>>
 ): Schema<A> =
   Schema.Product(

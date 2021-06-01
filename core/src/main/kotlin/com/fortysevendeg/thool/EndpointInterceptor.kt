@@ -19,7 +19,7 @@ public interface EndpointInterceptor {
    * @tparam I The type of the endpoint's inputs.
    * @return An effect, describing the server's response.
    */
-  suspend fun <I> onDecodeSuccess(
+  public suspend fun <I> onDecodeSuccess(
     request: ServerRequest,
     endpoint: Endpoint<I, *, *>,
     i: I,
@@ -34,7 +34,7 @@ public interface EndpointInterceptor {
    *
    * @return An effect, describing the optional server response. If `None`, the next endpoint will be tried (if any).
    */
-  suspend fun onDecodeFailure(
+  public suspend fun onDecodeFailure(
     request: ServerRequest,
     endpoint: Endpoint<*, *, *>,
     failure: DecodeResult.Failure,

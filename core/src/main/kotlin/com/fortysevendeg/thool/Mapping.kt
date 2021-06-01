@@ -22,16 +22,16 @@ import arrow.core.nonFatalOrThrow
  */
 public interface Mapping<L, H> {
 
-  fun rawDecode(l: L): DecodeResult<H>
+  public fun rawDecode(l: L): DecodeResult<H>
 
-  fun encode(h: H): L
+  public fun encode(h: H): L
 
   /**
    * - calls `rawDecode`
    * - catches any exceptions that might occur, converting them to decode failures
    * - validates the result
    */
-  fun decode(l: L): DecodeResult<H> = tryRawDecode(l)
+  public fun decode(l: L): DecodeResult<H> = tryRawDecode(l)
 
   private fun tryRawDecode(l: L): DecodeResult<H> =
     try {
@@ -41,7 +41,7 @@ public interface Mapping<L, H> {
       DecodeResult.Failure.Error(l.toString(), error)
     }
 
-  fun <HH> map(codec: Mapping<H, HH>): Mapping<L, HH> =
+  public fun <HH> map(codec: Mapping<H, HH>): Mapping<L, HH> =
     object : Mapping<L, HH> {
       override fun rawDecode(l: L): DecodeResult<HH> =
         this@Mapping.rawDecode(l).flatMap(codec::rawDecode)
@@ -51,26 +51,26 @@ public interface Mapping<L, H> {
     }
 
   public companion object {
-    fun <L> id(): Mapping<L, L> =
+    public fun <L> id(): Mapping<L, L> =
       object : Mapping<L, L> {
         override fun rawDecode(l: L): DecodeResult<L> = DecodeResult.Value(l)
         override fun encode(h: L): L = h
       }
 
-    fun <L, H> fromDecode(rawDecode: (L) -> DecodeResult<H>, encode: (H) -> L): Mapping<L, H> =
+    public fun <L, H> fromDecode(rawDecode: (L) -> DecodeResult<H>, encode: (H) -> L): Mapping<L, H> =
       object : Mapping<L, H> {
         override fun rawDecode(l: L): DecodeResult<H> = rawDecode(l)
         override fun encode(h: H): L = encode(h)
       }
 
-    fun <L, H> from(decode: (L) -> H, encode: (H) -> L): Mapping<L, H> =
+    public fun <L, H> from(decode: (L) -> H, encode: (H) -> L): Mapping<L, H> =
       fromDecode(decode.andThen { DecodeResult.Value(it) }, encode)
 
     /**
      * A mapping which, during encoding, adds the given `prefix`.
      * When decoding, the prefix is removed (case insensitive,if present), otherwise an error is reported.
      */
-    fun stringPrefixCaseInsensitive(prefix: String): Mapping<String, String> {
+    public fun stringPrefixCaseInsensitive(prefix: String): Mapping<String, String> {
       val prefixLength = prefix.length
       val prefixLower = prefix.toLowerCase()
 
@@ -82,20 +82,20 @@ public interface Mapping<L, H> {
   }
 }
 
-sealed class DecodeResult<out A> {
-  abstract fun <B> map(transform: (A) -> B): DecodeResult<B>
-  abstract fun <B> flatMap(transform: (A) -> DecodeResult<B>): DecodeResult<B>
+public sealed class DecodeResult<out A> {
+  public abstract fun <B> map(transform: (A) -> B): DecodeResult<B>
+  public abstract fun <B> flatMap(transform: (A) -> DecodeResult<B>): DecodeResult<B>
 
   public data class Value<A>(val value: A) : DecodeResult<A>() {
     override fun <B> map(transform: (A) -> B): DecodeResult<B> = Value(transform(value))
     override fun <B> flatMap(transform: (A) -> DecodeResult<B>): DecodeResult<B> = transform(value)
   }
 
-  sealed class Failure : DecodeResult<Nothing>() {
+  public sealed class Failure : DecodeResult<Nothing>() {
     override fun <B> map(transform: (Nothing) -> B): DecodeResult<B> = this
     override fun <B> flatMap(transform: (Nothing) -> DecodeResult<B>): DecodeResult<B> = this
 
-    object Missing : Failure()
+    public object Missing : Failure()
     public data class Multiple<A>(val values: List<A>) : Failure()
     public data class Mismatch(val expected: String, val actual: String) : Failure()
     public data class Error(val original: String, val error: Throwable) : Failure() {
@@ -106,7 +106,7 @@ sealed class DecodeResult<out A> {
         )
 
         public data class JsonError(val msg: String, val path: List<FieldName>) {
-          fun message(): String {
+          public fun message(): String {
             val at = if (path.isNotEmpty()) " at '${path.joinToString(separator = ".") { it.encodedName }}'" else ""
             return msg + at
           }
@@ -115,13 +115,13 @@ sealed class DecodeResult<out A> {
     }
   }
 
-  fun <A> fromOption(o: Option<A>): DecodeResult<A> =
+  public fun <A> fromOption(o: Option<A>): DecodeResult<A> =
     o.map { Value(it) }.getOrElse { Failure.Missing }
 }
 
-fun <A> List<DecodeResult<A>>.sequence(): DecodeResult<List<A>> = traverseDecodeResult(::identity)
+public fun <A> List<DecodeResult<A>>.sequence(): DecodeResult<List<A>> = traverseDecodeResult(::identity)
 
-inline fun <A, B> List<A>.traverseDecodeResult(f: (A) -> DecodeResult<B>): DecodeResult<List<B>> {
+public inline fun <A, B> List<A>.traverseDecodeResult(f: (A) -> DecodeResult<B>): DecodeResult<List<B>> {
   val acc = mutableListOf<B>()
   forEach { a ->
     when (val res = f(a)) {
