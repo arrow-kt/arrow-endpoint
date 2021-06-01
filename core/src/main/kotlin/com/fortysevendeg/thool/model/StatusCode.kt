@@ -11,8 +11,8 @@ public /*inline*/ class StatusCode(public val code: Int) {
 
   override fun toString(): String = code.toString()
   override fun equals(other: Any?): Boolean =
-    when {
-      other is StatusCode -> code == other.code
+    when (other) {
+      is StatusCode -> code == other.code
       else -> false
     }
 

@@ -48,10 +48,10 @@ public data class Uri(
 
     public fun parse(url: String): Either<UriError, Uri> {
       val trimmedUrl = url.trimStart()
-      val scheme = schemePattern.find(trimmedUrl)?.value?.substringBefore(':')?.toLowerCase() ?: ""
+      val scheme = schemePattern.find(trimmedUrl)?.value?.substringBefore(':')?.lowercase() ?: ""
 
       val schemeSpecificPart = when (scheme) {
-        "http", "https" -> trimmedUrl.substring(scheme.length + 1).toLowerCase()
+        "http", "https" -> trimmedUrl.substring(scheme.length + 1).lowercase()
         else -> return UriError.UnexpectedScheme("Unexpected scheme: $scheme").left()
       }
 
@@ -141,7 +141,7 @@ public data class Uri(
         when (querySegments.contains("&") || querySegments.contains("=")) {
           true -> {
             querySegments.split("&").map { querySegment ->
-              querySegment.split("=").map { it.decode(plusAsSpace = true).fold({ return it.left() }, { it }) }
+              querySegment.split("=").map { it.decode(plusAsSpace = true).fold({ e -> return e.left() }, { a -> a }) }
             }.map { listQueryParams: List<String> ->
               when (listQueryParams.size) {
                 1 -> QuerySegment.Value(listQueryParams.first())

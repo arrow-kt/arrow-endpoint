@@ -72,10 +72,10 @@ public interface Mapping<L, H> {
      */
     public fun stringPrefixCaseInsensitive(prefix: String): Mapping<String, String> {
       val prefixLength = prefix.length
-      val prefixLower = prefix.toLowerCase()
+      val prefixLower = prefix.lowercase()
 
       return fromDecode({ value ->
-        if (value.toLowerCase().startsWith(prefixLower)) DecodeResult.Value(value.substring(prefixLength))
+        if (value.lowercase().startsWith(prefixLower)) DecodeResult.Value(value.substring(prefixLength))
         else DecodeResult.Failure.Error(value, IllegalArgumentException("The given value doesn't start with $prefix"))
       }) { v -> "$prefix$v" }
     }

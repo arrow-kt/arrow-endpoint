@@ -38,8 +38,8 @@ public data class Cookie(val name: String, val value: String) {
       val cs = s.split(";").map { ss ->
         val cookie = ss.split(Regex("="), limit = 2).map(String::trim)
         when (cookie.size) {
-          1 -> Cookie.of(cookie[0], "")
-          2 -> Cookie.of(cookie[0], cookie[1])
+          1 -> of(cookie[0], "")
+          2 -> of(cookie[0], cookie[1])
           else -> throw RuntimeException("Cookie.parse failed. Expected size 1 or 2 but found $cookie")
         }
       }

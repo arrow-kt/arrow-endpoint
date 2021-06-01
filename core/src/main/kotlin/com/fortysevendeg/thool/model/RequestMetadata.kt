@@ -46,6 +46,27 @@ public sealed interface Body {
 
   public data class ByteArray(public val byteArray: KByteArray, public override val format: CodecFormat) : Body {
     override fun toByteArray(): KByteArray = byteArray
+
+    override fun equals(other: Any?): Boolean {
+      return when {
+        other == null -> false
+        this === other -> true
+        this::class != other::class -> false
+        else -> {
+          other as ByteArray
+
+          if (format != other.format) return false
+          if (!byteArray.contentEquals(other.byteArray)) return false
+          true
+        }
+      }
+    }
+
+    override fun hashCode(): Int {
+      var result = byteArray.contentHashCode()
+      result = 31 * result + format.hashCode()
+      return result
+    }
   }
 
   public data class ByteBuffer(public val byteBuffer: JByteBuffer, public override val format: CodecFormat) :
