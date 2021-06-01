@@ -3,8 +3,9 @@ package com.fortysevendeg.thool.spring.server
 import arrow.core.Either
 import com.fortysevendeg.thool.DecodeResult
 import com.fortysevendeg.thool.Endpoint
+import com.fortysevendeg.thool.model.StatusCode
 import com.fortysevendeg.thool.server.ServerEndpoint
-import com.fortysevendeg.thool.spring.client.toRequestAndParseWebClient
+import com.fortysevendeg.thool.spring.client.invokeAndResponse
 import com.fortysevendeg.thool.test.ServerInterpreterSuite
 import io.undertow.Undertow
 import org.springframework.http.server.reactive.HttpHandler
@@ -37,12 +38,12 @@ class SpringServerInterpreterSuite : ServerInterpreterSuite() {
     return Unit.run("http://localhost:8080")
   }
 
-  override suspend fun <I, E, O> Unit.request(
+  override suspend fun <I, E, O> Unit.requestAndStatusCode(
     endpoint: Endpoint<I, E, O>,
     baseUrl: String,
     input: I
-  ): DecodeResult<Either<E, O>> {
-    val f = endpoint.toRequestAndParseWebClient(baseUrl)
-    return client.f(input).second
+  ): Pair<DecodeResult<Either<E, O>>, StatusCode> {
+    val (res, response) = client.invokeAndResponse(endpoint, baseUrl, input)
+    return Pair(res, StatusCode(response.rawStatusCode()))
   }
 }

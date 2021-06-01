@@ -25,7 +25,6 @@ import com.fortysevendeg.thool.Thool.statusCode
 import com.fortysevendeg.thool.Thool.statusMapping
 import com.fortysevendeg.thool.Thool.stringBody
 import com.fortysevendeg.thool.and
-import com.fortysevendeg.thool.errorOutput
 import com.fortysevendeg.thool.input
 import com.fortysevendeg.thool.model.CodecFormat
 import com.fortysevendeg.thool.model.MediaType
@@ -248,14 +247,8 @@ object TestEndpoint {
         .output(header("B", Codec.listFirst(Codec.string)))
     )
 
-  public val not_existing_endpoint: Endpoint<Unit, String, Unit> =
+  public val out_reified_status: Endpoint<Unit, Unit, Either<Int, String>> =
     Endpoint
-      .get { "api" / "not-existing" }
-      .errorOutput(oneOf(statusMapping(StatusCode.BadRequest, stringBody())))
-
-  public val in_string_out_status_from_string: Endpoint<String, Unit, Either<Int, String>> =
-    Endpoint
-      .input(fruitParam)
       .output(
         oneOf(
           statusMapping(StatusCode.Accepted, plainBody(Codec.int).map({ Either.Left(it) }, { it.value })),
@@ -263,20 +256,17 @@ object TestEndpoint {
         )
       )
 
-  public val in_int_out_value_form_exact_match: Endpoint<Int, Unit, String> =
+  public val out_value_form_exact_match: Endpoint<Unit, Unit, String> =
     Endpoint
-      .input(fixedPath("mapping"))
-      .input(query("num", Codec.int))
       .output(
         oneOf(
-          statusMapping(StatusCode.Accepted, stringBody(), "A"),
-          statusMapping(StatusCode.Ok, stringBody(), "B")
+          statusMapping(StatusCode.Ok, stringBody(), "A"),
+          statusMapping(StatusCode.Accepted, stringBody(), "B")
         )
       )
 
-  public val in_string_out_status_from_string_one_empty: Endpoint<String, Unit, Either<Unit, String>> =
+  public val out_status_from_string_one_empty: Endpoint<Unit, Unit, Either<Unit, String>> =
     Endpoint
-      .input(fruitParam)
       .output(
         oneOf(
           statusMapping(StatusCode.Accepted, EndpointOutput.empty().map({ Either.Left(it) }, { it.value })),

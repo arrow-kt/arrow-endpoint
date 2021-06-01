@@ -33,8 +33,24 @@ public fun <I, E, O> Endpoint<I, E, O>.toRequestAndParseWebClient(
     val method = info.method.method()
     requireNotNull(method)
     val request: WebClient.RequestBodyUriSpec = toRequest(this, info, method)
-    Pair(request, parseResponse(request, method, baseUrl))
+    request.awaitExchange { response ->
+      Pair(request, parseResponse(request, method, baseUrl, response))
+    }
   }
+
+public suspend fun <I, E, O> WebClient.invokeAndResponse(
+  endpoint: Endpoint<I, E, O>,
+  baseUrl: String,
+  input: I
+): Pair<DecodeResult<Either<E, O>>, ClientResponse> {
+  val info = endpoint.input.requestInfo(input, baseUrl)
+  val method = info.method.method()
+  requireNotNull(method)
+  val request: WebClient.RequestBodyUriSpec = toRequest(this, info, method)
+  return request.awaitExchange { response ->
+    Pair(endpoint.parseResponse(request, method, baseUrl, response), response)
+  }
+}
 
 public suspend operator fun <I, E, O> WebClient.invoke(
   endpoint: Endpoint<I, E, O>,
@@ -45,7 +61,7 @@ public suspend operator fun <I, E, O> WebClient.invoke(
   val method = info.method.method()
   requireNotNull(method)
   val request: WebClient.RequestBodyUriSpec = toRequest(this, info, method)
-  return endpoint.parseResponse(request, method, baseUrl)
+  return request.awaitExchange { endpoint.parseResponse(request, method, baseUrl, it) }
 }
 
 private fun toRequest(
@@ -71,30 +87,30 @@ private fun toRequest(
 private suspend fun <I, E, O> Endpoint<I, E, O>.parseResponse(
   request: WebClient.RequestBodyUriSpec,
   method: HttpMethod,
-  url: String
-): DecodeResult<Either<E, O>> =
-  request.awaitExchange { response: ClientResponse ->
-    val code = StatusCode(response.rawStatusCode())
-    val output = if (code.isSuccess()) output else errorOutput
+  url: String,
+  response: ClientResponse
+): DecodeResult<Either<E, O>> {
+  val code = StatusCode(response.rawStatusCode())
+  val output = if (code.isSuccess()) output else errorOutput
 
-    val params =
-      output.getOutputParams(response, response.headers().asHttpHeaders(), code, response.statusCode().reasonPhrase)
+  val params =
+    output.getOutputParams(response, response.headers().asHttpHeaders(), code, response.statusCode().reasonPhrase)
 
-    params.map { it.asAny }
-      .map { p -> if (code.isSuccess()) Either.Right(p as O) else Either.Left(p as E) }
-  }.let { result: DecodeResult<Either<E, O>> ->
-    when (result) {
-      is DecodeResult.Failure.Error ->
-        DecodeResult.Failure.Error(
-          result.original,
-          IllegalArgumentException(
-            "Cannot decode from ${result.original} of request ${method.name} $url",
-            result.error
-          )
+  val result = params.map { it.asAny }
+    .map { p -> if (code.isSuccess()) Either.Right(p as O) else Either.Left(p as E) }
+
+  return when (result) {
+    is DecodeResult.Failure.Error ->
+      DecodeResult.Failure.Error(
+        result.original,
+        IllegalArgumentException(
+          "Cannot decode from ${result.original} of request ${method.name} $url",
+          result.error
         )
-      else -> result
-    }
+      )
+    else -> result
   }
+}
 
 private suspend fun EndpointOutput<*>.getOutputParams(
   response: ClientResponse,

@@ -14,7 +14,7 @@ import com.fortysevendeg.thool.test.TestEndpoint.in_byte_array_out_byte_array
 import com.fortysevendeg.thool.test.TestEndpoint.in_byte_buffer_out_byte_buffer
 import com.fortysevendeg.thool.test.TestEndpoint.in_header_out_string
 import com.fortysevendeg.thool.test.TestEndpoint.in_input_stream_out_input_stream
-import com.fortysevendeg.thool.test.TestEndpoint.in_int_out_value_form_exact_match
+import com.fortysevendeg.thool.test.TestEndpoint.out_value_form_exact_match
 import com.fortysevendeg.thool.test.TestEndpoint.in_json_out_json
 import com.fortysevendeg.thool.test.TestEndpoint.in_mapped_path_out_string
 import com.fortysevendeg.thool.test.TestEndpoint.in_mapped_path_path_out_string
@@ -30,7 +30,7 @@ import com.fortysevendeg.thool.test.TestEndpoint.in_query_out_string
 import com.fortysevendeg.thool.test.TestEndpoint.in_query_params_out_string
 import com.fortysevendeg.thool.test.TestEndpoint.in_query_query_out_string
 import com.fortysevendeg.thool.test.TestEndpoint.in_string_out_status
-import com.fortysevendeg.thool.test.TestEndpoint.in_string_out_status_from_string
+import com.fortysevendeg.thool.test.TestEndpoint.out_reified_status
 import com.fortysevendeg.thool.test.TestEndpoint.in_string_out_string
 import com.fortysevendeg.thool.test.TestEndpoint.in_unit_out_json_unit
 import io.kotest.core.spec.style.FreeSpec
@@ -57,11 +57,21 @@ public abstract class ClientInterpreterSuite : FreeSpec() {
     }
     afterSpec { server.close() }
 
+    fun <E, O> test(
+      endpoint: Endpoint<Unit, E, O>,
+      expected: Either<E, O>,
+      logic: suspend (input: Unit) -> Either<E, O>
+    ): Unit = endpoint.details().invoke {
+      server.dispatcher = endpoint.logic(logic).toDispatcher()
+      val result = request(endpoint, baseUrl, Unit).map(::normalise)
+      result shouldBe DecodeResult.Value(normalise(expected))
+    }
+
     fun <I, E, O> test(
       endpoint: Endpoint<I, E, O>,
       input: I,
       expected: Either<E, O>,
-      logic: suspend (I) -> Either<E, O>
+      logic: suspend (input: I) -> Either<E, O>
     ): Unit = endpoint.details().invoke {
       server.dispatcher = endpoint.logic(logic).toDispatcher()
       val result = request(endpoint, baseUrl, input).map(::normalise)
@@ -159,10 +169,10 @@ public abstract class ClientInterpreterSuite : FreeSpec() {
 
     test(in_unit_out_json_unit, Unit, Either.Right(Unit)) { it.right() }
 
-    test(in_string_out_status_from_string.name("status one of 1"), "apple", "fruit: apple".right().right()) { "fruit: $it".right().right() }
-    test(in_string_out_status_from_string.name("status one of 2"), "papaya", 29.left().right()) { 29.left().right() }
+    test(out_reified_status.name("status 1/2"), Unit, "fruit: apple".right().right()) { "fruit: apple".right().right() }
+    test(out_reified_status.name("status 2/2"), Unit, 29.left().right()) { 29.left().right() }
 
-    test(in_int_out_value_form_exact_match.name("first exact status of 2"), 1, "B".right()) { "B".right() }
-    test(in_int_out_value_form_exact_match.name("second exact status of 2"), 2, "A".right()) { "A".right() }
+    test(out_value_form_exact_match.name("first exact status of 2"), Unit, "B".right()) { "B".right() }
+    test(out_value_form_exact_match.name("second exact status of 2"), Unit, "A".right()) { "A".right() }
   }
 }
