@@ -64,7 +64,7 @@ public sealed interface EndpointOutput<A> : EndpointTransput<A> {
    * The [appliesTo] function should determine, whether a runtime value matches the type [O].
    * This check cannot be in general done by checking the runtime class of the value, due to type erasure (if `O` has type parameters).
    */
-  public class StatusMapping<O> internal constructor(
+  public class StatusMapping<O> @PublishedApi internal constructor(
     public val statusCode: MStatusCode?,
     public val output: EndpointOutput<O>,
     public val appliesTo: (Any?) -> Boolean
