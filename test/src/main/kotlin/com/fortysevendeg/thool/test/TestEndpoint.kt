@@ -248,29 +248,26 @@ object TestEndpoint {
     )
 
   public val out_reified_status: Endpoint<Unit, Unit, Either<Int, String>> =
-    Endpoint
-      .output(
-        oneOf(
-          statusMapping(StatusCode.Accepted, plainBody(Codec.int).map({ Either.Left(it) }, { it.value })),
-          statusMapping(StatusCode.Ok, plainBody(Codec.string).map({ Either.Right(it) }, { it.value }))
-        )
+    Endpoint.output(
+      oneOf(
+        statusMapping(StatusCode.Accepted, plainBody(Codec.int).map({ Either.Left(it) }, { it.value })),
+        statusMapping(StatusCode.Ok, plainBody(Codec.string).map({ Either.Right(it) }, { it.value }))
       )
+    )
 
   public val out_value_form_exact_match: Endpoint<Unit, Unit, String> =
-    Endpoint
-      .output(
-        oneOf(
-          statusMapping(StatusCode.Ok, stringBody(), "A"),
-          statusMapping(StatusCode.Accepted, stringBody(), "B")
-        )
+    Endpoint.output(
+      oneOf(
+        statusMapping(StatusCode.Ok, stringBody(), "A"),
+        statusMapping(StatusCode.Accepted, stringBody(), "B")
       )
+    )
 
   public val out_status_from_string_one_empty: Endpoint<Unit, Unit, Either<Unit, String>> =
-    Endpoint
-      .output(
-        oneOf(
-          statusMapping(StatusCode.Accepted, EndpointOutput.empty().map({ Either.Left(it) }, { it.value })),
-          statusMapping(StatusCode.Ok, stringBody().map({ Either.Right(it) }, { it.value }))
-        )
+    Endpoint.output(
+      oneOf(
+        statusMapping(StatusCode.Accepted, EndpointOutput.empty().map({ Either.Left(it) }, { it.value })),
+        statusMapping(StatusCode.Ok, stringBody().map({ Either.Right(it) }, { it.value }))
       )
+    )
 }

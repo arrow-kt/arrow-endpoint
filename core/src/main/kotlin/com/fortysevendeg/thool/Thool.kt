@@ -1,5 +1,6 @@
 package com.fortysevendeg.thool
 
+import arrow.core.Either
 import arrow.core.prependTo
 import com.fortysevendeg.thool.dsl.PathSyntax
 import com.fortysevendeg.thool.model.CodecFormat
@@ -124,6 +125,20 @@ object Thool {
    * Typically, the supertype is a sealed class, and the mappings are implementing classes.
    *
    * Note that exhaustiveness of mappings is not checked (that all subtypes of a sealed class are covered).
+   *
+   * We can use this to for example to define an [EndpointOutput] that returns an [Either] of [Int] or [String].
+   * Depending on if it returns [Either.Left] or [Either.Right] it allows you to return a different [StatusCode].
+   *
+   * The server decided based on the type, which [StatusCode] it needs to return,
+   * and the client determines based on the [StatusCode] which [Codec] to use to decode the response.
+   *
+   * ```kotlin
+   * val output: EndpointOutput.OneOf<Either<Int, String>, Either<Int, String>> =
+   *   oneOf(
+   *     statusMapping(StatusCode.Accepted, plainBody(Codec.int).map({ Either.Left(it) }, { it.value })),
+   *     statusMapping(StatusCode.Ok, stringBody().map({ Either.Right(it) }, { it.value }))
+   *   )
+   * ```
    */
   public fun <A> oneOf(firstCase: EndpointOutput.StatusMapping<A>, vararg otherCases: EndpointOutput.StatusMapping<A>): EndpointOutput.OneOf<A, A> =
     EndpointOutput.OneOf(firstCase prependTo otherCases.toList(), Codec.idPlain())
