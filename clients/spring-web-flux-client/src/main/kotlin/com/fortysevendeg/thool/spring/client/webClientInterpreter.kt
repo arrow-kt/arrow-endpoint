@@ -56,13 +56,8 @@ public suspend operator fun <I, E, O> WebClient.invoke(
   endpoint: Endpoint<I, E, O>,
   baseUrl: String,
   input: I
-): DecodeResult<Either<E, O>> {
-  val info = endpoint.input.requestInfo(input, baseUrl)
-  val method = info.method.method()
-  requireNotNull(method)
-  val request: WebClient.RequestBodyUriSpec = toRequest(this, info, method)
-  return request.awaitExchange { endpoint.parseResponse(request, method, baseUrl, it) }
-}
+): DecodeResult<Either<E, O>> =
+  invokeAndResponse(endpoint, baseUrl, input).first
 
 private fun toRequest(
   webClient: WebClient,

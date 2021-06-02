@@ -5,7 +5,6 @@ apply(from = "https://raw.githubusercontent.com/arrow-kt/arrow/main/arrow-libs/g
 dependencies {
   compileOnly(project(Libs.thoolModel))
   implementation(Libs.kotlinxCoroutines)
-  implementation(Libs.kotlinxCoroutinesJdk8)
   testImplementation(project(Libs.thoolModel))
 }
 
