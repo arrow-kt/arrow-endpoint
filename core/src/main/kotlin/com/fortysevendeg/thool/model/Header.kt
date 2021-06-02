@@ -26,7 +26,7 @@ public data class Header(val name: String, val value: String) {
   override fun toString(): String = toStringSafe()
 
   override fun hashCode(): Int =
-    (31 * name.toLowerCase().hashCode()) + value.hashCode()
+    (31 * name.lowercase().hashCode()) + value.hashCode()
 
   override fun equals(other: Any?): Boolean =
     when (other) {
@@ -125,15 +125,15 @@ public data class Header(val name: String, val value: String) {
     public const val XXSSProtection: String = "X-XSS-Protection"
 
     public val ContentHeaders: Set<String> =
-      setOf(ContentLength, ContentType, ContentMd5).map(String::toLowerCase).toSet()
+      setOf(ContentLength, ContentType, ContentMd5).map(String::lowercase).toSet()
 
     public val SensitiveHeaders: Set<String> =
-      setOf(Authorization, Cookie, SetCookie).map(String::toLowerCase).toSet()
+      setOf(Authorization, Cookie, SetCookie).map(String::lowercase).toSet()
 
     /** Performs a case-insensitive check, whether this header name is content-related.
      */
     public fun isContent(headerName: String): Boolean =
-      ContentHeaders.contains(headerName.toLowerCase().trim())
+      ContentHeaders.contains(headerName.lowercase().trim())
 
     /** Performs a case-insensitive check, whether this header is content-related. */
     public fun isContent(header: Header): Boolean =
@@ -145,7 +145,7 @@ public data class Header(val name: String, val value: String) {
 
     /** Performs a case-insensitive check, whether this header name is sensitive. */
     public fun isSensitive(headerName: String, sensitiveHeaders: Set<String>): Boolean =
-      sensitiveHeaders.map(String::toLowerCase).contains(headerName.toLowerCase().trim())
+      sensitiveHeaders.map(String::lowercase).contains(headerName.lowercase().trim())
 
     /** Performs a case-insensitive check, whether this header is sensitive. */
     public fun isSensitive(header: Header): Boolean =

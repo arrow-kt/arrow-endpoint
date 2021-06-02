@@ -2,7 +2,6 @@ package com.fortysevendeg.thool.test
 
 import arrow.core.Nullable
 import com.fortysevendeg.thool.EndpointIO
-import com.fortysevendeg.thool.map
 import com.fortysevendeg.thool.model.Address
 import com.fortysevendeg.thool.model.Body
 import com.fortysevendeg.thool.model.ConnectionInfo
