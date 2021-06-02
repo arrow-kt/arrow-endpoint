@@ -191,7 +191,7 @@ public sealed interface EndpointInput<A> : EndpointTransput<A> {
     }
   }
 
-  public fun toList(): List<EndpointInput<Any?>> =
+  private fun toList(): List<EndpointInput<Any?>> =
     reduce(::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf)
 
   public fun asListOfBasicInputs(includeAuth: Boolean = true): List<Basic<*, *, *>> =

@@ -133,9 +133,6 @@ public fun <A, B> EndpointOutput<A>.reduce(
         output.second.reduce(ifBody, ifEmpty, ifHeader, ifFixedStatuscode, ifStatusCode, ifVoid)
   }
 
-// fun EndpointOutput<*>.toList(): List<EndpointOutput<Any?>> =
-//  reduce(::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf)
-
 @JvmName("andLeftUnit")
 public fun <A> EndpointOutput<Unit>.and(
   other: EndpointOutput<A>,
