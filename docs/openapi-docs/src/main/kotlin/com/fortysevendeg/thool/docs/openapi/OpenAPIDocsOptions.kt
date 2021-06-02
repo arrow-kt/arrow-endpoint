@@ -11,7 +11,7 @@ public data class OpenAPIDocsOptions(
     public fun defaultOperationIdGenerator(pathComponents: List<String>, method: Method): String {
       val components = pathComponents.ifEmpty { listOf("root") }
       // converting to camelCase
-      return method.value.toLowerCase() + components.joinToString("") { it.toLowerCase().capitalize() }
+      return method.value.lowercase() + components.joinToString("") { it.lowercase().capitalize() }
     }
 
     public fun defaultSchemaName(info: Schema.ObjectInfo): String {

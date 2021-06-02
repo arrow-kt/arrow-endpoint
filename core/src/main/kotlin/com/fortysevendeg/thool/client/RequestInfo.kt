@@ -43,7 +43,6 @@ public fun <I> EndpointInput<I>.requestInfo(
   baseUrl: String // Scheme, base & port
 ): RequestInfo {
   val baseUrl = baseUrl.trimSlash()
-  val _params = Params.ParamsAsAny(input)
   var method: Method? = null
   val pathSegments: MutableList<PathSegment> = mutableListOf()
   val queryParams: MutableList<Pair<String, List<String>>> = mutableListOf()
@@ -110,7 +109,7 @@ public fun <I> EndpointInput<I>.requestInfo(
     }
   }
 
-  buildClientInfo(_params)
+  buildClientInfo(Params.ParamsAsAny(input))
 
   return RequestInfo(
     method ?: Method.GET,
