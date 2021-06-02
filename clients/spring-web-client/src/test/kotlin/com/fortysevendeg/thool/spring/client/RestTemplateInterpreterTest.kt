@@ -11,11 +11,6 @@ class RestTemplateInterpreterTest : ClientInterpreterSuite() {
 
   private val client = RestTemplate()
 
-//  override suspend fun <I, E, O> request(endpoint: Endpoint<I, E, O>, baseUrl: String, input: I): DecodeResult<Either<E, O>> {
-//    val f = endpoint.toRequestAndParseRestTemplate(baseUrl)
-//    return client.f(input).second
-//  }
-
   override suspend fun <I, E, O> requestAndStatusCode(
     endpoint: Endpoint<I, E, O>,
     baseUrl: String,
