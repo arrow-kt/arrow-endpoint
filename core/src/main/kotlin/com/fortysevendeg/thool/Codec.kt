@@ -7,6 +7,7 @@ import arrow.core.Some
 import arrow.core.andThen
 import com.fortysevendeg.thool.model.CodecFormat
 import com.fortysevendeg.thool.model.Cookie
+import com.fortysevendeg.thool.model.Uri
 import java.io.InputStream
 import java.math.BigDecimal
 import java.nio.ByteBuffer
@@ -26,13 +27,27 @@ import java.time.format.DateTimeParseException
 import java.util.UUID
 import java.util.Date
 
-typealias PlainCodec<A> = Codec<String, A, CodecFormat.TextPlain>
-typealias JsonCodec<A> = Codec<String, A, CodecFormat.Json>
-typealias XmlCodec<A> = Codec<String, A, CodecFormat.Xml>
+public typealias PlainCodec<A> = Codec<String, A, CodecFormat.TextPlain>
+public typealias JsonCodec<A> = Codec<String, A, CodecFormat.Json>
+public typealias XmlCodec<A> = Codec<String, A, CodecFormat.Xml>
 
 public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
-  fun schema(): Schema<H>
-  val format: CF
+  public fun schema(): Schema<H>
+  public val format: CF
+
+  public fun <HH> map(codec: Codec<H, HH, @UnsafeVariance CF>): Codec<L, HH, CF> =
+    object : Codec<L, HH, CF> {
+      override fun rawDecode(l: L): DecodeResult<HH> =
+        this@Codec.rawDecode(l).flatMap(codec::rawDecode)
+
+      override fun encode(h: HH): L =
+        this@Codec.encode(codec.encode(h))
+
+      override val format: CF = this@Codec.format
+
+      override fun schema(): Schema<HH> =
+        codec.schema()
+    }
 
   override fun <HH> map(codec: Mapping<H, HH>): Codec<L, HH, CF> =
     object : Codec<L, HH, CF> {
@@ -54,13 +69,13 @@ public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
           }
     }
 
-  fun <HH> mapDecode(rawDecode: (H) -> DecodeResult<HH>, encode: (HH) -> H): Codec<L, HH, CF> =
+  public fun <HH> mapDecode(rawDecode: (H) -> DecodeResult<HH>, encode: (HH) -> H): Codec<L, HH, CF> =
     map(Mapping.fromDecode(rawDecode, encode))
 
-  fun <HH> map(f: (H) -> HH, g: (HH) -> H): Codec<L, HH, CF> =
+  public fun <HH> map(f: (H) -> HH, g: (HH) -> H): Codec<L, HH, CF> =
     mapDecode(f.andThen { DecodeResult.Value(it) }, g)
 
-  fun schema(s2: Schema<H>?): Codec<L, H, CF> =
+  public fun schema(s2: Schema<H>?): Codec<L, H, CF> =
     s2?.let {
       object : Codec<L, H, CF> {
         override fun rawDecode(l: L): DecodeResult<H> = this@Codec.decode(l)
@@ -70,10 +85,10 @@ public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
       }
     } ?: this@Codec
 
-  fun modifySchema(modify: (Schema<H>) -> Schema<H>): Codec<L, H, CF> =
+  public fun modifySchema(modify: (Schema<H>) -> Schema<H>): Codec<L, H, CF> =
     schema(modify(schema()))
 
-  fun <CF2 : CodecFormat> format(f: CF2): Codec<L, H, CF2> =
+  public fun <CF2 : CodecFormat> format(f: CF2): Codec<L, H, CF2> =
     object : Codec<L, H, CF2> {
       override fun rawDecode(l: L): DecodeResult<H> = this@Codec.decode(l)
       override fun encode(h: H): L = this@Codec.encode(h)
@@ -92,7 +107,7 @@ public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
   }
 
   public companion object {
-    fun <L, CF : CodecFormat> id(f: CF, s: Schema<L>): Codec<L, L, CF> =
+    public fun <L, CF : CodecFormat> id(f: CF, s: Schema<L>): Codec<L, L, CF> =
       object : Codec<L, L, CF> {
         override fun rawDecode(l: L): DecodeResult<L> = DecodeResult.Value(l)
         override fun encode(h: L): L = h
@@ -100,55 +115,55 @@ public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
         override val format: CF = f
       }
 
-    fun <L> idPlain(s: Schema<L> = Schema.string()): Codec<L, L, CodecFormat.TextPlain> =
+    public fun <L> idPlain(s: Schema<L> = Schema.string()): Codec<L, L, CodecFormat.TextPlain> =
       id(CodecFormat.TextPlain, s)
 
-    fun <T> stringCodec(schema: Schema<T>, parse: (String) -> T): Codec<String, T, CodecFormat.TextPlain> =
+    public fun <T> stringCodec(schema: Schema<T>, parse: (String) -> T): Codec<String, T, CodecFormat.TextPlain> =
       string.map(parse) { it.toString() }.schema(schema)
 
-    val string: Codec<String, String, CodecFormat.TextPlain> =
+    public val string: Codec<String, String, CodecFormat.TextPlain> =
       id(CodecFormat.TextPlain, Schema.string)
 
-    val byte: Codec<String, Byte, CodecFormat.TextPlain> = stringCodec(Schema.byte) { it.toByte() }
-    val short: Codec<String, Short, CodecFormat.TextPlain> = stringCodec(Schema.short) { it.toShort() }
-    val int: Codec<String, Int, CodecFormat.TextPlain> = stringCodec(Schema.int) { it.toInt() }
-    val long: Codec<String, Long, CodecFormat.TextPlain> = stringCodec(Schema.long) { it.toLong() }
-    val float: Codec<String, Float, CodecFormat.TextPlain> = stringCodec(Schema.float) { it.toFloat() }
-    val double: Codec<String, Double, CodecFormat.TextPlain> = stringCodec(Schema.double) { it.toDouble() }
-    val boolean: Codec<String, Boolean, CodecFormat.TextPlain> = stringCodec(Schema.boolean) { it.toBoolean() }
+    public val byte: Codec<String, Byte, CodecFormat.TextPlain> = stringCodec(Schema.byte) { it.toByte() }
+    public val short: Codec<String, Short, CodecFormat.TextPlain> = stringCodec(Schema.short) { it.toShort() }
+    public val int: Codec<String, Int, CodecFormat.TextPlain> = stringCodec(Schema.int) { it.toInt() }
+    public val long: Codec<String, Long, CodecFormat.TextPlain> = stringCodec(Schema.long) { it.toLong() }
+    public val float: Codec<String, Float, CodecFormat.TextPlain> = stringCodec(Schema.float) { it.toFloat() }
+    public val double: Codec<String, Double, CodecFormat.TextPlain> = stringCodec(Schema.double) { it.toDouble() }
+    public val boolean: Codec<String, Boolean, CodecFormat.TextPlain> = stringCodec(Schema.boolean) { it.toBoolean() }
 
-    val uuid: Codec<String, UUID, CodecFormat.TextPlain> = stringCodec(Schema.uuid, UUID::fromString)
-    val bigDecimal: Codec<String, BigDecimal, CodecFormat.TextPlain> = stringCodec(Schema.bigDecimal, ::BigDecimal)
-    val localTime: Codec<String, LocalTime, CodecFormat.TextPlain> =
+    public val uuid: Codec<String, UUID, CodecFormat.TextPlain> = stringCodec(Schema.uuid, UUID::fromString)
+    public val bigDecimal: Codec<String, BigDecimal, CodecFormat.TextPlain> = stringCodec(Schema.bigDecimal, ::BigDecimal)
+    public val localTime: Codec<String, LocalTime, CodecFormat.TextPlain> =
       string.map({ LocalTime.parse(it) }, DateTimeFormatter.ISO_LOCAL_TIME::format).schema(Schema.localTime)
 
-    val localDate: Codec<String, LocalDate, CodecFormat.TextPlain> =
+    public val localDate: Codec<String, LocalDate, CodecFormat.TextPlain> =
       string.map({ LocalDate.parse(it) }, DateTimeFormatter.ISO_LOCAL_DATE::format).schema(Schema.localDate)
 
-    val offsetDateTime: Codec<String, OffsetDateTime, CodecFormat.TextPlain> =
+    public val offsetDateTime: Codec<String, OffsetDateTime, CodecFormat.TextPlain> =
       string.map({ OffsetDateTime.parse(it) }, DateTimeFormatter.ISO_OFFSET_DATE_TIME::format)
         .schema(Schema.offsetDateTime)
 
-    val zonedDateTime: Codec<String, ZonedDateTime, CodecFormat.TextPlain> =
+    public val zonedDateTime: Codec<String, ZonedDateTime, CodecFormat.TextPlain> =
       string.map({ ZonedDateTime.parse(it) }, DateTimeFormatter.ISO_ZONED_DATE_TIME::format)
         .schema(Schema.zonedDateTime)
 
-    val instant: Codec<String, Instant, CodecFormat.TextPlain> =
+    public val instant: Codec<String, Instant, CodecFormat.TextPlain> =
       string.map({ Instant.parse(it) }, DateTimeFormatter.ISO_INSTANT::format).schema(Schema.instant)
 
-    val date: Codec<String, Date, CodecFormat.TextPlain> =
+    public val date: Codec<String, Date, CodecFormat.TextPlain> =
       instant.map({ Date.from(it) }, { it.toInstant() }).schema(Schema.date)
 
-    val zoneOffset: Codec<String, ZoneOffset, CodecFormat.TextPlain> =
+    public val zoneOffset: Codec<String, ZoneOffset, CodecFormat.TextPlain> =
       stringCodec(Schema.zoneOffset, ZoneOffset::of)
 
-    val javaDuration: Codec<String, JavaDuration, CodecFormat.TextPlain> =
+    public val javaDuration: Codec<String, JavaDuration, CodecFormat.TextPlain> =
       stringCodec(Schema.javaDuration, JavaDuration::parse)
 
-    val offsetTime: Codec<String, OffsetTime, CodecFormat.TextPlain> =
+    public val offsetTime: Codec<String, OffsetTime, CodecFormat.TextPlain> =
       string.map({ OffsetTime.parse(it) }, DateTimeFormatter.ISO_OFFSET_TIME::format).schema(Schema.offsetTime)
 
-    val localDateTime: Codec<String, LocalDateTime, CodecFormat.TextPlain> =
+    public val localDateTime: Codec<String, LocalDateTime, CodecFormat.TextPlain> =
       string.mapDecode({ l ->
         try {
           try {
@@ -162,25 +177,30 @@ public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
       }) { h -> OffsetDateTime.of(h, ZoneOffset.UTC).toString() }
         .schema(Schema.localDateTime)
 
-    // Uri type from com.fortysevendeg.thool.Thool
-//    val uri: com.fortysevendeg.thool.PlainCodec<Uri> =
-//    string.mapDecode(raw => Uri.parse(raw).fold(e => com.fortysevendeg.thool.DecodeResult.Error(raw, new IllegalArgumentException(e)), com.fortysevendeg.thool.DecodeResult.Value(_)))(
-//    _.toString()
-//    )
+    public val uri: PlainCodec<Uri> =
+      string.mapDecode(
+        { raw ->
+          Uri.parse(raw).fold(
+            { e -> DecodeResult.Failure.Error(raw, IllegalArgumentException(this.toString())) },
+            { DecodeResult.Value(it) }
+          )
+        },
+        Uri::toString
+      )
 
-    val byteArray: Codec<ByteArray, ByteArray, CodecFormat.OctetStream> = id(CodecFormat.OctetStream, Schema.byteArray)
-    val inputStream: Codec<InputStream, InputStream, CodecFormat.OctetStream> =
+    public val byteArray: Codec<ByteArray, ByteArray, CodecFormat.OctetStream> = id(CodecFormat.OctetStream, Schema.byteArray)
+    public val inputStream: Codec<InputStream, InputStream, CodecFormat.OctetStream> =
       id(CodecFormat.OctetStream, Schema.inputStream)
-    val byteBuffer: Codec<ByteBuffer, ByteBuffer, CodecFormat.OctetStream> =
+    public val byteBuffer: Codec<ByteBuffer, ByteBuffer, CodecFormat.OctetStream> =
       id(CodecFormat.OctetStream, Schema.byteBuffer)
 
-    val formSeqCodecUtf8: Codec<String, List<Pair<String, String>>, CodecFormat.XWwwFormUrlencoded> =
+    public val formSeqCodecUtf8: Codec<String, List<Pair<String, String>>, CodecFormat.XWwwFormUrlencoded> =
       formSeqCodec(StandardCharsets.UTF_8)
 
-    val formMapCodecUtf8: Codec<String, Map<String, String>, CodecFormat.XWwwFormUrlencoded> =
+    public val formMapCodecUtf8: Codec<String, Map<String, String>, CodecFormat.XWwwFormUrlencoded> =
       formMapCodec(StandardCharsets.UTF_8)
 
-    fun formSeqCodec(charset: Charset): Codec<String, List<Pair<String, String>>, CodecFormat.XWwwFormUrlencoded> =
+    public fun formSeqCodec(charset: Charset): Codec<String, List<Pair<String, String>>, CodecFormat.XWwwFormUrlencoded> =
       string.format(CodecFormat.XWwwFormUrlencoded).map({ UrlencodedData.decode(it, charset) }) {
         UrlencodedData.encode(
           it,
@@ -188,7 +208,7 @@ public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
         )
       }
 
-    fun formMapCodec(charset: Charset): Codec<String, Map<String, String>, CodecFormat.XWwwFormUrlencoded> =
+    public fun formMapCodec(charset: Charset): Codec<String, Map<String, String>, CodecFormat.XWwwFormUrlencoded> =
       formSeqCodec(charset).map({ it.toMap() }) { it.toList() }
 
     private fun <A, B, CF : CodecFormat> listBinarySchema(c: Codec<A, B, CF>): Codec<List<A>, List<B>, CF> =
@@ -201,7 +221,7 @@ public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
      *
      * The schema and validator are copied from the base codec.
      */
-    fun <A, B, CF : CodecFormat> listFirst(c: Codec<A, B, CF>): Codec<List<A>, B, CF> =
+    public fun <A, B, CF : CodecFormat> listFirst(c: Codec<A, B, CF>): Codec<List<A>, B, CF> =
       listBinarySchema(c)
         .mapDecode({ list ->
           when (list.size) {
@@ -220,7 +240,7 @@ public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
      *
      * The schema and validator are copied from the base codec.
      */
-    fun <A, B, CF : CodecFormat> listFirstOrNull(c: Codec<A, B, CF>): Codec<List<A>, B?, CF> =
+    public fun <A, B, CF : CodecFormat> listFirstOrNull(c: Codec<A, B, CF>): Codec<List<A>, B?, CF> =
       listBinarySchema(c)
         .mapDecode({ list ->
           when (list.size) {
@@ -237,7 +257,7 @@ public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
      *
      * The schema and validator are copied from the base codec.
      */
-    fun <A, B, CF : CodecFormat> nullableFirst(c: Codec<A, B, CF>): Codec<A?, B, CF> =
+    public fun <A, B, CF : CodecFormat> nullableFirst(c: Codec<A, B, CF>): Codec<A?, B, CF> =
       id(c.format, Schema.binary<A?>())
         .mapDecode({ option ->
           when (option) {
@@ -252,7 +272,7 @@ public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
      *
      * The schema is copied from the base codec.
      */
-    fun <A, B, CF : CodecFormat> list(c: Codec<A, B, CF>): Codec<List<A>, List<B>, CF> =
+    public fun <A, B, CF : CodecFormat> list(c: Codec<A, B, CF>): Codec<List<A>, List<B>, CF> =
       listBinarySchema(c).schema(c.schema().asList())
 
     /**
@@ -261,7 +281,7 @@ public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
      *
      * The schema and validator are copied from the base codec.
      */
-    fun <A, B, CF : CodecFormat> option(c: Codec<A, B, CF>): Codec<Option<A>, Option<B>, CF> =
+    public fun <A, B, CF : CodecFormat> option(c: Codec<A, B, CF>): Codec<Option<A>, Option<B>, CF> =
       id(c.format, Schema.binary<Option<A>>())
         .mapDecode({ option ->
           when (option) {
@@ -277,7 +297,7 @@ public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
      *
      * The schema and validator are copied from the base codec.
      */
-    fun <A : Any, B : Any, CF : CodecFormat> nullable(c: Codec<A, B, CF>): Codec<A?, B?, CF> =
+    public fun <A : Any, B : Any, CF : CodecFormat> nullable(c: Codec<A, B, CF>): Codec<A?, B?, CF> =
       id(c.format, Schema.binary<A?>())
         .mapDecode({ option ->
           when (option) {
@@ -287,10 +307,10 @@ public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
         }) { us -> us?.let(c::encode) }
         .schema(c.schema().asNullable())
 
-    fun <A> json(schema: Schema<A>, _rawDecode: (String) -> DecodeResult<A>, _encode: (A) -> String): JsonCodec<A> =
+    public fun <A> json(schema: Schema<A>, _rawDecode: (String) -> DecodeResult<A>, _encode: (A) -> String): JsonCodec<A> =
       anyStringCodec(schema, CodecFormat.Json, _rawDecode, _encode)
 
-    fun <A> xml(schema: Schema<A>, rawDecode: (String) -> DecodeResult<A>, encode: (A) -> String): XmlCodec<A> =
+    public fun <A> xml(schema: Schema<A>, rawDecode: (String) -> DecodeResult<A>, encode: (A) -> String): XmlCodec<A> =
       anyStringCodec(schema, CodecFormat.Xml, rawDecode, encode)
 
     private fun decodeCookie(cookie: String): DecodeResult<List<Cookie>> =
@@ -299,13 +319,13 @@ public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
         is Either.Right -> DecodeResult.Value(res.value)
       }
 
-    val cookieCodec: Codec<String, List<Cookie>, CodecFormat.TextPlain> =
-      Codec.string.mapDecode(::decodeCookie) { cs -> cs.joinToString("; ") }
+    public val cookieCodec: Codec<String, List<Cookie>, CodecFormat.TextPlain> =
+      string.mapDecode(::decodeCookie) { cs -> cs.joinToString("; ") }
 
-    val cookiesCodec: Codec<List<String>, List<Cookie>, CodecFormat.TextPlain> =
-      Codec.list(cookieCodec).map(List<List<Cookie>>::flatten, ::listOf)
+    public val cookiesCodec: Codec<List<String>, List<Cookie>, CodecFormat.TextPlain> =
+      list(cookieCodec).map(List<List<Cookie>>::flatten, ::listOf)
 
-    fun <L, H, CF : CodecFormat> fromDecodeAndMeta(
+    public fun <L, H, CF : CodecFormat> fromDecodeAndMeta(
       schema: Schema<H>,
       cf: CF,
       f: (L) -> DecodeResult<H>,
@@ -318,7 +338,7 @@ public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
         override val format: CF = cf
       }
 
-    fun <A, CF : CodecFormat> anyStringCodec(
+    public fun <A, CF : CodecFormat> anyStringCodec(
       schema: Schema<A>,
       cf: CF,
       rawDecode: (String) -> DecodeResult<A>,

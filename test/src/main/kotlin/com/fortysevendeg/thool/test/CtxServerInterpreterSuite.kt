@@ -5,7 +5,7 @@ import arrow.core.left
 import arrow.core.right
 import com.fortysevendeg.thool.DecodeResult
 import com.fortysevendeg.thool.Endpoint
-import com.fortysevendeg.thool.EndpointInfo
+import com.fortysevendeg.thool.Endpoint.Info
 import com.fortysevendeg.thool.EndpointInput
 import com.fortysevendeg.thool.EndpointOutput
 import com.fortysevendeg.thool.Thool
@@ -82,7 +82,7 @@ public abstract class CtxServerInterpreterSuite<Ctx> : FreeSpec() {
     requestAndStatusCode(endpoint, baseUrl, input).first
 
   init {
-    val empty = Endpoint(EndpointInput.empty(), EndpointOutput.empty(), EndpointOutput.empty(), EndpointInfo.empty())
+    val empty = Endpoint(EndpointInput.empty(), EndpointOutput.empty(), EndpointOutput.empty(), Info.empty())
     val emptyGet = empty.input(Thool.method(Method.GET))
     val emptyPost = empty.input(Thool.method(Method.POST))
 

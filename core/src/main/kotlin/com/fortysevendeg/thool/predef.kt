@@ -21,17 +21,17 @@ internal object UrlencodedData {
     }
 }
 
-fun <A, B> Set<A>.map(transform: (A) -> B): Set<B> {
+internal fun <A, B> Set<A>.map(transform: (A) -> B): Set<B> {
   val destination = mutableSetOf<B>()
   for (item in this)
     destination.add(transform(item))
   return destination
 }
 
-fun <E> Iterable<E>.updated(index: Int, elem: E): List<E> =
+internal fun <E> Iterable<E>.updated(index: Int, elem: E): List<E> =
   mapIndexed { i, existing -> if (i == index) elem else existing }
 
-fun basicInputSortIndex(i: EndpointInput.Basic<*, *, *>): Int =
+internal fun basicInputSortIndex(i: EndpointInput.Basic<*, *, *>): Int =
   when (i) {
     is EndpointInput.FixedMethod<*> -> 0
     is EndpointInput.FixedPath<*> -> 1
@@ -48,8 +48,8 @@ fun basicInputSortIndex(i: EndpointInput.Basic<*, *, *>): Int =
     is EndpointIO.Empty<*> -> 7
   }
 
-fun <A> List<A>.initAndLastOrNull(): Pair<List<A>, A>? =
+internal fun <A> List<A>.initAndLastOrNull(): Pair<List<A>, A>? =
   if (isEmpty()) null else Pair(dropLast(1), last())
 
-fun <A> List<A>.headAndTailOrNull(): Pair<A, List<A>>? =
+internal fun <A> List<A>.headAndTailOrNull(): Pair<A, List<A>>? =
   if (isEmpty()) null else Pair(first(), tail())

@@ -19,7 +19,6 @@ object Version {
 
 object Libs {
   const val core: String = ":core"
-  const val thoolModel: String = ":thool-model"
   const val graphQL: String = ":graphql"
   const val examples: String = ":examples"
   const val ktorServer: String = ":servers:ktor-server"
