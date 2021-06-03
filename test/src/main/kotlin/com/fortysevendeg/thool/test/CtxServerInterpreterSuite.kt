@@ -55,7 +55,6 @@ public abstract class ServerInterpreterSuite : CtxServerInterpreterSuite<Unit>()
  *
  * See the Ktor module for an example that thread `TestApplicationEngine` between [withEndpoint] & [request].
  */
-// TODO add support to verify StatusCode
 public abstract class CtxServerInterpreterSuite<Ctx> : FreeSpec() {
 
   private val client: (Request) -> Response = ApacheClient()
