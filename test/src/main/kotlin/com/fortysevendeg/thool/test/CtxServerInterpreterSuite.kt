@@ -9,15 +9,15 @@ import com.fortysevendeg.thool.Endpoint.Info
 import com.fortysevendeg.thool.EndpointInput
 import com.fortysevendeg.thool.EndpointOutput
 import com.fortysevendeg.thool.Thool
-import com.fortysevendeg.thool.Thool.fixedPath
-import com.fortysevendeg.thool.Thool.stringBody
-import com.fortysevendeg.thool.http4k.invoke
+import com.fortysevendeg.thool.http4k.toRequestAndParser
 import com.fortysevendeg.thool.input
 import com.fortysevendeg.thool.model.Method
+import com.fortysevendeg.thool.model.StatusCode
 import com.fortysevendeg.thool.server.ServerEndpoint
 import com.fortysevendeg.thool.test.TestEndpoint.in_byte_array_out_byte_array
 import com.fortysevendeg.thool.test.TestEndpoint.in_header_before_path
 import com.fortysevendeg.thool.test.TestEndpoint.in_header_out_string
+import com.fortysevendeg.thool.test.TestEndpoint.out_value_form_exact_match
 import com.fortysevendeg.thool.test.TestEndpoint.in_json_out_json
 import com.fortysevendeg.thool.test.TestEndpoint.in_mapped_path_out_string
 import com.fortysevendeg.thool.test.TestEndpoint.in_mapped_path_path_out_string
@@ -29,6 +29,8 @@ import com.fortysevendeg.thool.test.TestEndpoint.in_query_out_mapped_string
 import com.fortysevendeg.thool.test.TestEndpoint.in_query_out_mapped_string_header
 import com.fortysevendeg.thool.test.TestEndpoint.in_query_out_string
 import com.fortysevendeg.thool.test.TestEndpoint.in_query_query_out_string
+import com.fortysevendeg.thool.test.TestEndpoint.out_status_from_string_one_empty
+import com.fortysevendeg.thool.test.TestEndpoint.out_reified_status
 import com.fortysevendeg.thool.test.TestEndpoint.in_string_out_string
 import com.fortysevendeg.thool.test.TestEndpoint.in_two_path_capture
 import com.fortysevendeg.thool.test.TestEndpoint.in_unit_out_json_unit
@@ -62,39 +64,41 @@ public abstract class CtxServerInterpreterSuite<Ctx> : FreeSpec() {
     run: suspend Ctx.(baseUrl: String) -> A
   ): A
 
-  public open suspend fun <I, E, O> Ctx.request(
+  public open suspend fun <I, E, O> Ctx.requestAndStatusCode(
+    endpoint: Endpoint<I, E, O>,
+    baseUrl: String,
+    input: I
+  ): Pair<DecodeResult<Either<E, O>>, StatusCode> {
+    val (request, parser) = endpoint.toRequestAndParser(baseUrl)(input)
+    val response = client(request)
+    return Pair(parser(response), StatusCode(response.status.code))
+  }
+
+  private suspend fun <I, E, O> Ctx.request(
     endpoint: Endpoint<I, E, O>,
     baseUrl: String,
     input: I
   ): DecodeResult<Either<E, O>> =
-    client.invoke(endpoint, baseUrl, input)
+    requestAndStatusCode(endpoint, baseUrl, input).first
 
   init {
     val empty = Endpoint(EndpointInput.empty(), EndpointOutput.empty(), EndpointOutput.empty(), Info.empty())
     val emptyGet = empty.input(Thool.method(Method.GET))
     val emptyPost = empty.input(Thool.method(Method.POST))
 
-    "POST a GET endpoint" {
-      withEndpoint(emptyGet.logic { it.right() }) { baseUrl ->
-        request(emptyPost, baseUrl, Unit) shouldBe DecodeResult.Value(Unit.left())
-      }
-    }
-
-    "POST empty endpoint" {
+    "Empty endpoint matches all methods" {
       withEndpoint(empty.logic { it.right() }) { baseUrl ->
-        request(emptyPost, baseUrl, Unit) shouldBe DecodeResult.Value(Unit.right())
+        val (res, code) = requestAndStatusCode(emptyPost, baseUrl, Unit)
+        res shouldBe DecodeResult.Value(Unit.right())
+        code shouldBe StatusCode.Ok
       }
     }
 
-    "Empty path should not be passed to path capture decoding" {
-      withEndpoint(TestEndpoint.in_path.logic { Unit.right() }) { baseUrl ->
-        request(emptyGet.input(fixedPath("api")), baseUrl, Unit) shouldBe DecodeResult.Value(Unit.left())
-      }
-    }
-
-    "Calling post \"api\" / \"echo\" with get" {
-      withEndpoint(in_string_out_string.logic { it.right() }) { baseUrl ->
-        request(emptyGet.input(stringBody()), baseUrl, "Sweet") shouldBe DecodeResult.Value(Unit.left())
+    "Mismatching endpoint results in NotFound" {
+      withEndpoint(emptyGet.logic { it.right() }) { baseUrl ->
+        val (res, code) = requestAndStatusCode(emptyPost, baseUrl, Unit)
+        res shouldBe DecodeResult.Value(Unit.left())
+        code shouldBe StatusCode.NotFound
       }
     }
 
@@ -108,6 +112,45 @@ public abstract class CtxServerInterpreterSuite<Ctx> : FreeSpec() {
       "${endpoint.details()} - $postfix" {
         withEndpoint(endpoint.logic(logic)) { baseUrl ->
           request(endpoint, baseUrl, input).map(::normalise) shouldBe DecodeResult.Value(normalise(expected))
+        }
+      }
+
+    fun <E, O> test(
+      endpoint: Endpoint<Unit, E, O>,
+      expected: Either<E, O>,
+      postfix: String = "",
+      logic: suspend (input: Unit) -> Either<E, O>
+    ): Unit =
+      "${endpoint.details()} - $postfix" {
+        withEndpoint(endpoint.logic(logic)) { baseUrl ->
+          request(endpoint, baseUrl, Unit).map(::normalise) shouldBe DecodeResult.Value(normalise(expected))
+        }
+      }
+
+    fun <I, E, O> test(
+      endpoint: Endpoint<I, E, O>,
+      input: I,
+      expected: Pair<Either<E, O>, StatusCode>,
+      postfix: String = "",
+      logic: suspend (input: I) -> Either<E, O>
+    ): Unit =
+      "${endpoint.details()} - $postfix" {
+        withEndpoint(endpoint.logic(logic)) { baseUrl ->
+          val (normalised, code) = requestAndStatusCode(endpoint, baseUrl, input)
+          Pair(normalised, code) shouldBe Pair(DecodeResult.Value(normalise(expected.first)), expected.second)
+        }
+      }
+
+    fun <E, O> test(
+      endpoint: Endpoint<Unit, E, O>,
+      expected: Pair<Either<E, O>, StatusCode>,
+      postfix: String = "",
+      logic: suspend (input: Unit) -> Either<E, O>
+    ): Unit =
+      "${endpoint.details()} - $postfix" {
+        withEndpoint(endpoint.logic(logic)) { baseUrl ->
+          val (normalised, code) = requestAndStatusCode(endpoint, baseUrl, Unit)
+          Pair(normalised, code) shouldBe Pair(DecodeResult.Value(normalise(expected.first)), expected.second)
         }
       }
 
@@ -227,9 +270,38 @@ public abstract class CtxServerInterpreterSuite<Ctx> : FreeSpec() {
 
     test(
       in_unit_out_json_unit,
-      Unit,
       Unit.right(),
       "unit json mapper"
     ) { it.right() }
+
+    test(
+      out_reified_status.name("status 1/2"),
+      Pair("x".right().right(), StatusCode.Ok),
+    ) { "x".right().right() }
+
+    test(
+      out_reified_status.name("status 2/2"),
+      Pair(1.left().right(), StatusCode.Accepted),
+    ) { 1.left().right() }
+
+    test(
+      out_value_form_exact_match.name("status A"),
+      Pair("A".right(), StatusCode.Ok)
+    ) { "A".right() }
+
+    test(
+      out_value_form_exact_match.name("status B"),
+      Pair("B".right(), StatusCode.Accepted)
+    ) { "B".right() }
+
+    test(
+      out_status_from_string_one_empty.name("status string"),
+      Pair("x".right().right(), StatusCode.Ok)
+    ) { "x".right().right() }
+
+    test(
+      out_status_from_string_one_empty.name("status empty"),
+      Pair(Unit.left().right(), StatusCode.Accepted)
+    ) { Unit.left().right() }
   }
 }

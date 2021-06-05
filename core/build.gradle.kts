@@ -7,6 +7,5 @@ dependencies {
   // TODO https://app.clickup.com/t/kt7qd2
   implementation(kotlin("stdlib-jdk8"))
   implementation(Libs.kotlinxCoroutines)
-  implementation(Libs.kotlinxCoroutinesJdk8)
 }
 

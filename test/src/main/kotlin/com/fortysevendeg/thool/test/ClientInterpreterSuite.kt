@@ -1,6 +1,7 @@
 package com.fortysevendeg.thool.test
 
 import arrow.core.Either
+import arrow.core.left
 import arrow.core.right
 import com.fortysevendeg.thool.DecodeResult
 import com.fortysevendeg.thool.Endpoint
@@ -13,6 +14,7 @@ import com.fortysevendeg.thool.test.TestEndpoint.in_byte_array_out_byte_array
 import com.fortysevendeg.thool.test.TestEndpoint.in_byte_buffer_out_byte_buffer
 import com.fortysevendeg.thool.test.TestEndpoint.in_header_out_string
 import com.fortysevendeg.thool.test.TestEndpoint.in_input_stream_out_input_stream
+import com.fortysevendeg.thool.test.TestEndpoint.out_value_form_exact_match
 import com.fortysevendeg.thool.test.TestEndpoint.in_json_out_json
 import com.fortysevendeg.thool.test.TestEndpoint.in_mapped_path_out_string
 import com.fortysevendeg.thool.test.TestEndpoint.in_mapped_path_path_out_string
@@ -28,10 +30,13 @@ import com.fortysevendeg.thool.test.TestEndpoint.in_query_out_string
 import com.fortysevendeg.thool.test.TestEndpoint.in_query_params_out_string
 import com.fortysevendeg.thool.test.TestEndpoint.in_query_query_out_string
 import com.fortysevendeg.thool.test.TestEndpoint.in_string_out_status
+import com.fortysevendeg.thool.test.TestEndpoint.out_reified_status
 import com.fortysevendeg.thool.test.TestEndpoint.in_string_out_string
 import com.fortysevendeg.thool.test.TestEndpoint.in_unit_out_json_unit
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okhttp3.mockwebserver.MockWebServer
 import java.io.ByteArrayInputStream
 import java.nio.ByteBuffer
@@ -40,29 +45,59 @@ public abstract class ClientInterpreterSuite : FreeSpec() {
   private val server = MockWebServer()
   private var baseUrl: String = ""
 
-  public abstract suspend fun <I, E, O> request(
+  public abstract suspend fun <I, E, O> requestAndStatusCode(
     endpoint: Endpoint<I, E, O>,
     baseUrl: String,
     input: I
-  ): DecodeResult<Either<E, O>>
+  ): Pair<DecodeResult<Either<E, O>>, StatusCode>
+
+  public suspend fun <I, E, O> request(
+    endpoint: Endpoint<I, E, O>,
+    baseUrl: String,
+    input: I
+  ): DecodeResult<Either<E, O>> =
+    requestAndStatusCode(endpoint, baseUrl, input).first
 
   init {
     beforeSpec {
-      server.start()
+      withContext(Dispatchers.IO) { server.start() }
       baseUrl = server.url("/").toString()
     }
-    afterSpec { server.close() }
+    afterSpec { withContext(Dispatchers.IO) { server.close() } }
 
     fun <I, E, O> test(
       endpoint: Endpoint<I, E, O>,
       input: I,
       expected: Either<E, O>,
-      logic: suspend (I) -> Either<E, O>
+      logic: suspend (input: I) -> Either<E, O>
     ): Unit = endpoint.details().invoke {
       server.dispatcher = endpoint.logic(logic).toDispatcher()
       val result = request(endpoint, baseUrl, input).map(::normalise)
       result shouldBe DecodeResult.Value(normalise(expected))
     }
+
+    fun <E, O> test(
+      endpoint: Endpoint<Unit, E, O>,
+      expected: Either<E, O>,
+      logic: suspend (input: Unit) -> Either<E, O>
+    ): Unit = test(endpoint, Unit, expected, logic)
+
+    fun <I, E, O> test(
+      endpoint: Endpoint<I, E, O>,
+      input: I,
+      expected: Pair<Either<E, O>, StatusCode>,
+      logic: suspend (input: I) -> Either<E, O>
+    ): Unit = endpoint.details().invoke {
+      server.dispatcher = endpoint.logic(logic).toDispatcher()
+      val (res, code) = requestAndStatusCode(endpoint, baseUrl, input)
+      Pair(res.map(::normalise), code) shouldBe Pair(DecodeResult.Value(normalise(expected.first)), expected.second)
+    }
+
+    fun <E, O> test(
+      endpoint: Endpoint<Unit, E, O>,
+      expected: Pair<Either<E, O>, StatusCode>,
+      logic: suspend (input: Unit) -> Either<E, O>
+    ): Unit = test(endpoint, Unit, expected, logic)
 
     test(Endpoint.input(EndpointInput.empty()), Unit, Either.Right(Unit)) { it.right() }
     test(in_query_out_string, "apple", Either.Right("apple")) { it.right() }
@@ -154,5 +189,25 @@ public abstract class ClientInterpreterSuite : FreeSpec() {
     ) { it.right() }
 
     test(in_unit_out_json_unit, Unit, Either.Right(Unit)) { it.right() }
+
+    test(
+      out_reified_status.name("status 1/2"),
+      Pair("fruit: apple".right().right(), StatusCode.Ok)
+    ) { "fruit: apple".right().right() }
+
+    test(
+      out_reified_status.name("status 2/2"),
+      Pair(29.left().right(), StatusCode.Accepted)
+    ) { 29.left().right() }
+
+    test(
+      out_value_form_exact_match.name("first exact status of 2"),
+      Pair("B".right(), StatusCode.Accepted)
+    ) { "B".right() }
+
+    test(
+      out_value_form_exact_match.name("second exact status of 2"),
+      Pair("A".right(), StatusCode.Ok)
+    ) { "A".right() }
   }
 }

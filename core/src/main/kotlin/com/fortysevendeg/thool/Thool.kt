@@ -1,5 +1,7 @@
 package com.fortysevendeg.thool
 
+import arrow.core.Either
+import arrow.core.prependTo
 import com.fortysevendeg.thool.dsl.PathSyntax
 import com.fortysevendeg.thool.model.CodecFormat
 import com.fortysevendeg.thool.model.Cookie
@@ -116,4 +118,48 @@ object Thool {
 
   fun statusCode(statusCode: StatusCode): EndpointOutput.FixedStatusCode<Unit> =
     EndpointOutput.FixedStatusCode(statusCode, Codec.idPlain(), EndpointIO.Info.empty())
+
+  /**
+   * Maps [StatusCode]s to outputs.
+   * All outputs must have a common supertype [A].
+   * Typically, the supertype is a sealed class, and the mappings are implementing classes.
+   *
+   * Note that exhaustiveness of mappings is not checked (that all subtypes of a sealed class are covered).
+   *
+   * We can use this to for example to define an [EndpointOutput] that returns an [Either] of [Int] or [String].
+   * Depending on if it returns [Either.Left] or [Either.Right] it allows you to return a different [StatusCode].
+   *
+   * The server decided based on the type, which [StatusCode] it needs to return,
+   * and the client determines based on the [StatusCode] which [Codec] to use to decode the response.
+   *
+   * ```kotlin
+   * val output: EndpointOutput.OneOf<Either<Int, String>, Either<Int, String>> =
+   *   oneOf(
+   *     statusMapping(StatusCode.Accepted, plainBody(Codec.int).map({ Either.Left(it) }, { it.value })),
+   *     statusMapping(StatusCode.Ok, stringBody().map({ Either.Right(it) }, { it.value }))
+   *   )
+   * ```
+   */
+  public fun <A> oneOf(firstCase: EndpointOutput.StatusMapping<A>, vararg otherCases: EndpointOutput.StatusMapping<A>): EndpointOutput.OneOf<A, A> =
+    EndpointOutput.OneOf(firstCase prependTo otherCases.toList(), Codec.idPlain())
+
+  /**
+   * Create a status mapping which uses [statusCode] and [output] if the outputted value matches the type of [A].
+   * Should be used in [oneOf] output descriptions.
+   */
+  public inline fun <reified A> statusMapping(statusCode: StatusCode, output: EndpointOutput<A>): EndpointOutput.StatusMapping<A> =
+    EndpointOutput.StatusMapping(statusCode, output) { a: Any? -> a is A }
+
+  /**
+   * Create a status mapping which uses [statusCode] and [output] if the outputted value matches the type of [A].
+   * Should be used in [oneOf] output descriptions.
+   */
+  public fun <A> statusMapping(statusCode: StatusCode, output: EndpointOutput<A>, firstExactValue: A, vararg rest: A): EndpointOutput.StatusMapping<A> {
+    val set = setOf(firstExactValue) + rest.toSet()
+    return EndpointOutput.StatusMapping(statusCode, output) { a: Any? -> a in set }
+  }
+
+  /** Create a fallback mapping to be used in [oneOf] output descriptions */
+  public fun <A> statusDefaultMapping(output: EndpointOutput<A>): EndpointOutput.StatusMapping<A> =
+    EndpointOutput.StatusMapping(null, output) { true }
 }

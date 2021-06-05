@@ -139,6 +139,11 @@ fun EndpointOutput<*>.getOutputParams(
       is EndpointOutput.StatusCode -> single.codec.decode(code)
       is EndpointIO.Header -> single.codec.decode(headers[single.name].orEmpty())
 
+      is EndpointOutput.OneOf<*, *> ->
+        single.mappings.firstOrNull { it.statusCode == null || it.statusCode == code }
+          ?.let { mapping -> mapping.output.getOutputParams(response, headers, code, statusText).flatMap { p -> (single.codec as Mapping<Any?, Any?>).decode(p.asAny) } }
+          ?: DecodeResult.Failure.Error(statusText, IllegalArgumentException("Cannot find mapping for status code $code in outputs $output"))
+
       is EndpointIO.MappedPair<*, *, *, *> ->
         single.wrapped.getOutputParams(response, headers, code, statusText).flatMap { p ->
           (single.mapping as Mapping<Any?, DecodeResult<Any?>>).decode(p.asAny)

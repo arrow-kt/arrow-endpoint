@@ -12,6 +12,8 @@ import com.fortysevendeg.thool.Mapping
 import com.fortysevendeg.thool.Params
 import com.fortysevendeg.thool.client.requestInfo
 import com.fortysevendeg.thool.model.StatusCode
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runInterruptible
 import org.springframework.http.client.ClientHttpRequest
 import org.springframework.http.client.ClientHttpRequestFactory
 import org.springframework.http.client.ClientHttpResponse
@@ -21,20 +23,29 @@ import java.nio.ByteBuffer
 
 public fun <I, E, O> Endpoint<I, E, O>.toRequestAndParseRestTemplate(
   baseUrl: String
-): RestTemplate.(I) -> Pair<ClientHttpRequest, DecodeResult<Either<E, O>>> =
+): suspend RestTemplate.(I) -> Pair<ClientHttpRequest, DecodeResult<Either<E, O>>> =
   { input: I ->
     val request = toRequest(requestFactory, baseUrl, input)
-    Pair(request, parseResponse(request))
+    val response = runInterruptible(Dispatchers.IO) { request.execute() }
+    Pair(request, parseResponse(request, response))
   }
 
-public operator fun <I, E, O> RestTemplate.invoke(
+public suspend fun <I, E, O> RestTemplate.invokeAndResponse(
   endpoint: Endpoint<I, E, O>,
   baseUrl: String,
   input: I
-): DecodeResult<Either<E, O>> {
+): Pair<DecodeResult<Either<E, O>>, ClientHttpResponse> {
   val request: ClientHttpRequest = endpoint.toRequest(requestFactory, baseUrl, input)
-  return endpoint.parseResponse(request)
+  val response = runInterruptible(Dispatchers.IO) { request.execute() }
+  return Pair(endpoint.parseResponse(request, response), response)
 }
+
+public suspend operator fun <I, E, O> RestTemplate.invoke(
+  endpoint: Endpoint<I, E, O>,
+  baseUrl: String,
+  input: I
+): DecodeResult<Either<E, O>> =
+  invokeAndResponse(endpoint, baseUrl, input).first
 
 private fun <I, E, O> Endpoint<I, E, O>.toRequest(
   requestFactory: ClientHttpRequestFactory,
@@ -58,8 +69,8 @@ private fun <I, E, O> Endpoint<I, E, O>.toRequest(
 // Functionality on how to go from Spring Response to our domain
 private fun <I, E, O> Endpoint<I, E, O>.parseResponse(
   request: ClientHttpRequest,
+  response: ClientHttpResponse
 ): DecodeResult<Either<E, O>> {
-  val response = request.execute()
   val code = StatusCode(response.rawStatusCode)
   val output = if (code.isSuccess()) output else errorOutput
 
@@ -98,6 +109,9 @@ private fun EndpointOutput<*>.getOutputParams(
       is EndpointOutput.FixedStatusCode -> single.codec.decode(Unit)
       is EndpointOutput.StatusCode -> single.codec.decode(code)
       is EndpointIO.Header -> single.codec.decode(headers[single.name].orEmpty())
+      is EndpointOutput.OneOf<*, *> -> single.mappings.firstOrNull { it.statusCode == null || it.statusCode == code }
+        ?.let { mapping -> mapping.output.getOutputParams(response, headers, code, statusText).flatMap { p -> (single.codec as Mapping<Any?, Any?>).decode(p.asAny) } }
+        ?: DecodeResult.Failure.Error(statusText, IllegalArgumentException("Cannot find mapping for status code $code in outputs $output"))
 
       is EndpointIO.MappedPair<*, *, *, *> ->
         single.wrapped.getOutputParams(response, headers, code, statusText).flatMap { p ->
