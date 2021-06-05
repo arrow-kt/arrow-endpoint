@@ -10,35 +10,62 @@ import com.fortysevendeg.thool.Mapping
 import com.fortysevendeg.thool.Params
 import com.fortysevendeg.thool.client.requestInfo
 import com.fortysevendeg.thool.model.Body
+import com.fortysevendeg.thool.model.Method
 import com.fortysevendeg.thool.model.StatusCode
 import io.ktor.client.HttpClient
 import io.ktor.client.call.receive
+import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.request.HttpRequestData
 import io.ktor.client.request.cookie
-import io.ktor.client.request.request
 import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.HttpStatement
 import io.ktor.client.statement.request
 import io.ktor.client.utils.EmptyContent
 import io.ktor.content.ByteArrayContent
 import io.ktor.content.TextContent
 import io.ktor.http.ContentType
 import io.ktor.http.Headers
+import io.ktor.http.HttpMethod
 import io.ktor.http.takeFrom
 import java.nio.ByteBuffer
 
-fun <I, E, O> Endpoint<I, E, O>.requestAndParse(
-  baseUrl: String
-): suspend HttpClient.(I) -> DecodeResult<Either<E, O>> =
-  { value: I ->
-    val response = invoke(this@requestAndParse, baseUrl)(value)
-    this@requestAndParse.responseToDomain(response)
+public fun <A> DecodeResult<A>.getOrThrow(): A =
+  when (this) {
+    is DecodeResult.Value -> this.value
+    is DecodeResult.Failure.Error -> throw this.error
+    else -> throw IllegalArgumentException("Cannot decode: $this")
   }
 
-operator fun <I, E, O> HttpClient.invoke(
+public fun <A> DecodeResult<A>.getOrNull(): A? =
+  when (this) {
+    is DecodeResult.Value -> this.value
+    else -> null
+  }
+
+public suspend operator fun <I, E, O> HttpClient.invoke(
   endpoint: Endpoint<I, E, O>,
-  baseUrl: String
-): suspend (I) -> HttpResponse = { value ->
-  val info = endpoint.input.requestInfo(value, baseUrl)
-  request {
+  baseUrl: String,
+  input: I
+): DecodeResult<Either<E, O>> {
+  val request = endpoint.toRequestBuilder(baseUrl, input)
+  val response = HttpStatement(request, this).execute()
+  return endpoint.parseResponse(response)
+}
+
+public suspend fun <I, E, O> HttpClient.execute(
+  endpoint: Endpoint<I, E, O>,
+  baseUrl: String,
+  input: I
+): Triple<HttpRequestData, HttpResponse, DecodeResult<Either<E, O>>> {
+  val request = endpoint.toRequestBuilder(baseUrl, input)
+  val response = HttpStatement(request, this).execute()
+  val result = endpoint.parseResponse(response)
+  return Triple(request.build(), response, result)
+}
+
+public fun <I, E, O> Endpoint<I, E, O>.toRequestBuilder(baseUrl: String, input: I): HttpRequestBuilder =
+  HttpRequestBuilder().apply {
+    val info = this@toRequestBuilder.input.requestInfo(input, baseUrl)
     method = info.method.toMethod()
     url.takeFrom(info.baseUrlWithPath)
     info.cookies.forEach { (name, value) ->
@@ -60,12 +87,9 @@ operator fun <I, E, O> HttpClient.invoke(
       null -> EmptyContent
     }
   }
-}
 
 @Suppress("UNCHECKED_CAST")
-suspend fun <I, E, O> Endpoint<I, E, O>.responseToDomain(
-  response: HttpResponse
-): DecodeResult<Either<E, O>> {
+public suspend fun <I, E, O> Endpoint<I, E, O>.parseResponse(response: HttpResponse): DecodeResult<Either<E, O>> {
   val code = StatusCode(response.status.value)
   val output = if (code.isSuccess()) output else errorOutput
   val headers = response.headers
@@ -88,8 +112,22 @@ suspend fun <I, E, O> Endpoint<I, E, O>.responseToDomain(
   }
 }
 
+public fun Method.toMethod(): HttpMethod =
+  when (this) {
+    Method.GET -> HttpMethod.Get
+    Method.HEAD -> HttpMethod.Head
+    Method.POST -> HttpMethod.Post
+    Method.PUT -> HttpMethod.Put
+    Method.DELETE -> HttpMethod.Delete
+    Method.OPTIONS -> HttpMethod.Options
+    Method.PATCH -> HttpMethod.Patch
+    Method.CONNECT -> HttpMethod("CONNECT")
+    Method.TRACE -> HttpMethod("TRACE")
+    else -> HttpMethod(value)
+  }
+
 @Suppress("UNCHECKED_CAST")
-suspend fun EndpointOutput<*>.outputParams(
+private suspend fun EndpointOutput<*>.outputParams(
   response: HttpResponse,
   headers: Headers,
   code: StatusCode

@@ -5,7 +5,7 @@ import com.fortysevendeg.thool.DecodeResult
 import com.fortysevendeg.thool.Endpoint
 import com.fortysevendeg.thool.model.StatusCode
 import com.fortysevendeg.thool.server.ServerEndpoint
-import com.fortysevendeg.thool.spring.client.invokeAndResponse
+import com.fortysevendeg.thool.spring.client.execute
 import com.fortysevendeg.thool.test.ServerInterpreterSuite
 import io.undertow.Undertow
 import org.springframework.http.server.reactive.HttpHandler
@@ -43,7 +43,7 @@ class SpringServerInterpreterSuite : ServerInterpreterSuite() {
     baseUrl: String,
     input: I
   ): Pair<DecodeResult<Either<E, O>>, StatusCode> {
-    val (res, response) = client.invokeAndResponse(endpoint, baseUrl, input)
+    val (_, response, res) = client.execute(endpoint, baseUrl, input)
     return Pair(res, StatusCode(response.rawStatusCode()))
   }
 }

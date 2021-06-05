@@ -1,5 +1,3 @@
-@file:Suppress("UNCHECKED_CAST")
-
 package com.fortysevendeg.thool.spring.client
 
 import arrow.core.Either
@@ -11,9 +9,11 @@ import com.fortysevendeg.thool.EndpointOutput
 import com.fortysevendeg.thool.Mapping
 import com.fortysevendeg.thool.Params
 import com.fortysevendeg.thool.client.requestInfo
+import com.fortysevendeg.thool.model.Method
 import com.fortysevendeg.thool.model.StatusCode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runInterruptible
+import org.springframework.http.HttpMethod
 import org.springframework.http.client.ClientHttpRequest
 import org.springframework.http.client.ClientHttpRequestFactory
 import org.springframework.http.client.ClientHttpResponse
@@ -21,33 +21,41 @@ import org.springframework.web.client.RestTemplate
 import java.net.URI
 import java.nio.ByteBuffer
 
-public fun <I, E, O> Endpoint<I, E, O>.toRequestAndParseRestTemplate(
-  baseUrl: String
-): suspend RestTemplate.(I) -> Pair<ClientHttpRequest, DecodeResult<Either<E, O>>> =
-  { input: I ->
-    val request = toRequest(requestFactory, baseUrl, input)
-    val response = runInterruptible(Dispatchers.IO) { request.execute() }
-    Pair(request, parseResponse(request, response))
+public fun <A> DecodeResult<A>.getOrThrow(): A =
+  when (this) {
+    is DecodeResult.Value -> this.value
+    is DecodeResult.Failure.Error -> throw this.error
+    else -> throw IllegalArgumentException("Cannot decode: $this")
   }
 
-public suspend fun <I, E, O> RestTemplate.invokeAndResponse(
-  endpoint: Endpoint<I, E, O>,
-  baseUrl: String,
-  input: I
-): Pair<DecodeResult<Either<E, O>>, ClientHttpResponse> {
-  val request: ClientHttpRequest = endpoint.toRequest(requestFactory, baseUrl, input)
-  val response = runInterruptible(Dispatchers.IO) { request.execute() }
-  return Pair(endpoint.parseResponse(request, response), response)
-}
+public fun <A> DecodeResult<A>.getOrNull(): A? =
+  when (this) {
+    is DecodeResult.Value -> this.value
+    else -> null
+  }
 
 public suspend operator fun <I, E, O> RestTemplate.invoke(
   endpoint: Endpoint<I, E, O>,
   baseUrl: String,
   input: I
-): DecodeResult<Either<E, O>> =
-  invokeAndResponse(endpoint, baseUrl, input).first
+): DecodeResult<Either<E, O>> {
+  val request = endpoint.toRequest(requestFactory, baseUrl, input)
+  val response = runInterruptible(Dispatchers.IO) { request.execute() }
+  return endpoint.parseResponse(request, response)
+}
 
-private fun <I, E, O> Endpoint<I, E, O>.toRequest(
+public suspend fun <I, E, O> RestTemplate.execute(
+  endpoint: Endpoint<I, E, O>,
+  baseUrl: String,
+  input: I
+): Triple<ClientHttpRequest, ClientHttpResponse, DecodeResult<Either<E, O>>> {
+  val request = endpoint.toRequest(requestFactory, baseUrl, input)
+  val response = runInterruptible(Dispatchers.IO) { request.execute() }
+  val result = endpoint.parseResponse(request, response)
+  return Triple(request, response, result)
+}
+
+public fun <I, E, O> Endpoint<I, E, O>.toRequest(
   requestFactory: ClientHttpRequestFactory,
   baseUrl: String,
   i: I
@@ -66,8 +74,7 @@ private fun <I, E, O> Endpoint<I, E, O>.toRequest(
   }
 }
 
-// Functionality on how to go from Spring Response to our domain
-private fun <I, E, O> Endpoint<I, E, O>.parseResponse(
+public fun <I, E, O> Endpoint<I, E, O>.parseResponse(
   request: ClientHttpRequest,
   response: ClientHttpResponse
 ): DecodeResult<Either<E, O>> {
@@ -77,6 +84,7 @@ private fun <I, E, O> Endpoint<I, E, O>.parseResponse(
   val params =
     output.getOutputParams(response, response.headers, code, response.statusCode.reasonPhrase)
 
+  @Suppress("UNCHECKED_CAST")
   val result = params.map { it.asAny }
     .map { p -> if (code.isSuccess()) Either.Right(p as O) else Either.Left(p as E) }
 
@@ -93,6 +101,21 @@ private fun <I, E, O> Endpoint<I, E, O>.parseResponse(
   }
 }
 
+public fun Method.method(): HttpMethod? =
+  when (this) {
+    Method.GET -> HttpMethod.GET
+    Method.HEAD -> HttpMethod.HEAD
+    Method.POST -> HttpMethod.POST
+    Method.PUT -> HttpMethod.PUT
+    Method.DELETE -> HttpMethod.DELETE
+    Method.OPTIONS -> HttpMethod.OPTIONS
+    Method.PATCH -> HttpMethod.PATCH
+    Method.TRACE -> HttpMethod.TRACE
+    Method.CONNECT -> null
+    else -> null
+  }
+
+@Suppress("UNCHECKED_CAST")
 private fun EndpointOutput<*>.getOutputParams(
   response: ClientHttpResponse,
   headers: Map<String, List<String>>,

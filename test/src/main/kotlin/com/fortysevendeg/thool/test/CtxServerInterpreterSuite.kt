@@ -9,7 +9,7 @@ import com.fortysevendeg.thool.Endpoint.Info
 import com.fortysevendeg.thool.EndpointInput
 import com.fortysevendeg.thool.EndpointOutput
 import com.fortysevendeg.thool.Thool
-import com.fortysevendeg.thool.http4k.toRequestAndParser
+import com.fortysevendeg.thool.http4k.client.execute
 import com.fortysevendeg.thool.input
 import com.fortysevendeg.thool.model.Method
 import com.fortysevendeg.thool.model.StatusCode
@@ -69,9 +69,8 @@ public abstract class CtxServerInterpreterSuite<Ctx> : FreeSpec() {
     baseUrl: String,
     input: I
   ): Pair<DecodeResult<Either<E, O>>, StatusCode> {
-    val (request, parser) = endpoint.toRequestAndParser(baseUrl)(input)
-    val response = client(request)
-    return Pair(parser(response), StatusCode(response.status.code))
+    val (_, resp, result) = client.execute(endpoint, baseUrl, input)
+    return Pair(result, StatusCode(resp.status.code))
   }
 
   private suspend fun <I, E, O> Ctx.request(

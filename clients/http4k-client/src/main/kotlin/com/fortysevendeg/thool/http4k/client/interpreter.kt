@@ -1,4 +1,4 @@
-package com.fortysevendeg.thool.http4k
+package com.fortysevendeg.thool.http4k.client
 
 import arrow.core.Either
 import com.fortysevendeg.thool.CombineParams
@@ -28,13 +28,20 @@ import org.http4k.core.Response
 import org.http4k.core.cookie.cookie
 import org.http4k.core.cookie.cookies
 
-public fun <I, E, O> Endpoint<I, E, O>.toRequestAndParser(baseUrl: String): (I) -> Pair<Request, (Response) -> DecodeResult<Either<E, O>>> =
-  { input: I ->
-    val request = toRequest(baseUrl, input)
-    Pair(request, { response: Response -> parseResponse(request, response) })
+public fun <A> DecodeResult<A>.getOrThrow(): A =
+  when (this) {
+    is DecodeResult.Value -> this.value
+    is DecodeResult.Failure.Error -> throw this.error
+    else -> throw IllegalArgumentException("Cannot decode: $this")
   }
 
-public operator fun <I, E, O> HttpHandler.invoke(
+public fun <A> DecodeResult<A>.getOrNull(): A? =
+  when (this) {
+    is DecodeResult.Value -> this.value
+    else -> null
+  }
+
+public suspend operator fun <I, E, O> HttpHandler.invoke(
   endpoint: Endpoint<I, E, O>,
   baseUrl: String,
   input: I
@@ -42,6 +49,17 @@ public operator fun <I, E, O> HttpHandler.invoke(
   val request = endpoint.toRequest(baseUrl, input)
   val response = invoke(request)
   return endpoint.parseResponse(request, response)
+}
+
+public suspend fun <I, E, O> HttpHandler.execute(
+  endpoint: Endpoint<I, E, O>,
+  baseUrl: String,
+  input: I
+): Triple<Request, Response, DecodeResult<Either<E, O>>> {
+  val request = endpoint.toRequest(baseUrl, input)
+  val response = invoke(request)
+  val result = endpoint.parseResponse(request, response)
+  return Triple(request, response, result)
 }
 
 public fun <I, E, O> Endpoint<I, E, O>.toRequest(baseUrl: String, i: I): Request {
@@ -94,14 +112,16 @@ public fun <I, E, O> Endpoint<I, E, O>.parseResponse(
   val code = StatusCode(response.status.code)
   val output = if (code.isSuccess()) output else errorOutput
 
+  @Suppress("UNCHECKED_CAST")
   val responseHeaders = response.headers
     .mapNotNull { if (it.second == null) null else it as Pair<String, String> }
     .groupBy({ it.first }) { it.second }
 
   val headers = response.cookies().asHeaders() + responseHeaders
   val params =
-    output.getOutputParams(response, headers, code, response.status.description)
+    output.getOutputParams(response, headers, code)
 
+  @Suppress("UNCHECKED_CAST")
   val result = params.map { it.asAny }
     .map { p -> if (code.isSuccess()) Either.Right(p as O) else Either.Left(p as E) }
 
@@ -118,14 +138,14 @@ public fun <I, E, O> Endpoint<I, E, O>.parseResponse(
   }
 }
 
-fun List<org.http4k.core.cookie.Cookie>.asHeaders(): Map<String, List<String>> =
+public fun List<org.http4k.core.cookie.Cookie>.asHeaders(): Map<String, List<String>> =
   mapOf("Set-Cookie" to map { c -> "${c.name}=${c.value}" })
 
-fun EndpointOutput<*>.getOutputParams(
+@Suppress("UNCHECKED_CAST")
+private fun EndpointOutput<*>.getOutputParams(
   response: Response,
   headers: Map<String, List<String>>,
-  code: StatusCode,
-  statusText: String
+  code: StatusCode
 ): DecodeResult<Params> =
   when (val output = this) {
     is EndpointOutput.Single<*> -> when (val single = (output as EndpointOutput.Single<Any?>)) {
@@ -141,15 +161,15 @@ fun EndpointOutput<*>.getOutputParams(
 
       is EndpointOutput.OneOf<*, *> ->
         single.mappings.firstOrNull { it.statusCode == null || it.statusCode == code }
-          ?.let { mapping -> mapping.output.getOutputParams(response, headers, code, statusText).flatMap { p -> (single.codec as Mapping<Any?, Any?>).decode(p.asAny) } }
-          ?: DecodeResult.Failure.Error(statusText, IllegalArgumentException("Cannot find mapping for status code $code in outputs $output"))
+          ?.let { mapping -> mapping.output.getOutputParams(response, headers, code).flatMap { p -> (single.codec as Mapping<Any?, Any?>).decode(p.asAny) } }
+          ?: DecodeResult.Failure.Error(response.status.description, IllegalArgumentException("Cannot find mapping for status code $code in outputs $output"))
 
       is EndpointIO.MappedPair<*, *, *, *> ->
-        single.wrapped.getOutputParams(response, headers, code, statusText).flatMap { p ->
+        single.wrapped.getOutputParams(response, headers, code).flatMap { p ->
           (single.mapping as Mapping<Any?, DecodeResult<Any?>>).decode(p.asAny)
         }
       is EndpointOutput.MappedPair<*, *, *, *> ->
-        single.output.getOutputParams(response, headers, code, statusText).flatMap { p ->
+        single.output.getOutputParams(response, headers, code).flatMap { p ->
           (single.mapping as Mapping<Any?, DecodeResult<Any?>>).decode(p.asAny)
         }
     }.map { Params.ParamsAsAny(it) }
@@ -160,8 +180,7 @@ fun EndpointOutput<*>.getOutputParams(
       output.combine,
       response,
       headers,
-      code,
-      statusText
+      code
     )
     is EndpointOutput.Pair<*, *, *> -> handleOutputPair(
       output.first,
@@ -169,8 +188,7 @@ fun EndpointOutput<*>.getOutputParams(
       output.combine,
       response,
       headers,
-      code,
-      statusText
+      code
     )
     is EndpointOutput.Void -> DecodeResult.Failure.Error(
       "Cannot convert a void output to a value!",
@@ -184,10 +202,9 @@ private fun handleOutputPair(
   combine: CombineParams,
   response: Response,
   headers: Map<String, List<String>>,
-  code: StatusCode,
-  statusText: String
+  code: StatusCode
 ): DecodeResult<Params> {
-  val l = left.getOutputParams(response, headers, code, statusText)
-  val r = right.getOutputParams(response, headers, code, statusText)
+  val l = left.getOutputParams(response, headers, code)
+  val r = right.getOutputParams(response, headers, code)
   return l.flatMap { leftParams -> r.map { rightParams -> combine(leftParams, rightParams) } }
 }

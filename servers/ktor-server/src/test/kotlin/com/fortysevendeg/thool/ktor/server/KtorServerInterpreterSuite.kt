@@ -3,8 +3,7 @@ package com.fortysevendeg.thool.ktor.server
 import arrow.core.Either
 import com.fortysevendeg.thool.DecodeResult
 import com.fortysevendeg.thool.Endpoint
-import com.fortysevendeg.thool.ktor.client.invoke
-import com.fortysevendeg.thool.ktor.client.responseToDomain
+import com.fortysevendeg.thool.ktor.client.execute
 import com.fortysevendeg.thool.model.StatusCode
 import com.fortysevendeg.thool.server.ServerEndpoint
 import com.fortysevendeg.thool.test.CtxServerInterpreterSuite
@@ -26,7 +25,7 @@ class KtorServerInterpreterSuite : CtxServerInterpreterSuite<TestApplicationEngi
     baseUrl: String,
     input: I
   ): Pair<DecodeResult<Either<E, O>>, StatusCode> {
-    val response = client.config { expectSuccess = false }.invoke(endpoint, baseUrl)(input)
-    return Pair(endpoint.responseToDomain(response), StatusCode(response.status.value))
+    val (_, response, result) = client.config { expectSuccess = false }.execute(endpoint, baseUrl, input)
+    return Pair(result, StatusCode(response.status.value))
   }
 }

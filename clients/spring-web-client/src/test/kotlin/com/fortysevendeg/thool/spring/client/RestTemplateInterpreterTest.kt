@@ -16,7 +16,7 @@ class RestTemplateInterpreterTest : ClientInterpreterSuite() {
     baseUrl: String,
     input: I
   ): Pair<DecodeResult<Either<E, O>>, StatusCode> {
-    val (res, response) = client.invokeAndResponse(endpoint, baseUrl, input)
-    return Pair(res, StatusCode(response.rawStatusCode))
+    val (_, response, result) = client.execute(endpoint, baseUrl, input)
+    return Pair(result, StatusCode(response.rawStatusCode))
   }
 }
