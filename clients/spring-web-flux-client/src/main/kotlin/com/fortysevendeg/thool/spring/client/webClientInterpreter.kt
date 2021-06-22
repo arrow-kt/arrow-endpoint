@@ -1,5 +1,3 @@
-@file:Suppress("UNCHECKED_CAST")
-
 package com.fortysevendeg.thool.spring.client
 
 import arrow.core.Either
@@ -12,6 +10,7 @@ import com.fortysevendeg.thool.Mapping
 import com.fortysevendeg.thool.Params
 import com.fortysevendeg.thool.client.RequestInfo
 import com.fortysevendeg.thool.client.requestInfo
+import com.fortysevendeg.thool.model.Method
 import com.fortysevendeg.thool.model.StatusCode
 import org.springframework.http.HttpMethod
 import org.springframework.web.reactive.function.client.ClientResponse
@@ -25,46 +24,39 @@ import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.awaitBodyOrNull
 import java.io.ByteArrayInputStream
 
-public fun <I, E, O> Endpoint<I, E, O>.toRequestAndParseWebClient(
-  baseUrl: String
-): suspend WebClient.(I) -> Pair<WebClient.RequestBodyUriSpec, DecodeResult<Either<E, O>>> =
-  { input: I ->
-    val info = this@toRequestAndParseWebClient.input.requestInfo(input, baseUrl)
-    val method = info.method.method()
-    requireNotNull(method)
-    val request: WebClient.RequestBodyUriSpec = toRequest(this, info, method)
-    request.awaitExchange { response ->
-      Pair(request, parseResponse(request, method, baseUrl, response))
-    }
-  }
-
-public suspend fun <I, E, O> WebClient.invokeAndResponse(
-  endpoint: Endpoint<I, E, O>,
-  baseUrl: String,
-  input: I
-): Pair<DecodeResult<Either<E, O>>, ClientResponse> {
-  val info = endpoint.input.requestInfo(input, baseUrl)
-  val method = info.method.method()
-  requireNotNull(method)
-  val request: WebClient.RequestBodyUriSpec = toRequest(this, info, method)
-  return request.awaitExchange { response ->
-    Pair(endpoint.parseResponse(request, method, baseUrl, response), response)
-  }
-}
-
 public suspend operator fun <I, E, O> WebClient.invoke(
   endpoint: Endpoint<I, E, O>,
   baseUrl: String,
   input: I
-): DecodeResult<Either<E, O>> =
-  invokeAndResponse(endpoint, baseUrl, input).first
+): DecodeResult<Either<E, O>> {
+  val info = endpoint.input.requestInfo(input, baseUrl)
+  val method = info.method.method()
+  requireNotNull(method)
+  val request = toRequest(info, method)
+  return request.awaitExchange { response ->
+    endpoint.parseResponse(method, baseUrl, response)
+  }
+}
 
-private fun toRequest(
-  webClient: WebClient,
+public suspend fun <I, E, O> WebClient.execute(
+  endpoint: Endpoint<I, E, O>,
+  baseUrl: String,
+  input: I
+): Triple<WebClient.RequestBodyUriSpec, ClientResponse, DecodeResult<Either<E, O>>> {
+  val info = endpoint.input.requestInfo(input, baseUrl)
+  val method = info.method.method()
+  requireNotNull(method)
+  val request = toRequest(info, method)
+  return request.awaitExchange { response ->
+    Triple(request, response, endpoint.parseResponse(method, baseUrl, response))
+  }
+}
+
+public fun WebClient.toRequest(
   info: RequestInfo,
-  method: HttpMethod,
-): WebClient.RequestBodyUriSpec {
-  return webClient.method(method).apply {
+  method: HttpMethod
+): WebClient.RequestBodyUriSpec =
+  method(method).apply {
     uri(URI.create(info.fullUrl))
     info.headers.forEach { (name, value) ->
       header(name, value)
@@ -76,11 +68,8 @@ private fun toRequest(
       body(BodyInserters.fromPublisher(Mono.just(it), ByteArray::class.java))
     }
   }
-}
 
-// Functionality on how to go from Spring response to our domain
-private suspend fun <I, E, O> Endpoint<I, E, O>.parseResponse(
-  request: WebClient.RequestBodyUriSpec,
+public suspend fun <I, E, O> Endpoint<I, E, O>.parseResponse(
   method: HttpMethod,
   url: String,
   response: ClientResponse
@@ -91,6 +80,7 @@ private suspend fun <I, E, O> Endpoint<I, E, O>.parseResponse(
   val params =
     output.getOutputParams(response, response.headers().asHttpHeaders(), code, response.statusCode().reasonPhrase)
 
+  @Suppress("UNCHECKED_CAST")
   val result = params.map { it.asAny }
     .map { p -> if (code.isSuccess()) Either.Right(p as O) else Either.Left(p as E) }
 
@@ -107,6 +97,21 @@ private suspend fun <I, E, O> Endpoint<I, E, O>.parseResponse(
   }
 }
 
+public fun Method.method(): HttpMethod? =
+  when (this.value) {
+    Method.GET.value -> HttpMethod.GET
+    Method.HEAD.value -> HttpMethod.HEAD
+    Method.POST.value -> HttpMethod.POST
+    Method.PUT.value -> HttpMethod.PUT
+    Method.DELETE.value -> HttpMethod.DELETE
+    Method.OPTIONS.value -> HttpMethod.OPTIONS
+    Method.PATCH.value -> HttpMethod.PATCH
+    Method.TRACE.value -> HttpMethod.TRACE
+    Method.CONNECT.value -> null
+    else -> null
+  }
+
+@Suppress("UNCHECKED_CAST")
 private suspend fun EndpointOutput<*>.getOutputParams(
   response: ClientResponse,
   headers: Map<String, List<String>>,

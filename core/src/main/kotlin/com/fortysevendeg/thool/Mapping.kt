@@ -119,9 +119,9 @@ public sealed class DecodeResult<out A> {
     o.map { Value(it) }.getOrElse { Failure.Missing }
 }
 
-public fun <A> List<DecodeResult<A>>.sequence(): DecodeResult<List<A>> = traverseDecodeResult(::identity)
+public fun <A> Iterable<DecodeResult<A>>.sequence(): DecodeResult<List<A>> = traverseDecodeResult(::identity)
 
-public inline fun <A, B> List<A>.traverseDecodeResult(f: (A) -> DecodeResult<B>): DecodeResult<List<B>> {
+public inline fun <A, B> Iterable<A>.traverseDecodeResult(f: (A) -> DecodeResult<B>): DecodeResult<List<B>> {
   val acc = mutableListOf<B>()
   forEach { a ->
     when (val res = f(a)) {
