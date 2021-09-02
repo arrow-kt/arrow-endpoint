@@ -4,5 +4,4 @@ public fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.mai
 
 public fun Application.module() {
   endpointModule()
-  graphQLModule()
 }
