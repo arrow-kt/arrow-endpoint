@@ -585,18 +585,20 @@ public sealed interface QuerySegment {
     override fun toString(): String = "Value($v)"
   }
 
-  /** A query fragment which will be inserted into the query, without and
+  /**
+   * A query fragment which will be inserted into the query, without and
    * preceding or following separators. Allows constructing query strings
    * which are not (only) &-separated key-value pairs.
    *
    * @param encoding How to encode the value, and which characters should be escaped. The RFC3986 standard
    * defines that the query can include these special characters, without escaping:
-   * {{{
+   *
+   * ```
    * /?:@-._~!$&()*+,;=
-   * }}}
-   * See:
-   * [[https://stackoverflow.com/questions/2322764/what-characters-must-be-escaped-in-an-http-query-string]]
-   * [[https://stackoverflow.com/questions/2366260/whats-valid-and-whats-not-in-a-uri-query]]
+   * ```
+   *
+   * @see https://stackoverflow.com/questions/2322764/what-characters-must-be-escaped-in-an-http-query-string
+   * @see https://stackoverflow.com/questions/2366260/whats-valid-and-whats-not-in-a-uri-query
    */
   public data class Plain(
     val v: String,

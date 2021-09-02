@@ -21,17 +21,19 @@ import arrow.core.Tuple8
 import arrow.core.Tuple9
 
 /**
- * A union type: Unit | value | Tuple. Represents the possible parameters of an endpoint's input/output:
+ * TODO: remodel as value class kotlin.Result type but for union of Unit | value | Array<Any?> ?
+ *
+ * A union type: Unit | value | TupleN. Represents the possible parameters of an endpoint's input/output:
  * no parameters, a single parameter (a "stand-alone" value instead of a 1-tuple), and multiple parameters.
  *
  * There are two views on parameters: [ParamsAsAny], where the parameters are represented as instances of
  * the union type, or [ParamsAsList], where the parameters are represented as a vector of size 0/1/2+.
  */
-sealed class Params {
-  abstract val asAny: Any?
-  abstract val asList: List<Any?>
+public sealed class Params {
+  public abstract val asAny: Any?
+  public abstract val asList: List<Any?>
 
-  object Unit : Params() {
+  public object Unit : Params() {
     override val asAny: Any = Unit
     override val asList: List<Any?> = emptyList()
     override fun toString(): String = "Params.Unit"
@@ -525,5 +527,5 @@ sealed class Params {
   }
 }
 
-typealias CombineParams = (Params, Params) -> Params
-typealias SplitParams = (Params) -> Pair<Params, Params>
+public typealias CombineParams = (Params, Params) -> Params
+public typealias SplitParams = (Params) -> Pair<Params, Params>

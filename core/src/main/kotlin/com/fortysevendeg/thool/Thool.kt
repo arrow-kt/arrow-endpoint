@@ -162,4 +162,10 @@ object Thool {
   /** Create a fallback mapping to be used in [oneOf] output descriptions */
   public fun <A> statusDefaultMapping(output: EndpointOutput<A>): EndpointOutput.StatusMapping<A> =
     EndpointOutput.StatusMapping(null, output) { true }
+
+  /** Reads authorization data from the given `input`. */
+  public fun <A> apiKey(
+    input: EndpointInput.Single<A>,
+    challenge: EndpointInput.WWWAuthenticate = EndpointInput.WWWAuthenticate.apiKey()
+  ): EndpointInput.Auth.ApiKey<A> = EndpointInput.Auth.ApiKey(input, challenge, null)
 }

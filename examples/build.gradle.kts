@@ -11,6 +11,7 @@ dependencies {
   implementation(project(Libs.openApiDocs))
   implementation(Libs.graphQlServer)
   implementation(Libs.ktorServerCore)
+  implementation(Libs.ktorAuth)
   implementation(Libs.ktorServerNetty)
   implementation(Libs.logbackClassic)
   implementation(Libs.kotlinxSerializationJson)

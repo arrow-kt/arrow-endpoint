@@ -125,10 +125,11 @@ public data class Endpoint<Input, Error, Output>(
   /**
    * Renders endpoint path, by default all parametrised path and query components are replaced by {param_name} or {paramN}.
    *
-   * {{{
-   * endpoint.in("p1" / path[String] / query[String]("par2"))
-   * }}}
-   * returns `/p1/{param1}?par2={par2}`
+   * ```
+   * Endpoint.input  {  "p1" / path(Codec.string) / query("par2", Codec.string) }
+   *   .renderPath()
+   *   .let(::println) // /p1/{param1}?par2={par2}
+   * ```
    *
    * @param includeAuth Should authentication inputs be included in the result.
    */
@@ -202,6 +203,8 @@ public data class Endpoint<Input, Error, Output>(
     }
   }
 }
+
+// Boilerplate for composition
 
 @JvmName("inputLeftUnit")
 public fun <I, E, O> Endpoint<Unit, E, O>.input(input: EndpointInput<I>, @Suppress("UNUSED_PARAMETER") dummmy: Unit = Unit): Endpoint<I, E, O> =

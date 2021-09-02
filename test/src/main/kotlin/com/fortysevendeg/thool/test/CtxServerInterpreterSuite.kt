@@ -6,14 +6,20 @@ import arrow.core.right
 import com.fortysevendeg.thool.DecodeResult
 import com.fortysevendeg.thool.Endpoint
 import com.fortysevendeg.thool.Endpoint.Info
+import com.fortysevendeg.thool.EndpointIO
 import com.fortysevendeg.thool.EndpointInput
 import com.fortysevendeg.thool.EndpointOutput
 import com.fortysevendeg.thool.Thool
 import com.fortysevendeg.thool.http4k.toRequestAndParser
 import com.fortysevendeg.thool.input
+import com.fortysevendeg.thool.model.Body
+import com.fortysevendeg.thool.model.Header
 import com.fortysevendeg.thool.model.Method
+import com.fortysevendeg.thool.model.ServerResponse
 import com.fortysevendeg.thool.model.StatusCode
+import com.fortysevendeg.thool.reduce
 import com.fortysevendeg.thool.server.ServerEndpoint
+import com.fortysevendeg.thool.test.TestEndpoint.apiKeyInQuery
 import com.fortysevendeg.thool.test.TestEndpoint.in_byte_array_out_byte_array
 import com.fortysevendeg.thool.test.TestEndpoint.in_header_before_path
 import com.fortysevendeg.thool.test.TestEndpoint.in_header_out_string
@@ -35,6 +41,7 @@ import com.fortysevendeg.thool.test.TestEndpoint.in_string_out_string
 import com.fortysevendeg.thool.test.TestEndpoint.in_two_path_capture
 import com.fortysevendeg.thool.test.TestEndpoint.in_unit_out_json_unit
 import io.kotest.core.spec.style.FreeSpec
+import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 import org.http4k.client.ApacheClient
 import org.http4k.core.Request
@@ -64,14 +71,31 @@ public abstract class CtxServerInterpreterSuite<Ctx> : FreeSpec() {
     run: suspend Ctx.(baseUrl: String) -> A
   ): A
 
-  public open suspend fun <I, E, O> Ctx.requestAndStatusCode(
+  public open suspend fun <I, E, O> Ctx.requestAndResponse(
     endpoint: Endpoint<I, E, O>,
     baseUrl: String,
     input: I
-  ): Pair<DecodeResult<Either<E, O>>, StatusCode> {
+  ): Pair<DecodeResult<Either<E, O>>, ServerResponse> {
     val (request, parser) = endpoint.toRequestAndParser(baseUrl)(input)
-    val response = client(request)
-    return Pair(parser(response), StatusCode(response.status.code))
+    return client(request).use { response ->
+
+      val body = when (val e = endpoint.output.reduce(ifBody = { listOf(it) }).firstOrNull()) {
+        is EndpointIO.ByteArrayBody -> Body.ByteArray(response.body.payload.array(), e.codec.format)
+        is EndpointIO.ByteBufferBody -> Body.ByteBuffer(response.body.payload, e.codec.format)
+        is EndpointIO.InputStreamBody -> Body.InputStream(response.body.stream, e.codec.format)
+        is EndpointIO.StringBody -> Body.String(e.charset, response.body.payload.array().toString(e.charset), e.codec.format)
+        null -> null
+      }
+
+      Pair(
+        parser(response),
+        ServerResponse(
+          StatusCode(response.status.code),
+          response.headers.mapNotNull { (name, value) -> value?.let { Header(name, it) } },
+          body
+        )
+      )
+    }
   }
 
   private suspend fun <I, E, O> Ctx.request(
@@ -79,7 +103,7 @@ public abstract class CtxServerInterpreterSuite<Ctx> : FreeSpec() {
     baseUrl: String,
     input: I
   ): DecodeResult<Either<E, O>> =
-    requestAndStatusCode(endpoint, baseUrl, input).first
+    requestAndResponse(endpoint, baseUrl, input).first
 
   init {
     val empty = Endpoint(EndpointInput.empty(), EndpointOutput.empty(), EndpointOutput.empty(), Info.empty())
@@ -88,17 +112,17 @@ public abstract class CtxServerInterpreterSuite<Ctx> : FreeSpec() {
 
     "Empty endpoint matches all methods" {
       withEndpoint(empty.logic { it.right() }) { baseUrl ->
-        val (res, code) = requestAndStatusCode(emptyPost, baseUrl, Unit)
+        val (res, response) = requestAndResponse(emptyPost, baseUrl, Unit)
         res shouldBe DecodeResult.Value(Unit.right())
-        code shouldBe StatusCode.Ok
+        response.code shouldBe StatusCode.Ok
       }
     }
 
     "Mismatching endpoint results in NotFound" {
       withEndpoint(emptyGet.logic { it.right() }) { baseUrl ->
-        val (res, code) = requestAndStatusCode(emptyPost, baseUrl, Unit)
+        val (res, response) = requestAndResponse(emptyPost, baseUrl, Unit)
         res shouldBe DecodeResult.Value(Unit.left())
-        code shouldBe StatusCode.NotFound
+        response.code shouldBe StatusCode.NotFound
       }
     }
 
@@ -136,8 +160,8 @@ public abstract class CtxServerInterpreterSuite<Ctx> : FreeSpec() {
     ): Unit =
       "${endpoint.details()} - $postfix" {
         withEndpoint(endpoint.logic(logic)) { baseUrl ->
-          val (normalised, code) = requestAndStatusCode(endpoint, baseUrl, input)
-          Pair(normalised, code) shouldBe Pair(DecodeResult.Value(normalise(expected.first)), expected.second)
+          val (normalised, response) = requestAndResponse(endpoint, baseUrl, input)
+          Pair(normalised, response.code) shouldBe Pair(DecodeResult.Value(normalise(expected.first)), expected.second)
         }
       }
 
@@ -149,8 +173,8 @@ public abstract class CtxServerInterpreterSuite<Ctx> : FreeSpec() {
     ): Unit =
       "${endpoint.details()} - $postfix" {
         withEndpoint(endpoint.logic(logic)) { baseUrl ->
-          val (normalised, code) = requestAndStatusCode(endpoint, baseUrl, Unit)
-          Pair(normalised, code) shouldBe Pair(DecodeResult.Value(normalise(expected.first)), expected.second)
+          val (normalised, response) = requestAndResponse(endpoint, baseUrl, Unit)
+          Pair(normalised, response.code) shouldBe Pair(DecodeResult.Value(normalise(expected.first)), expected.second)
         }
       }
 
@@ -302,6 +326,29 @@ public abstract class CtxServerInterpreterSuite<Ctx> : FreeSpec() {
     test(
       out_status_from_string_one_empty.name("status empty"),
       Pair(Unit.left().right(), StatusCode.Accepted)
-    ) { Unit.left().right() }
+    ) {
+      Unit.left().right()
+    }
+
+    test(
+      apiKeyInQuery.name("Passes apiKey"),
+      "supersecret",
+      Pair(Unit.right(), StatusCode.Ok),
+    ) { Unit.right() }
+
+//    test(
+//      ,
+//      "",
+//      Pair(Unit.right(), StatusCode.Unauthorized),
+//    ) { Unit.left() }
+
+    val endpoint = apiKeyInQuery.name("Fails apiKey")
+    (endpoint.details()) {
+      withEndpoint(apiKeyInQuery.name("Fails apiKey").logic { Unit.left() }) { baseUrl ->
+        val (normalised, response) = requestAndResponse(endpoint, baseUrl, "")
+        response.headers.firstOrNull { it.name == "WWW-Authenticate" }?.value shouldBe "ApiKey realm=realm"
+        Pair(normalised, response.code) shouldBe Pair(DecodeResult.Value(normalise(Unit.right())), StatusCode.Unauthorized)
+      }
+    }
   }
 }

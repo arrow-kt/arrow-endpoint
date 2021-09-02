@@ -23,11 +23,8 @@ public sealed interface DecodeBasicInputsResult {
     val bodyInputWithIndex: Pair<EndpointIO.Body<*, *>, Int>?
   ) : DecodeBasicInputsResult {
 
-    private fun verifyNoBody(input: EndpointInput<*>): Unit =
-      check(bodyInputWithIndex == null) { "Double body definition: $input" }
-
     fun addBodyInput(input: EndpointIO.Body<*, *>, bodyIndex: Int): Values {
-      verifyNoBody(input)
+      require(bodyInputWithIndex == null) { "Double body definition: $input" }
       return copy(bodyInputWithIndex = Pair(input, bodyIndex))
     }
 

@@ -9,7 +9,7 @@ import com.fortysevendeg.thool.model.Method
 
 internal class PathCreator(
   private val schemas: Map<Schema.ObjectInfo, String>,
-//  securitySchemes: SecuritySchemes,
+  private val securitySchemes: SecuritySchemes,
   private val options: OpenAPIDocsOptions
 ) {
 
@@ -39,12 +39,30 @@ internal class PathCreator(
     return Pair(e.renderPath(renderQueryParam = null, includeAuth = false), pathItem)
   }
 
+  private fun operationSecurity(e: Endpoint<*, *, *>): List<SecurityRequirement> {
+    val securityRequirement: SecurityRequirement = e.input.auths().mapNotNull { auth ->
+      securitySchemes[auth]?.first?.let { Pair(it, emptyList<String>()) }
+    }.toMap()
+
+    return when {
+      securityRequirement.isEmpty() -> emptyList()
+      else -> {
+        val securityOptional =
+          e.input.auths()
+            .flatMap { it.asListOfBasicInputs() }
+            .all { it.codec.schema().isOptional() }
+
+        if (securityOptional) listOf(emptyMap(), securityRequirement)
+        else listOf(securityRequirement)
+      }
+    }
+  }
+
   private fun endpointToOperation(defaultId: String, e: Endpoint<*, *, *>, inputs: List<EndpointInput.Basic<*, *, *>>): Operation {
     val parameters: List<Parameter> = operationParameters(inputs)
     val body: List<Referenced<RequestBody>> = operationInputBody(inputs)
     val responses = e.toOperationResponses(schemas)
 
-    // TODO security
     return Operation(
       tags = e.info.tags,
       summary = e.info.summary,
@@ -54,6 +72,7 @@ internal class PathCreator(
       requestBody = body.firstOrNull(),
       responses = responses,
       deprecated = e.info.deprecated,
+      security = operationSecurity(e),
       servers = emptyList()
     )
   }

@@ -37,6 +37,7 @@ import io.ktor.request.path
 import io.ktor.request.port
 import io.ktor.response.header
 import io.ktor.response.respond
+import io.ktor.util.StringValues
 import io.ktor.util.flattenEntries
 import io.ktor.util.toByteArray
 import io.ktor.utils.io.jvm.javaio.toInputStream
@@ -122,11 +123,16 @@ public fun ApplicationCall.toServerRequest(): ServerRequest {
     connectionInfo = ConnectionInfo(request.origin.toAddress(), null, null),
     method = Method(request.httpMethod.value),
     uri = uri,
-    headers = request.headers.flattenEntries().map { (name, value) -> Header(name, value) },
+    headers = request.headers.toHeaders(),
     pathSegments = uri.path(),
     queryParameters = uri.params()
   )
 }
+
+internal fun StringValues.toHeaders(): List<Header> =
+  entries().flatMap { e ->
+    e.value.map { Header(e.key, it) }
+  }
 
 private fun RequestConnectionPoint.toAddress(): Address = Address(host, port)
 

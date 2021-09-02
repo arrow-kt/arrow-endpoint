@@ -15,6 +15,9 @@ import com.fortysevendeg.thool.input
 import com.fortysevendeg.thool.ktor.server.install
 import com.fortysevendeg.thool.output
 import com.fortysevendeg.thool.product
+import io.ktor.auth.Authentication
+import io.ktor.auth.authentication
+import io.ktor.auth.basic
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -65,6 +68,4 @@ public fun Application.endpointModule() = Thool {
       Either.Right(Project("other-$project", "other-$language"))
     }
   )
-
-  install(openApiServerEndpoint)
 }

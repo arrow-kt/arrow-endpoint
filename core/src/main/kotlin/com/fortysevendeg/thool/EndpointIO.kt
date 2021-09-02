@@ -15,7 +15,9 @@ public sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
   override fun <B> map(f: (A) -> B, g: (B) -> A): EndpointIO<B> = map(Mapping.from(f, g))
   override fun <B> mapDecode(f: (A) -> DecodeResult<B>, g: (B) -> A): EndpointIO<B> = map(Mapping.fromDecode(f, g))
 
-  public sealed interface Single<A> : EndpointIO<A>, EndpointInput.Single<A>, EndpointOutput.Single<A>
+  public sealed interface Single<A> : EndpointIO<A>, EndpointInput.Single<A>, EndpointOutput.Single<A> {
+    override fun <B> map(mapping: Mapping<A, B>): EndpointIO.Single<B>
+  }
 
   public sealed interface Basic<L, A, CF : CodecFormat> :
     Single<A>,
@@ -59,7 +61,7 @@ public sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
     override fun toString(): String = "{header $name}"
   }
 
-  // TODO FileBody, MultipartBody
+  // TODO FileBody, MultipartBody turn into tickets
   public sealed interface Body<R, T> : Basic<R, T, CodecFormat>
   public sealed interface BinaryBody<R, T> : Body<R, T>
 

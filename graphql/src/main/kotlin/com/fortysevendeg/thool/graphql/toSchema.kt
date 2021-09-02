@@ -151,6 +151,7 @@ fun <I> EndpointInput<I>.toInput(
 
     is EndpointInput.PathsCapture -> throw RuntimeException("remaining path positions params not allowed for GraphQL??")
     is EndpointInput.QueryParams -> TODO("How to extract query params from GraphQLServerRequest ??")
+    is EndpointInput.Auth.ApiKey -> TODO()
 
     is EndpointInput.MappedPair<*, *, *, *> -> handleMappedPair(
       this.input.first, this.input.second,

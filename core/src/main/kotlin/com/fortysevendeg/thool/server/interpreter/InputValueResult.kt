@@ -21,7 +21,7 @@ public sealed interface InputValueResult {
     fun from(input: EndpointInput<*>, values: DecodeBasicInputsResult.Values): InputValueResult =
       from(input, values.basicInputsValues)
 
-    private fun from(input: EndpointInput<*>, remainingBasicValues: List<Any?>): InputValueResult =
+    private tailrec fun from(input: EndpointInput<*>, remainingBasicValues: List<Any?>): InputValueResult =
       when (input) {
         is EndpointInput.Pair<*, *, *> -> handlePair(input.first, input.second, input.combine, remainingBasicValues)
         is EndpointIO.Pair<*, *, *> -> handlePair(input.first, input.second, input.combine, remainingBasicValues)
@@ -36,7 +36,7 @@ public sealed interface InputValueResult {
           input.mapping as Mapping<Any?, Any?>,
           remainingBasicValues
         )
-//      is EndpointInput.Auth<_>                 -> apply(auth.input, remainingBasicValues)
+        is EndpointInput.Auth<*> -> from(input.input, remainingBasicValues)
         is EndpointInput.Basic<*, *, *> ->
           remainingBasicValues.headAndTailOrNull()?.let { (v, valuesTail) ->
             Value(Params.ParamsAsAny(v), valuesTail)
@@ -44,7 +44,7 @@ public sealed interface InputValueResult {
             ?: throw IllegalStateException("Mismatch between basic input values: $remainingBasicValues, and basic inputs in: $input")
       }
 
-    private fun handlePair(
+    private inline fun handlePair(
       left: EndpointInput<*>,
       right: EndpointInput<*>,
       combine: CombineParams,

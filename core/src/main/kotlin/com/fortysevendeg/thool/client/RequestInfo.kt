@@ -52,6 +52,7 @@ public fun <I> EndpointInput<I>.requestInfo(
 
   fun <I> EndpointInput<I>.buildClientInfo(params: Params): Unit {
     val value = params.asAny as I
+    val x: Any? =  // make it exhaustive
     when (this) {
       is EndpointInput.FixedPath ->
         pathSegments.add(PathSegment(s))
@@ -88,6 +89,9 @@ public fun <I> EndpointInput<I>.requestInfo(
         queryParams.add(Pair(name, codec.encode(value)))
       is EndpointInput.QueryParams ->
         queryParams.addAll(codec.encode(value).ps)
+
+      is EndpointInput.Auth.ApiKey ->
+        this.input.buildClientInfo(params)
 
       // Recurse on composition of inputs.
       is EndpointInput.Pair<*, *, *> -> {

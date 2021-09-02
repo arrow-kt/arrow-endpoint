@@ -41,7 +41,6 @@ internal fun basicInputSortIndex(i: EndpointInput.Basic<*, *, *>): Int =
     is EndpointInput.QueryParams<*> -> 2
     is EndpointInput.Cookie<*> -> 3
     is EndpointIO.Header<*> -> 3
-//  is EndpointIO.Headers<*> -> 3
 //  is EndpointIO.FixedHeader<*> -> 3
 //  is EndpointInput.ExtractFromRequest<*> -> 4
     is EndpointIO.Body<*, *> -> 6

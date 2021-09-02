@@ -36,6 +36,7 @@ private fun forInput(input: EndpointInput<*>): List<Pair<TSchema.ObjectInfo, TSc
     is EndpointInput.FixedPath -> emptyList()
     is EndpointInput.PathsCapture -> emptyList()
     is EndpointInput.QueryParams -> emptyList()
+    is EndpointInput.Auth -> emptyList()
     is EndpointInput.Pair<*, *, *> -> forInput(input.first) + forInput(input.second)
     is EndpointInput.MappedPair<*, *, *, *> -> forInput(input.input)
     is EndpointIO -> forIO(input)

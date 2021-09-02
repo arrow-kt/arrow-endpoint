@@ -132,6 +132,7 @@ public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
     public val double: Codec<String, Double, CodecFormat.TextPlain> = stringCodec(Schema.double) { it.toDouble() }
     public val boolean: Codec<String, Boolean, CodecFormat.TextPlain> = stringCodec(Schema.boolean) { it.toBoolean() }
 
+    // TODO move to jvmMain
     public val uuid: Codec<String, UUID, CodecFormat.TextPlain> = stringCodec(Schema.uuid, UUID::fromString)
     public val bigDecimal: Codec<String, BigDecimal, CodecFormat.TextPlain> = stringCodec(Schema.bigDecimal, ::BigDecimal)
     public val localTime: Codec<String, LocalTime, CodecFormat.TextPlain> =

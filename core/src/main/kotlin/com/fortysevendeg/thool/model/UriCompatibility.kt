@@ -5,6 +5,7 @@ import java.net.URLEncoder
 
 internal object UriCompatibility {
   fun encodeDNSHost(host: String): String =
+    // TODO make MPP
     java.net.IDN.toASCII(host).encode(allowedCharacters = Rfc3986.Host)
 
   fun encodeQuery(s: String, enc: String): String =

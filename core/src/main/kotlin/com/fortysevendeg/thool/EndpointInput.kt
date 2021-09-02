@@ -4,6 +4,7 @@ import arrow.core.Tuple4
 import arrow.core.Tuple5
 import arrow.core.Tuple6
 import com.fortysevendeg.thool.model.CodecFormat
+import com.fortysevendeg.thool.model.Header
 import com.fortysevendeg.thool.model.Method
 import com.fortysevendeg.thool.model.QueryParams as MQueryParams
 
@@ -35,7 +36,10 @@ public sealed interface EndpointInput<A> : EndpointTransput<A> {
   override fun <B> map(f: (A) -> B, g: (B) -> A): EndpointInput<B> = map(Mapping.from(f, g))
   override fun <B> mapDecode(f: (A) -> DecodeResult<B>, g: (B) -> A): EndpointInput<B> = map(Mapping.fromDecode(f, g))
 
-  public sealed interface Single<A> : EndpointInput<A>
+  public sealed interface Single<A> : EndpointInput<A> {
+    override fun <B> map(mapping: Mapping<A, B>): EndpointInput.Single<B>
+  }
+
   public sealed interface Basic<L, A, CF : CodecFormat> : Single<A>, EndpointTransput.Basic<L, A, CF> {
 
     override fun <B> copyWith(c: Codec<L, B, CF>, i: EndpointIO.Info<B>): Basic<L, B, CF>
@@ -150,6 +154,37 @@ public sealed interface EndpointInput<A> : EndpointTransput<A> {
     override fun toString(): String = "{cookie $name}"
   }
 
+  public data class WWWAuthenticate(val values: List<String>) {
+    public fun headers(): List<Header> = values.map { Header("WWW-Authenticate", it) }
+
+    public companion object {
+      public val defaultRealm: String = "default realm"
+      public fun basic(realm: String = defaultRealm): WWWAuthenticate = single("Basic", realm)
+      public fun bearer(realm: String = defaultRealm): WWWAuthenticate = single("Bearer", realm)
+      public fun apiKey(realm: String = defaultRealm): WWWAuthenticate = single("ApiKey", realm)
+      public fun single(scheme: String, realm: String = defaultRealm): WWWAuthenticate = WWWAuthenticate(listOf("$scheme realm=\"$realm\""))
+    }
+  }
+
+  public sealed interface Auth<A> : Single<A> {
+    public val input: Single<A>
+    public val challenge: WWWAuthenticate
+    public val securitySchemeName: String?
+    public fun securitySchemeName(name: String): Auth<A>
+
+    public data class ApiKey<A>(
+      override val input: Single<A>,
+      override val challenge: WWWAuthenticate,
+      override val securitySchemeName: String?
+    ) : Auth<A> {
+      override fun <B> map(mapping: Mapping<A, B>): ApiKey<B> =
+        ApiKey(input.map(mapping), challenge, securitySchemeName)
+
+      override fun securitySchemeName(name: String): ApiKey<A> = copy(securitySchemeName = name)
+      override fun toString(): String = "auth(api key, via $input)"
+    }
+  }
+
   public data class MappedPair<A, B, C, D>(val input: Pair<A, B, C>, val mapping: Mapping<C, D>) : Single<D> {
     override fun <E> map(mapping: Mapping<D, E>): MappedPair<A, B, C, E> = MappedPair(input, this.mapping.map(mapping))
     override fun toString(): String = input.toString()
@@ -191,17 +226,22 @@ public sealed interface EndpointInput<A> : EndpointTransput<A> {
     }
   }
 
-  private fun toList(): List<EndpointInput<Any?>> =
-    reduce(::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf)
+  private fun toList(includeAuth: Boolean = true): List<EndpointInput<Any?>> =
+    reduce(::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, includeAuth)
 
   public fun asListOfBasicInputs(includeAuth: Boolean = true): List<Basic<*, *, *>> =
-    toList().mapNotNull {
-//      if(includeAuth) it as? Basic<*, *, *> ?: it as EndpointInput.Auth<*> else
-      it as? Basic<*, *, *>
+    toList(includeAuth).flatMap {
+      when (it) {
+        is Basic<*, *, *> -> listOf(it)
+        else -> emptyList()
+      }
     }
 
   public fun method(): Method? =
     toList().firstNotNull { (it as? FixedMethod<*>)?.m }
+
+  public fun auths(): List<Auth<*>> =
+    toList().mapNotNull { (it as? Auth<*>) }
 
   public companion object {
     public fun empty(): EndpointIO.Empty<Unit> =
@@ -227,6 +267,7 @@ public fun <A, B> EndpointInput<A>.reduce(
   ifPathsCapture: (EndpointInput.PathsCapture<Any?>) -> List<B> = { emptyList() },
   ifQuery: (EndpointInput.Query<Any?>) -> List<B> = { emptyList() },
   ifQueryParams: (EndpointInput.QueryParams<Any?>) -> List<B> = { emptyList() },
+  includeAuth: Boolean = true
 ): List<B> =
   when (this) {
     is EndpointIO.Body<*, *> -> ifBody(this as EndpointIO.Body<Any?, Any?>)
@@ -239,6 +280,9 @@ public fun <A, B> EndpointInput<A>.reduce(
     is EndpointInput.PathsCapture -> ifPathsCapture(this as EndpointInput.PathsCapture<Any?>)
     is EndpointInput.Query -> ifQuery(this as EndpointInput.Query<Any?>)
     is EndpointInput.QueryParams -> ifQueryParams(this as EndpointInput.QueryParams<Any?>)
+    is EndpointInput.Auth -> if (includeAuth) this.input
+      .reduce(ifBody, ifEmpty, ifHeader, ifCookie, ifFixedMethod, ifFixedPath, ifPathCapture, ifPathsCapture, ifQuery, ifQueryParams)
+    else emptyList()
 
     is EndpointInput.Pair<*, *, *> ->
       first.reduce(

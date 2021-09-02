@@ -35,7 +35,7 @@ public data class Cookie(val name: String, val value: String) {
      * Parse the cookie, represented as a header value (in the format: `[name]=[value]`).
      */
     public fun parse(s: String): Either<String, List<Cookie>> {
-      val cs = s.split(";").map { ss ->
+      val cs = s.split(";").mapNotNull { ss ->
         val cookie = ss.split(Regex("="), limit = 2).map(String::trim)
         when (cookie.size) {
           1 -> of(cookie[0], "")

@@ -178,7 +178,7 @@ public data class Components(
   public val examples: Definitions<Example> = emptyMap(),
   public val requestBodies: Definitions<RequestBody> = emptyMap(),
   public val headers: Definitions<Header> = emptyMap(),
-//  val securitySchemes: Definitions<SecurityScheme>,
+  public val securitySchemes: Definitions<SecurityScheme>,
   public val links: Map<String, Link> = emptyMap(),
   public val callbacks: Map<String, Callback> = emptyMap(),
 )

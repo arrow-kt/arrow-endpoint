@@ -3,7 +3,9 @@ package com.fortysevendeg.thool.spring.server
 import arrow.core.Either
 import com.fortysevendeg.thool.DecodeResult
 import com.fortysevendeg.thool.Endpoint
+import com.fortysevendeg.thool.model.Header
 import com.fortysevendeg.thool.model.StatusCode
+import com.fortysevendeg.thool.model.ServerResponse as ArrowSResponse
 import com.fortysevendeg.thool.server.ServerEndpoint
 import com.fortysevendeg.thool.spring.client.invokeAndResponse
 import com.fortysevendeg.thool.test.ServerInterpreterSuite
@@ -38,12 +40,19 @@ class SpringServerInterpreterSuite : ServerInterpreterSuite() {
     return Unit.run("http://localhost:8080")
   }
 
-  override suspend fun <I, E, O> Unit.requestAndStatusCode(
+  override suspend fun <I, E, O> Unit.requestAndResponse(
     endpoint: Endpoint<I, E, O>,
     baseUrl: String,
     input: I
-  ): Pair<DecodeResult<Either<E, O>>, StatusCode> {
+  ): Pair<DecodeResult<Either<E, O>>, ArrowSResponse> {
     val (res, response) = client.invokeAndResponse(endpoint, baseUrl, input)
-    return Pair(res, StatusCode(response.rawStatusCode()))
+    return Pair(
+      res,
+      ArrowSResponse(
+        StatusCode(response.rawStatusCode()),
+        response.headers().asHttpHeaders().toSingleValueMap().map { (name, value) -> Header(name, value) },
+        null // TODO("Extract the correct body type")
+      )
+    )
   }
 }

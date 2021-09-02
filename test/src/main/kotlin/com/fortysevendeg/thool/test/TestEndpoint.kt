@@ -5,9 +5,11 @@ import com.fortysevendeg.thool.Codec
 import com.fortysevendeg.thool.DecodeResult
 import com.fortysevendeg.thool.Endpoint
 import com.fortysevendeg.thool.EndpointInput
+import com.fortysevendeg.thool.EndpointInput.WWWAuthenticate.Companion
 import com.fortysevendeg.thool.EndpointOutput
 import com.fortysevendeg.thool.Schema
 import com.fortysevendeg.thool.Thool.anyJsonBody
+import com.fortysevendeg.thool.Thool.apiKey
 import com.fortysevendeg.thool.Thool.byteArrayBody
 import com.fortysevendeg.thool.Thool.byteBufferBody
 import com.fortysevendeg.thool.Thool.cookie
@@ -270,4 +272,11 @@ object TestEndpoint {
         statusMapping(StatusCode.Ok, stringBody().map({ Either.Right(it) }, { it.value }))
       )
     )
+
+  private val Realm = "realm"
+
+  val apiKeyInQuery: Endpoint<String, Unit, Unit> = Endpoint.input(apiKey(query("token", Codec.string), EndpointInput.WWWAuthenticate.apiKey(Realm)))
+  val apiKeyInHeader = Endpoint.input(apiKey(header("x-api-key", Codec.listFirst(Codec.string)), EndpointInput.WWWAuthenticate.apiKey(Realm)))
+
+
 }

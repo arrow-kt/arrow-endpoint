@@ -108,12 +108,12 @@ public sealed interface EndpointOutput<A> : EndpointTransput<A> {
 
 @Suppress("UNCHECKED_CAST")
 public fun <A, B> EndpointOutput<A>.reduce(
-  ifBody: (EndpointIO.Body<Any?, Any?>) -> List<B>,
-  ifEmpty: (EndpointIO.Empty<Any?>) -> List<B>,
-  ifHeader: (EndpointIO.Header<Any?>) -> List<B>,
-  ifFixedStatuscode: (EndpointOutput.FixedStatusCode<Any?>) -> List<B>,
-  ifStatusCode: (EndpointOutput.StatusCode<Any?>) -> List<B>,
-  ifVoid: (EndpointOutput.Void<Any?>) -> List<B>
+  ifBody: (EndpointIO.Body<Any?, Any?>) -> List<B> = { emptyList() },
+  ifEmpty: (EndpointIO.Empty<Any?>) -> List<B> = { emptyList() },
+  ifHeader: (EndpointIO.Header<Any?>) -> List<B> = { emptyList() },
+  ifFixedStatuscode: (EndpointOutput.FixedStatusCode<Any?>) -> List<B> = { emptyList() },
+  ifStatusCode: (EndpointOutput.StatusCode<Any?>) -> List<B> = { emptyList() },
+  ifVoid: (EndpointOutput.Void<Any?>) -> List<B> = { emptyList() },
 ): List<B> =
   when (this) {
     is EndpointIO.Body<*, *> -> ifBody(this as EndpointIO.Body<Any?, Any?>)
