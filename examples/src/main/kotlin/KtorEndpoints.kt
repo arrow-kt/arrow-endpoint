@@ -36,6 +36,29 @@ public data class Project(
   }
 }
 
+public val helloWorld: Endpoint<Pair<String, String>, Unit, Project> =
+  Endpoint
+    .get()
+    .input(fixedPath("project"))
+    .input(fixedPath("json"))
+    .input(
+      Thool.query("project", Codec.string)
+        .description("The name of the project")
+        .example("Arrow Fx Coroutines")
+    )
+    .input(
+      Thool.query("language", Codec.string)
+        .description("The primary programming language of the project")
+        .default("kotlin")
+        .example("java")
+    )
+    .output(
+      Thool.anyJsonBody(Project.jsonCodec)
+        .description("The project transformed into json format")
+        .default(Project("", "Kotlin"))
+        .example(Project("Arrow Fx Coroutines", "Kotlin"))
+    )
+
 public val pong: Endpoint<Unit, Unit, String> = Endpoint
   .get()
   .input(fixedPath("ping"))
@@ -46,10 +69,7 @@ public val openApiServerEndpoint: ServerEndpoint<Unit, Unit, String> =
     .get("openapi")
     .output(Thool.stringBody())
     .logic {
-      listOf(
-        helloWorld,
-        pong
-      )
+      listOf(pong)
         .toOpenAPI("Example Server", "0.0.1")
         .toJson()
         .right()
