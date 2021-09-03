@@ -50,6 +50,6 @@ allprojects {
   }
 
   kotlin {
-    explicitApiWarning()
+    explicitApi()
   }
 }

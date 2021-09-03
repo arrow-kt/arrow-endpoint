@@ -2,6 +2,7 @@ package com.fortysevendeg.thool.docs.openapi
 
 import com.fortysevendeg.thool.Schema
 import com.fortysevendeg.thool.model.Method
+import java.util.Locale
 
 public data class OpenAPIDocsOptions(
   val operationIdGenerator: (List<String>, Method) -> String = Companion::defaultOperationIdGenerator,
@@ -11,7 +12,7 @@ public data class OpenAPIDocsOptions(
     public fun defaultOperationIdGenerator(pathComponents: List<String>, method: Method): String {
       val components = pathComponents.ifEmpty { listOf("root") }
       // converting to camelCase
-      return method.value.lowercase() + components.joinToString("") { it.lowercase().capitalize() }
+      return method.value.lowercase() + components.joinToString("") { it.lowercase().replaceFirstChar { ch -> if (ch.isLowerCase()) ch.titlecase(Locale.getDefault()) else ch.toString() } }
     }
 
     public fun defaultSchemaName(info: Schema.ObjectInfo): String {

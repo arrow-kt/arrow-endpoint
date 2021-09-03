@@ -75,6 +75,7 @@ private fun SpringServerRequest.toServerRequest(): ServerRequest {
 private class SpringRequestBody(
   private val request: SpringServerRequest
 ) : RequestBody {
+  @Suppress("UNCHECKED_CAST")
   override suspend fun <R> toRaw(bodyType: EndpointIO.Body<R, *>): R {
     val body: DataBuffer? = request.awaitBodyOrNull()
     return when (bodyType) {

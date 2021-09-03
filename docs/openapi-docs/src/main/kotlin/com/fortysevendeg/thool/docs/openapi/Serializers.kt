@@ -1,3 +1,4 @@
+@file:OptIn(ExperimentalSerializationApi::class)
 package com.fortysevendeg.thool.docs.openapi
 
 import arrow.core.NonEmptyList
@@ -34,7 +35,6 @@ internal object BigDecimalAsStringSerializer : KSerializer<BigDecimal> {
   override fun deserialize(decoder: Decoder): BigDecimal = BigDecimal(decoder.decodeString())
 }
 
-@ExperimentalSerializationApi
 internal class NelDescriptor(val elementDescriptor: SerialDescriptor) : SerialDescriptor {
   override val serialName: String = "arrow.core.NonEmptyList"
   override val kind: SerialKind = StructureKind.LIST
@@ -113,7 +113,6 @@ internal class ReferencedSerializer<T>(
     element<String>(RefKey)
   }
 
-  @InternalSerializationApi
   // TODO review SerialDescriptor. Should it describe the actual type or the com.fortysevendeg.thool.docs.openapi.json model
   override val descriptor: SerialDescriptor =
     buildClassSerialDescriptor("com.fortysevendeg.thool.docs.openapi.Referenced") {
@@ -121,19 +120,17 @@ internal class ReferencedSerializer<T>(
       element("description", dataSerializer.descriptor, isOptional = true)
     }
 
-  @InternalSerializationApi
   override fun serialize(encoder: Encoder, value: Referenced<T>) {
     when (value) {
       is Referenced.Other -> encoder.encodeSerializableValue(dataSerializer, value.value)
       is Referenced.Ref -> {
-        val encoder = encoder.beginStructure(descriptor)
-        encoder.encodeStringElement(refDescriptor, 0, value.value.ref)
-        encoder.endStructure(descriptor)
+        val nested = encoder.beginStructure(descriptor)
+        nested.encodeStringElement(refDescriptor, 0, value.value.ref)
+        nested.endStructure(descriptor)
       }
     }
   }
 
-  @InternalSerializationApi
   override fun deserialize(decoder: Decoder): Referenced<T> =
     TODO(
       """
@@ -145,7 +142,7 @@ internal class ReferencedSerializer<T>(
 
 internal class ExampleValueSerializer : KSerializer<ExampleValue> {
 
-  @InternalSerializationApi
+  @OptIn(InternalSerializationApi::class)
   override val descriptor: SerialDescriptor =
     buildSerialDescriptor(
       "com.fortysevendeg.thool.docs.openapi.ExampleValueSerializer",
@@ -174,19 +171,19 @@ internal class ResponsesSerializer : KSerializer<Responses> {
   private val elementSerializer = Referenced.serializer(Response.serializer())
 
   override fun deserialize(decoder: Decoder): Responses {
-    val decoder = decoder.beginStructure(descriptor)
-    val size = decoder.decodeCollectionSize(descriptor)
+    val nested = decoder.beginStructure(descriptor)
+    val size = nested.decodeCollectionSize(descriptor)
     var default: Referenced<Response>? = null
     val responses = LinkedHashMap<StatusCode, Referenced<Response>>(size)
     while (true) {
-      val index = decoder.decodeElementIndex(descriptor)
+      val index = nested.decodeElementIndex(descriptor)
       if (index == CompositeDecoder.DECODE_DONE) break
-      val key: String = decoder.decodeSerializableElement(descriptor, index, String.serializer())
+      val key: String = nested.decodeSerializableElement(descriptor, index, String.serializer())
       if (key == "default") {
-        default = decoder.decodeSerializableElement(descriptor, index + 1, elementSerializer)
+        default = nested.decodeSerializableElement(descriptor, index + 1, elementSerializer)
       } else {
         val code = StatusCode(key.toInt())
-        responses[code] = decoder.decodeSerializableElement(descriptor, index + 1, elementSerializer)
+        responses[code] = nested.decodeSerializableElement(descriptor, index + 1, elementSerializer)
       }
     }
 
@@ -209,8 +206,7 @@ internal class ResponsesSerializer : KSerializer<Responses> {
   }
 }
 
-@ExperimentalSerializationApi
-object ResponsesDescriptor : SerialDescriptor {
+public object ResponsesDescriptor : SerialDescriptor {
   override val serialName: String = "com.fortysevendeg.thool.docs.openapi.Responses"
   override val kind: SerialKind = StructureKind.MAP
   override val elementsCount: Int = 2

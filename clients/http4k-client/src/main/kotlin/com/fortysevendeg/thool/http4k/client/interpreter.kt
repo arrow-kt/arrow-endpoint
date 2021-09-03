@@ -41,7 +41,7 @@ public fun <A> DecodeResult<A>.getOrNull(): A? =
     else -> null
   }
 
-public suspend operator fun <I, E, O> HttpHandler.invoke(
+public operator fun <I, E, O> HttpHandler.invoke(
   endpoint: Endpoint<I, E, O>,
   baseUrl: String,
   input: I
@@ -51,7 +51,7 @@ public suspend operator fun <I, E, O> HttpHandler.invoke(
   return endpoint.parseResponse(request, response)
 }
 
-public suspend fun <I, E, O> HttpHandler.execute(
+public fun <I, E, O> HttpHandler.execute(
   endpoint: Endpoint<I, E, O>,
   baseUrl: String,
   input: I
@@ -68,15 +68,15 @@ public fun <I, E, O> Endpoint<I, E, O>.toRequest(baseUrl: String, i: I): Request
     requireNotNull(info.method.toHttp4kMethod()) { "Method ${info.method.value} not supported!" },
     info.baseUrlWithPath
   )
-  val r2 = info.cookies.fold(r) { r, (name, value) ->
-    r.cookie(name, value)
+  val r2 = info.cookies.fold(r) { rr, (name, value) ->
+    rr.cookie(name, value)
   }
-  val r3 = info.headers.fold(r2) { r, (name, value) ->
-    r.header(name, value)
+  val r3 = info.headers.fold(r2) { rr, (name, value) ->
+    rr.header(name, value)
   }
-  val r4 = info.queryParams.ps.fold(r3) { r, (name, params) ->
-    params.fold(r) { r, v ->
-      r.query(name, v)
+  val r4 = info.queryParams.all().fold(r3) { rr, (name, params) ->
+    params.fold(rr) { rrr, v ->
+      rrr.query(name, v)
     }
   }
 

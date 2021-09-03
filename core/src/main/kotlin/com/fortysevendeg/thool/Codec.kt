@@ -8,6 +8,7 @@ import arrow.core.andThen
 import com.fortysevendeg.thool.model.CodecFormat
 import com.fortysevendeg.thool.model.Cookie
 import com.fortysevendeg.thool.model.Uri
+import com.fortysevendeg.thool.model.UriError
 import java.io.InputStream
 import java.math.BigDecimal
 import java.nio.ByteBuffer
@@ -181,7 +182,7 @@ public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
       string.mapDecode(
         { raw ->
           Uri.parse(raw).fold(
-            { e -> DecodeResult.Failure.Error(raw, IllegalArgumentException(this.toString())) },
+            { _: UriError -> DecodeResult.Failure.Error(raw, IllegalArgumentException(this.toString())) },
             { DecodeResult.Value(it) }
           )
         },

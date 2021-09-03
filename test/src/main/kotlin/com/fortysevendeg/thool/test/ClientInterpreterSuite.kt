@@ -60,9 +60,11 @@ public abstract class ClientInterpreterSuite : FreeSpec() {
 
   init {
     beforeSpec {
+      @Suppress("BlockingMethodInNonBlockingContext")
       withContext(Dispatchers.IO) { server.start() }
       baseUrl = server.url("/").toString()
     }
+    @Suppress("BlockingMethodInNonBlockingContext")
     afterSpec { withContext(Dispatchers.IO) { server.close() } }
 
     fun <I, E, O> test(
@@ -154,7 +156,7 @@ public abstract class ClientInterpreterSuite : FreeSpec() {
       QueryParams(mapOf("name" to "apple", "weight" to "42", "kind" to "very good")),
       Either.Right("kind=very good&name=apple&weight=42")
     ) {
-      it.ps.sortedBy(Pair<String, List<String>>::first)
+      it.all().sortedBy(Pair<String, List<String>>::first)
         .joinToString("&") { p -> "${p.first}=${p.second.firstOrNull() ?: ""}" }.right()
     }
 

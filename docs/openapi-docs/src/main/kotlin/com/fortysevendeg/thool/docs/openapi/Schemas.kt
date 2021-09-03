@@ -29,6 +29,7 @@ internal fun Map<TSchema.ObjectInfo, String>.referenceOr(schema: TSchema<*>): Re
     else -> _referenceOrSchema(schema)
   }
 
+@Suppress("FunctionName")
 internal fun Map<TSchema.ObjectInfo, String>._referenceOrSchema(schema: TSchema<*>): Referenced<Schema> =
   when (schema) {
     is TSchema.Number.UInt -> Referenced.Other(Schema(type = OpenApiType.integer, format = Format.int32))
@@ -51,12 +52,12 @@ internal fun Map<TSchema.ObjectInfo, String>._referenceOrSchema(schema: TSchema<
       Schema(
         type = OpenApiType.`object`,
         required = schema.required().map(FieldName::encodedName),
-        properties = schema.fields.map { (name, schema) ->
+        properties = schema.fields.associateTo(linkedMapOf()) { (name, schema) ->
           when (schema) {
             is TSchema.Object<*> -> Pair(name.encodedName, Referenced.Ref(getReference(schema.objectInfo)))
             else -> Pair(name.encodedName, _referenceOrSchema(schema))
           }
-        }.toMap(linkedMapOf())
+        }
       )
     )
 

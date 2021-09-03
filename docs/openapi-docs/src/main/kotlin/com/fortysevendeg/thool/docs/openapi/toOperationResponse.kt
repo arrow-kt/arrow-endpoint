@@ -32,10 +32,10 @@ public fun EndpointOutput<*>.toResponse(
           ?.let { response -> Pair(responseKey, Referenced.Other(response)) }
       }.toMap(linkedMapOf())
 
-  val map: Map<String, Referenced.Other<Response>> = if (responses.isEmpty()) {
+  val map: Map<String, Referenced.Other<Response>> = responses.ifEmpty {
     // no output at all - using default if defined
     defaultResponse?.let { Pair(defaultResponseKey, Referenced.Other(it)) }?.let { linkedMapOf(it) } ?: linkedMapOf()
-  } else responses
+  }
 
   return Responses(
     default = map["default"],

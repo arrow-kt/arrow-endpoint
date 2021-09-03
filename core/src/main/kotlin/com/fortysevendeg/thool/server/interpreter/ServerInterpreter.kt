@@ -35,7 +35,7 @@ public class ServerInterpreter(
       }
     }
 
-    val decodedBasicInputs = DecodeBasicInputs.apply(se.endpoint.input, request)
+    val decodedBasicInputs = DecodeBasicInputs.decode(se.endpoint.input, request)
 
     return when (val values = decodeBody(decodedBasicInputs)) {
       is DecodeBasicInputsResult.Values ->

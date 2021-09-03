@@ -1,9 +1,11 @@
 package com.fortysevendeg.thool.model
 
-public data class QueryParams(val ps: List<Pair<String, List<String>>>) {
+@JvmInline
+public value class QueryParams(internal val ps: List<Pair<String, List<String>>>) {
 
   public constructor(map: Map<String, String>) : this(map.entries.map { (k, v) -> Pair(k, listOf(v)) })
 
+  public fun all(): List<Pair<String, List<String>>> = ps
   public fun toMap(): Map<String, String> = toList().toMap()
   public fun toMultiMap(): Map<String, List<String>> = ps.toMap()
   public fun toList(): List<Pair<String, String>> = ps.flatMap { (k, vs) -> vs.map { Pair(k, it) } }

@@ -1,3 +1,4 @@
+
 package com.fortysevendeg.thool.client
 
 import com.fortysevendeg.thool.Codec
@@ -42,6 +43,7 @@ public fun <I> EndpointInput<I>.requestInfo(
   input: I,
   baseUrl: String // Scheme, base & port
 ): RequestInfo {
+  @Suppress("NAME_SHADOWING")
   val baseUrl = baseUrl.trimSlash()
   var method: Method? = null
   val pathSegments: MutableList<PathSegment> = mutableListOf()
@@ -50,7 +52,8 @@ public fun <I> EndpointInput<I>.requestInfo(
   val cookies: MutableList<Cookie> = mutableListOf()
   var body: Body? = null
 
-  fun <I> EndpointInput<I>.buildClientInfo(params: Params): Unit {
+  @Suppress("UNCHECKED_CAST")
+  fun <I> EndpointInput<I>.buildClientInfo(params: Params) {
     val value = params.asAny as I
     when (this) {
       is EndpointInput.FixedPath ->

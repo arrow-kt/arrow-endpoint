@@ -19,7 +19,7 @@ public fun Iterable<Endpoint<*, *, *>>.toSchemas(
     sObjects.map(Pair<TSchema.ObjectInfo, TSchema<*>>::first).calculateUniqueKeys(schemaName)
 
   val infosToSchema: Map<TSchema.ObjectInfo, Referenced<Schema>> =
-    sObjects.map { (info, schema) -> Pair(info, infoToKey._referenceOrSchema(schema)) }.toMap(linkedMapOf())
+    sObjects.associateTo(linkedMapOf()) { (info, schema) -> Pair(info, infoToKey._referenceOrSchema(schema)) }
 
   val schemas: Map<String, Referenced<Schema>> =
     infosToSchema.mapKeysTo(linkedMapOf()) { (info, _) -> infoToKey[info]!! }
