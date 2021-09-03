@@ -18,9 +18,10 @@ public sealed interface InputValueResult {
      * Returns the value of the input, tupled and mapped as described by the data structure. Values of basic inputs
      * are taken as consecutive values from `values.basicInputsValues`. Hence, these should when (in order).
      */
-    fun from(input: EndpointInput<*>, values: DecodeBasicInputsResult.Values): InputValueResult =
+    public fun from(input: EndpointInput<*>, values: DecodeBasicInputsResult.Values): InputValueResult =
       from(input, values.basicInputsValues)
 
+    @Suppress("UNCHECKED_CAST")
     private fun from(input: EndpointInput<*>, remainingBasicValues: List<Any?>): InputValueResult =
       when (input) {
         is EndpointInput.Pair<*, *, *> -> handlePair(input.first, input.second, input.combine, remainingBasicValues)
@@ -60,6 +61,7 @@ public sealed interface InputValueResult {
         is Failure -> res
       }
 
+    @Suppress("UNCHECKED_CAST")
     private fun <II, T> handleMappedPair(
       wrapped: EndpointInput<II>,
       codec: Mapping<II, T>,

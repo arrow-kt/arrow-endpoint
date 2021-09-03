@@ -26,19 +26,19 @@ public sealed interface DecodeBasicInputsResult {
     private fun verifyNoBody(input: EndpointInput<*>): Unit =
       check(bodyInputWithIndex == null) { "Double body definition: $input" }
 
-    fun addBodyInput(input: EndpointIO.Body<*, *>, bodyIndex: Int): Values {
+    public fun addBodyInput(input: EndpointIO.Body<*, *>, bodyIndex: Int): Values {
       verifyNoBody(input)
       return copy(bodyInputWithIndex = Pair(input, bodyIndex))
     }
 
     /** Sets the value of the body input, once it is known, if a body input is defined. */
-    fun setBodyInputValue(v: Any?): Values =
+    public fun setBodyInputValue(v: Any?): Values =
       when (bodyInputWithIndex) {
         null -> this
         else -> copy(basicInputsValues = basicInputsValues.updated(bodyInputWithIndex.second, v))
       }
 
-    fun setBasicInputValue(v: Any?, i: Int): Values =
+    public fun setBasicInputValue(v: Any?, i: Int): Values =
       copy(basicInputsValues = basicInputsValues.updated(i, v))
   }
 
@@ -67,7 +67,7 @@ internal data class DecodeInputsContext(val request: ServerRequest, val pathSegm
   val queryParameters: QueryParams = request.queryParameters
 }
 
-object DecodeBasicInputs {
+public object DecodeBasicInputs {
   private data class IndexedBasicInput(val input: EndpointInput.Basic<*, *, *>, val index: Int)
 
   /**
@@ -79,12 +79,10 @@ object DecodeBasicInputs {
    *
    * In any of the decoding fails, the failure is returned together , the failing input.
    */
-  // TODO rename
-  fun apply(input: EndpointInput<*>, request: ServerRequest): DecodeBasicInputsResult =
-    apply(input, DecodeInputsContext(request, request.pathSegments))
+  public fun decode(input: EndpointInput<*>, request: ServerRequest): DecodeBasicInputsResult =
+    decode(input, DecodeInputsContext(request, request.pathSegments))
 
-  // TODO rename
-  private fun apply(input: EndpointInput<*>, ctx: DecodeInputsContext): DecodeBasicInputsResult {
+  private fun decode(input: EndpointInput<*>, ctx: DecodeInputsContext): DecodeBasicInputsResult {
     // The first decoding failure is returned.
     // We decode in the following order: method, path, query, headers (incl. cookies), request, status, body
     // An exact-path check is done after thool.method & path matching

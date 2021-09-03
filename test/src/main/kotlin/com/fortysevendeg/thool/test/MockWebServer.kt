@@ -17,6 +17,7 @@ import com.fortysevendeg.thool.server.interpreter.RequestBody
 import com.fortysevendeg.thool.server.interpreter.ServerInterpreter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.RecordedRequest
@@ -47,12 +48,13 @@ public fun <I, E, O> ServerEndpoint<I, E, O>.toDispatcher(): Dispatcher =
   }
 
 internal class RequestBody(val ctx: RecordedRequest) : RequestBody {
+  @Suppress("IMPLICIT_CAST_TO_ANY", "UNCHECKED_CAST", "BlockingMethodInNonBlockingContext")
   override suspend fun <R> toRaw(bodyType: EndpointIO.Body<R, *>): R {
     return when (bodyType) {
-      is EndpointIO.ByteArrayBody -> ctx.body.readByteArray()
-      is EndpointIO.ByteBufferBody -> ByteBuffer.wrap(ctx.body.readByteArray())
+      is EndpointIO.ByteArrayBody -> withContext(Dispatchers.IO) { ctx.body.readByteArray() }
+      is EndpointIO.ByteBufferBody -> withContext(Dispatchers.IO) { ByteBuffer.wrap(ctx.body.readByteArray()) }
       is EndpointIO.InputStreamBody -> ctx.body.inputStream()
-      is EndpointIO.StringBody -> ctx.body.readByteArray().toString(bodyType.charset)
+      is EndpointIO.StringBody -> withContext(Dispatchers.IO) { ctx.body.readByteArray().toString(bodyType.charset) }
     } as R
   }
 }

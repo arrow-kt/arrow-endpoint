@@ -31,13 +31,14 @@ import com.fortysevendeg.thool.model.MediaType
 import com.fortysevendeg.thool.model.QueryParams
 import com.fortysevendeg.thool.model.StatusCode
 import com.fortysevendeg.thool.output
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.InputStream
 import java.nio.ByteBuffer
 
-object TestEndpoint {
+public object TestEndpoint {
 
   public val fruitParam: EndpointInput.Query<String> = query("fruit", Codec.string)
 
@@ -168,6 +169,7 @@ object TestEndpoint {
       .output(header("Content-Length", Codec.listFirstOrNull(Codec.long)))
       .name("input string output stream with header")
 
+  @OptIn(ExperimentalSerializationApi::class)
   public val in_unit_out_json_unit: Endpoint<Unit, Unit, Unit> =
     Endpoint.get { "api" / "unit" }
       .output(

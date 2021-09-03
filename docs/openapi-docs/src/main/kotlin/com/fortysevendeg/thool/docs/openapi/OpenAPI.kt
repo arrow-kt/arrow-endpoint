@@ -11,6 +11,7 @@ import arrow.core.NonEmptyList
 import arrow.core.Option
 import com.fortysevendeg.thool.Codec
 import com.fortysevendeg.thool.model.StatusCode
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
@@ -71,6 +72,7 @@ public data class OpenApi(
   public val externalDocs: ExternalDocs? = null,
 ) {
   /** OpenAPI Version used **/
+  @Suppress("JoinDeclarationAndAssignment")
   public val openapi: String
 
   // If assigned immediately, then KotlinX Serialization will not include it in Json definition unless we `encodeDefaults = true`
@@ -94,6 +96,7 @@ public data class OpenApi(
   public fun tags(t: LinkedHashSet<Tag>): OpenApi =
     copy(tags = t)
 
+  @OptIn(ExperimentalSerializationApi::class)
   public fun toJson(): String =
     json.encodeToString(this)
 }
@@ -236,7 +239,7 @@ public data class PathItem(
 /**
  * Describes a single operation parameter.
  *
- * A unique parameter is defined by a combination of a [name] and [location].
+ * A unique parameter is defined by a combination of a [name] and [input].
  *
  * Parameter Locations
  * There are four possible parameter locations specified by the in field:
@@ -256,7 +259,7 @@ public data class Parameter(
    */
   public val name: String,
   @SerialName("in")
-  /** The location of the parameter..*/
+  /** The input of the parameter..*/
   public val input: ParameterIn,
   /** A brief description of the parameter. This could contain examples of use. CommonMark syntax MAY be used for rich text representation.*/
   public val description: String? = null,
@@ -508,12 +511,14 @@ public data class Header(
  * that identifies a URL to use for the callback operation.
  */
 @Serializable
-public inline class Callback(public val value: Map<String, PathItem>)
+@JvmInline
+public value class Callback(public val value: Map<String, PathItem>)
 
 @Serializable
 public data class Discriminator(val propertyName: String, val mapping: Map<String, String>? = null)
 
 @Serializable
+@Suppress("EnumEntryName")
 public enum class OpenApiType {
   boolean,
   `object`,
@@ -523,19 +528,21 @@ public enum class OpenApiType {
   integer
 }
 
+@Suppress("MayBeConstant")
 public object Format {
-  public val int32: String = "int32"
-  public val int64: String = "int64"
-  public val float: String = "float"
-  public val double: String = "double"
-  public val byte: String = "byte"
-  public val binary: String = "binary"
-  public val date: String = "date"
-  public val datetime: String = "datetime"
-  public val password: String = "password"
+  public const val int32: String = "int32"
+  public const val int64: String = "int64"
+  public const val float: String = "float"
+  public const val double: String = "double"
+  public const val byte: String = "byte"
+  public const val binary: String = "binary"
+  public const val date: String = "date"
+  public const val datetime: String = "datetime"
+  public const val password: String = "password"
 }
 
 @Serializable
+@Suppress("EnumEntryName")
 public enum class Style {
   simple,
   form,
@@ -696,6 +703,7 @@ public sealed class ExampleValue {
 
   public companion object {
     public operator fun invoke(v: String): ExampleValue = Single(v)
+    @Suppress("UNCHECKED_CAST")
     public operator fun invoke(codec: Codec<*, *, *>, e: Any?): ExampleValue? =
       invoke(codec.schema(), (codec as Codec<*, Any?, *>).encode(e))
 
@@ -729,11 +737,15 @@ public sealed class Referenced<out A> {
 }
 
 public sealed interface ExpressionOrValue {
-  public inline class Expression(public val value: String) : ExpressionOrValue
-  public inline class Value(public val value: Any?) : ExpressionOrValue
+  @JvmInline
+  public value class Expression(public val value: String) : ExpressionOrValue
+  @JvmInline
+  public value class Value(public val value: Any?) : ExpressionOrValue
 }
 
 public sealed interface AdditionalProperties {
-  public inline class Allowed(public val value: Boolean) : AdditionalProperties
-  public inline class PSchema(public val value: Referenced<Schema>) : AdditionalProperties
+  @JvmInline
+  public value class Allowed(public val value: Boolean) : AdditionalProperties
+  @JvmInline
+  public value class PSchema(public val value: Referenced<Schema>) : AdditionalProperties
 }

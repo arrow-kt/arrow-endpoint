@@ -13,8 +13,8 @@ private fun <A> List<EndpointIO.Info.Example<A>>.convertExamples(exampleValue: (
     1 -> Examples(exampleValue(first().value), linkedMapOf())
     else -> {
       val exampleValues = mapIndexed { index, example ->
-        val name = example.name ?: "${com.fortysevendeg.thool.docs.openapi.Example::class.java.canonicalName}$index"
-        val example: Referenced<Example> = Referenced.Other(
+        val name = example.name ?: "${Example::class.java.canonicalName}$index"
+        val referenced = Referenced.Other(
           Example(
             summary = example.summary,
             description = null,
@@ -22,7 +22,7 @@ private fun <A> List<EndpointIO.Info.Example<A>>.convertExamples(exampleValue: (
             externalValue = null
           )
         )
-        name to example
+        name to referenced
       }.toMap(linkedMapOf())
       Examples(null, exampleValues)
     }

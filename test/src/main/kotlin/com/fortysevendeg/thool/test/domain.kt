@@ -6,6 +6,7 @@ import com.fortysevendeg.thool.FieldName
 import com.fortysevendeg.thool.JsonCodec
 import com.fortysevendeg.thool.Schema
 import com.fortysevendeg.thool.model.CodecFormat
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -16,28 +17,31 @@ public enum class Test { A, B, C; }
 @Serializable
 public data class Person(val name: String, val age: Int)
 
+@OptIn(ExperimentalSerializationApi::class)
 public fun Codec.Companion.person(): JsonCodec<Person> =
-  Codec.json(Schema.person(), { DecodeResult.Value(Json.decodeFromString(it)) }) { Json.encodeToString(it) }
+  json(Schema.person(), { DecodeResult.Value(Json.decodeFromString(it)) }) { Json.encodeToString(it) }
 
 public fun Schema.Companion.person(): Schema<Person> =
   Schema.Product(
     Schema.ObjectInfo("Person"),
     listOf(
-      Pair(FieldName("name"), Schema.string),
-      Pair(FieldName("age"), Schema.int)
+      Pair(FieldName("name"), string),
+      Pair(FieldName("age"), int)
     )
   )
 
-data class Fruit(val name: String)
+public data class Fruit(val name: String)
 
 @Serializable
-data class FruitAmount(val fruit: String, val amount: Int)
+public data class FruitAmount(val fruit: String, val amount: Int)
 
+@OptIn(ExperimentalSerializationApi::class)
 public fun Codec.Companion.jsonFruitAmount(): JsonCodec<FruitAmount> =
-  Codec.json(Schema.fruitAmount(), { DecodeResult.Value(Json.decodeFromString(it)) }) { Json.encodeToString(it) }
+  json(Schema.fruitAmount(), { DecodeResult.Value(Json.decodeFromString(it)) }) { Json.encodeToString(it) }
 
+@OptIn(ExperimentalSerializationApi::class)
 public fun Codec.Companion.jsonNullableFruitAmount(): JsonCodec<FruitAmount?> =
-  Codec.json(
+  json(
     Schema.fruitAmount().asNullable(),
     { DecodeResult.Value(Json.decodeFromString(it)) }
   ) { Json.encodeToString(it) }
@@ -63,7 +67,7 @@ public fun Schema.Companion.fruitAmount(): Schema<FruitAmount> =
   Schema.Product(
     Schema.ObjectInfo("FruitAmount"),
     listOf(
-      Pair(FieldName("fruit"), Schema.string),
-      Pair(FieldName("amount"), Schema.int)
+      Pair(FieldName("fruit"), string),
+      Pair(FieldName("amount"), int)
     )
   )

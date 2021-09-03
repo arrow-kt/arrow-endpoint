@@ -18,10 +18,12 @@ import java.util.Date
 import kotlin.reflect.KClass
 import kotlin.reflect.KVisibility
 
-inline fun <reified A : Any> Schema.Companion.reflect(): Schema<A> =
+public inline fun <reified A : Any> Schema.Companion.reflect(): Schema<A> =
   A::class.schema()
 
-fun <A : Any> KClass<A>.schema(): Schema<A> =
+@OptIn(ExperimentalUnsignedTypes::class)
+@Suppress("NO_REFLECTION_IN_CLASS_PATH", "UNCHECKED_CAST")
+public fun <A : Any> KClass<A>.schema(): Schema<A> =
   when {
     this == String::class -> Schema.string as Schema<A>
     this == UByte::class -> Schema.ubyte as Schema<A>
@@ -63,13 +65,15 @@ fun <A : Any> KClass<A>.schema(): Schema<A> =
     } ?: TODO("No schema supported for $this")
   }
 
-fun KClass<*>.sealedSubclassSchemas(): Nel<Schema<*>> =
+@Suppress("NO_REFLECTION_IN_CLASS_PATH")
+public fun KClass<*>.sealedSubclassSchemas(): Nel<Schema<*>> =
   Nel.fromListUnsafe(sealedSubclasses.map { it.schema() })
 
-fun KClass<*>.objectInfo(): Schema.ObjectInfo =
+public fun KClass<*>.objectInfo(): Schema.ObjectInfo =
   Schema.ObjectInfo(qualifiedName ?: "<anonymous>")
 
-fun KClass<*>.properties(): List<Pair<FieldName, Schema<*>>> =
+@Suppress("NO_REFLECTION_IN_CLASS_PATH")
+public fun KClass<*>.properties(): List<Pair<FieldName, Schema<*>>> =
   constructors.firstOrNull { it.visibility == KVisibility.PUBLIC }
     ?.parameters.orEmpty().mapNotNull {
       val pName = it.name

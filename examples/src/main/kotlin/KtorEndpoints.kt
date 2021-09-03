@@ -15,6 +15,7 @@ import com.fortysevendeg.thool.input
 import com.fortysevendeg.thool.ktor.server.install
 import com.fortysevendeg.thool.output
 import com.fortysevendeg.thool.product
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -23,7 +24,7 @@ import kotlinx.serialization.json.Json
 @Serializable
 public data class Project(
   val name: String,
-  val language: String
+  val language: String = "kotlin"
 ) {
   public companion object {
     public val schema: Schema<Project> = Schema.product(
@@ -31,10 +32,13 @@ public data class Project(
       Project::language to Schema.string.default("kotlin")
     )
 
-    public val jsonCodec: JsonCodec<Project> =
-      Codec.json(schema, { DecodeResult.Value(Json.decodeFromString(it)) }) { Json.encodeToString(it) }
+    public val jsonCodec: JsonCodec<Project> = Codec.kotlinxJson(schema)
   }
 }
+
+@OptIn(ExperimentalSerializationApi::class)
+public inline fun <reified A> Codec.Companion.kotlinxJson(schema: Schema<A>): JsonCodec<A> =
+  json(schema, { DecodeResult.Value(Json.decodeFromString(it)) }) { Json.encodeToString(it) }
 
 public val helloWorld: Endpoint<Pair<String, String>, Unit, Project> =
   Endpoint
@@ -64,18 +68,17 @@ public val pong: Endpoint<Unit, Unit, String> = Endpoint
   .input(fixedPath("ping"))
   .output(stringBody())
 
+private val docs = listOf(helloWorld, pong)
+  .toOpenAPI("Example Server", "0.0.1")
+  .toJson()
+
 public val openApiServerEndpoint: ServerEndpoint<Unit, Unit, String> =
   Endpoint
     .get("openapi")
-    .output(Thool.stringBody())
-    .logic {
-      listOf(pong)
-        .toOpenAPI("Example Server", "0.0.1")
-        .toJson()
-        .right()
-    }
+    .output(stringBody())
+    .logic { docs.right() }
 
-public fun Application.endpointModule() = Thool {
+public fun Application.endpointModule(): Unit = Thool {
   install(ServerEndpoint(pong) { Either.Right("Pong") })
 
   install(ServerEndpoint(Endpoint.get().input(fixedPath("empty"))) { it.right() })

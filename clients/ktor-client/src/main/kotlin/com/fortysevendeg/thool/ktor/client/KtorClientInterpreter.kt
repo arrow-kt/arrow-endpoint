@@ -72,9 +72,11 @@ public fun <I, E, O> Endpoint<I, E, O>.toRequestBuilder(baseUrl: String, input: 
       cookie(name, value)
     }
     info.headers.forEach { (name, value) ->
+      @Suppress("EXPERIMENTAL_API_USAGE_FUTURE_ERROR")
       headers.append(name, value)
     }
-    info.queryParams.ps.forEach { (name, params) ->
+    info.queryParams.all().forEach { (name, params) ->
+      @Suppress("EXPERIMENTAL_API_USAGE_FUTURE_ERROR")
       url.parameters.appendAll(name, params)
     }
     body = when (val body = info.body) {

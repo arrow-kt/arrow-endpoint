@@ -37,6 +37,7 @@ public data class Uri(
     private val schemePattern =
       Regex("^([a-zA-Z][a-zA-Z0-9+\\-.]*):")
 
+    @Suppress("RegExpRedundantEscape")
     private val schemeSpecificPartPattern =
       Regex("^?(//(?<authority>((?<userinfo>[^/?#]*)@)?(?<host>(\\[[^\\]]*\\]|[^/?#:]*))(:(?<port>[^/?#]*))?))?(?<path>[^?#]*)(\\?(?<query>[^#]*))?(#(?<fragment>.*))?")
 
@@ -256,9 +257,9 @@ public data class Uri(
     val m = linkedMapOf<String, List<String>>() // keeping parameter order
     querySegments.forEach {
       when (it) {
-        is QuerySegment.KeyValue -> m[it.k] = m.getOrElse(it.k, { emptyList() }) + listOf(it.v)
-        is QuerySegment.Value -> m[it.v] = m.getOrElse(it.v, { emptyList() })
-        is QuerySegment.Plain -> m[it.v] = m.getOrElse(it.v, { emptyList() })
+        is QuerySegment.KeyValue -> m[it.k] = m.getOrElse(it.k) { emptyList() } + listOf(it.v)
+        is QuerySegment.Value -> m[it.v] = m.getOrElse(it.v) { emptyList() }
+        is QuerySegment.Plain -> m[it.v] = m.getOrElse(it.v) { emptyList() }
       }
     }
     return QueryParams(m.toList())
@@ -279,13 +280,9 @@ public data class Uri(
 
   public fun fragment(): String? = fragmentSegment?.v
 
-  //
-
   public fun toJavaUri(): URI = URI(toString())
 
-  public suspend fun resolveOrNull(other: Uri): Uri? = Uri(toJavaUri().resolve(other.toJavaUri()))
-
-  //
+  public fun resolveOrNull(other: Uri): Uri? = Uri(toJavaUri().resolve(other.toJavaUri()))
 
   public fun hostSegmentEncoding(encoding: Encoding): Uri =
     copy(authority = authority?.copy(hostSegment = authority.hostSegment.encoding(encoding)))
@@ -369,11 +366,14 @@ public data class Uri(
 }
 
 public sealed interface UriError {
-  public data class UnexpectedScheme(val errorMessage: String) : UriError
-  public data class CantParse(val errorMessage: String) : UriError
+  @JvmInline
+  public value class UnexpectedScheme(public val errorMessage: String) : UriError
+  @JvmInline
+  public value class CantParse(public val errorMessage: String) : UriError
   public object InvalidHost : UriError
   public object InvalidPort : UriError
-  public data class IllegalArgument(val errorMessage: String) : UriError
+  @JvmInline
+  public value class IllegalArgument(public val errorMessage: String) : UriError
 }
 
 public data class Authority(
@@ -585,18 +585,20 @@ public sealed interface QuerySegment {
     override fun toString(): String = "Value($v)"
   }
 
-  /** A query fragment which will be inserted into the query, without and
+  /**
+   * A query fragment which will be inserted into the query, without and
    * preceding or following separators. Allows constructing query strings
    * which are not (only) &-separated key-value pairs.
    *
    * @param encoding How to encode the value, and which characters should be escaped. The RFC3986 standard
    * defines that the query can include these special characters, without escaping:
-   * {{{
+   *
+   * ```
    * /?:@-._~!$&()*+,;=
-   * }}}
-   * See:
-   * [[https://stackoverflow.com/questions/2322764/what-characters-must-be-escaped-in-an-http-query-string]]
-   * [[https://stackoverflow.com/questions/2366260/whats-valid-and-whats-not-in-a-uri-query]]
+   * ```
+   *
+   * @url https://stackoverflow.com/questions/2322764/what-characters-must-be-escaped-in-an-http-query-string
+   * @url https://stackoverflow.com/questions/2366260/whats-valid-and-whats-not-in-a-uri-query
    */
   public data class Plain(
     val v: String,
