@@ -1,14 +1,14 @@
-import com.fortysevendeg.thool.Codec
-import com.fortysevendeg.thool.Endpoint
-import com.fortysevendeg.thool.Thool
-import com.fortysevendeg.thool.and
-import com.fortysevendeg.thool.input
+import arrow.endpoint.Codec
+import arrow.endpoint.Endpoint
+import arrow.endpoint.ArrowEndpoint
+import arrow.endpoint.and
+import arrow.endpoint.input
 import io.kotest.core.spec.style.StringSpec
 
 @Suppress("UNUSED_VARIABLE")
 class EndpointTest : StringSpec({
   "endpoint should compose correctly" {
-    Thool {
+    ArrowEndpoint {
       val e1: Endpoint<String, Unit, Unit> = Endpoint.input(query("q1", Codec.string))
 
       val e2: Endpoint<Pair<String, Int>, Unit, Unit> =

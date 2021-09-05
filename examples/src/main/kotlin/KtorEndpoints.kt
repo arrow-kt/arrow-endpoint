@@ -1,20 +1,20 @@
 import arrow.core.Either
 import arrow.core.right
-import com.fortysevendeg.thool.Codec
-import com.fortysevendeg.thool.Endpoint
-import com.fortysevendeg.thool.Thool
-import com.fortysevendeg.thool.server.ServerEndpoint
+import arrow.endpoint.Codec
+import arrow.endpoint.Endpoint
+import arrow.endpoint.ArrowEndpoint
+import arrow.endpoint.server.ServerEndpoint
 import io.ktor.application.Application
-import com.fortysevendeg.thool.DecodeResult
-import com.fortysevendeg.thool.JsonCodec
-import com.fortysevendeg.thool.Schema
-import com.fortysevendeg.thool.Thool.fixedPath
-import com.fortysevendeg.thool.Thool.stringBody
-import com.fortysevendeg.thool.docs.openapi.toOpenAPI
-import com.fortysevendeg.thool.input
-import com.fortysevendeg.thool.ktor.server.install
-import com.fortysevendeg.thool.output
-import com.fortysevendeg.thool.product
+import arrow.endpoint.DecodeResult
+import arrow.endpoint.JsonCodec
+import arrow.endpoint.Schema
+import arrow.endpoint.ArrowEndpoint.fixedPath
+import arrow.endpoint.ArrowEndpoint.stringBody
+import arrow.endpoint.docs.openapi.toOpenAPI
+import arrow.endpoint.input
+import arrow.endpoint.ktor.server.install
+import arrow.endpoint.output
+import arrow.endpoint.product
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -46,18 +46,18 @@ public val helloWorld: Endpoint<Pair<String, String>, Unit, Project> =
     .input(fixedPath("project"))
     .input(fixedPath("json"))
     .input(
-      Thool.query("project", Codec.string)
+      ArrowEndpoint.query("project", Codec.string)
         .description("The name of the project")
         .example("Arrow Fx Coroutines")
     )
     .input(
-      Thool.query("language", Codec.string)
+      ArrowEndpoint.query("language", Codec.string)
         .description("The primary programming language of the project")
         .default("kotlin")
         .example("java")
     )
     .output(
-      Thool.anyJsonBody(Project.jsonCodec)
+      ArrowEndpoint.anyJsonBody(Project.jsonCodec)
         .description("The project transformed into json format")
         .default(Project("", "Kotlin"))
         .example(Project("Arrow Fx Coroutines", "Kotlin"))
@@ -78,7 +78,7 @@ public val openApiServerEndpoint: ServerEndpoint<Unit, Unit, String> =
     .output(stringBody())
     .logic { docs.right() }
 
-public fun Application.endpointModule(): Unit = Thool {
+public fun Application.endpointModule(): Unit = ArrowEndpoint {
   install(ServerEndpoint(pong) { Either.Right("Pong") })
 
   install(ServerEndpoint(Endpoint.get().input(fixedPath("empty"))) { it.right() })
