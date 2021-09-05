@@ -1,6 +1,6 @@
-# Thool
+# Arrow Endpoint
 
-Thool offers a composable `Endpoint` datatype, that allows us easily define an `Endpoint` from which we can derive
+Arrow Endpoint offers a composable `Endpoint` datatype, that allows us easily define an `Endpoint` from which we can derive
 clients, servers & documentation.
 
 ## Rationale
