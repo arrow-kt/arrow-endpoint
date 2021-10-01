@@ -46,7 +46,7 @@ internal data class OutputValues(
   fun headers(): List<Header> =
     headerTransformations.fold(baseHeaders) { hs, t -> t(hs) }
 
-  public companion object {
+  companion object {
     fun empty(): OutputValues =
       OutputValues(null, emptyList(), emptyList(), null)
 
@@ -81,6 +81,7 @@ internal data class OutputValues(
     ): OutputValues =
       withBody(body).withDefaultContentType(output.codec.format, charset(output.codec.format.mediaType, output))
 
+    @Suppress("UNCHECKED_CAST")
     private fun applySingle(
       output: EndpointOutput.Single<*>,
       value: Params,

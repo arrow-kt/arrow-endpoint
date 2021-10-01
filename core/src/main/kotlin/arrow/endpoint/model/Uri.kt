@@ -518,7 +518,7 @@ public sealed interface PathSegments {
 public sealed interface QuerySegment {
 
   public companion object {
-    /** Encodes all reserved characters using [[java.net.URLEncoder.encode()]]. */
+    /** Encodes all reserved characters using [java.net.URLEncoder.encode]. */
     public val All: Encoding = {
       UriCompatibility.encodeQuery(it, "UTF-8")
     }
@@ -565,8 +565,8 @@ public sealed interface QuerySegment {
   }
 
   /**
-   * @param keyEncoding See [[Plain.encoding]]
-   * @param valueEncoding See [[Plain.encoding]]
+   * @param keyEncoding See [Plain.encoding]
+   * @param valueEncoding See [Plain.encoding]
    */
   public data class KeyValue(
     val k: String,

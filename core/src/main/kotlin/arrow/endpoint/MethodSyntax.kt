@@ -1,4 +1,4 @@
-package arrow.endpoint.dsl
+package arrow.endpoint
 
 import arrow.core.Tuple4
 import arrow.core.Tuple5

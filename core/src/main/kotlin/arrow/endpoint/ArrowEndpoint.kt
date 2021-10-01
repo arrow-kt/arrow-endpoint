@@ -44,11 +44,11 @@ public object ArrowEndpoint {
   public fun <A> header(name: String, codec: Codec<List<String>, A, CodecFormat.TextPlain>): EndpointIO.Header<A> =
     EndpointIO.Header(name, codec, EndpointIO.Info.empty())
 
+// TODO add support for Fixed Headers
 //  fun header(h: Header): EndpointIO.FixedHeader<Unit> = EndpointIO.FixedHeader(h, Codec.idPlain(), EndpointIO.Info.empty())
 //  fun header(name: String, value: String): EndpointIO.FixedHeader<Unit> = header(Header(name, value))
 //  fun headers(): EndpointIO.Headers<List<Header>> = EndpointIO.Headers(Codec.idPlain(), EndpointIO.Info.empty())
 
-  // TODO: cache directives
   public fun <A> cookie(name: String, codec: Codec<String?, A, CodecFormat.TextPlain>): EndpointInput.Cookie<A> =
     EndpointInput.Cookie(name, codec, EndpointIO.Info.empty())
 
