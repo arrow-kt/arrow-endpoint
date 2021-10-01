@@ -6,7 +6,6 @@ import arrow.endpoint.model.ServerResponse
 /**
  * Allows intercepting the handling of a request by an endpoint, when either the endpoint's inputs have been
  * decoded successfully, or when decoding has failed.
- * @tparam B The interpreter-specific, low-level type of body.
  */
 public interface EndpointInterceptor {
 

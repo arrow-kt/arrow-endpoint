@@ -37,7 +37,7 @@ public sealed interface InputValueResult {
           input.mapping as Mapping<Any?, Any?>,
           remainingBasicValues
         )
-//      is EndpointInput.Auth<_>                 -> apply(auth.input, remainingBasicValues)
+//      is EndpointInput.Auth<*>  -> from(auth.input, remainingBasicValues)
         is EndpointInput.Basic<*, *, *> ->
           remainingBasicValues.headAndTailOrNull()?.let { (v, valuesTail) ->
             Value(Params.ParamsAsAny(v), valuesTail)

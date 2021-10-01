@@ -41,6 +41,7 @@ public class ServerInterpreter(
       is DecodeBasicInputsResult.Values ->
         when (val res = InputValueResult.from(se.endpoint.input, values)) {
           is InputValueResult.Value ->
+            @Suppress("UNCHECKED_CAST")
             callInterceptorsOnDecodeSuccess(interceptors, se.endpoint, res.params.asAny as I, valueToResponse)
           is InputValueResult.Failure -> callInterceptorsOnDecodeFailure(
             interceptors,
@@ -67,7 +68,8 @@ public class ServerInterpreter(
     interceptors.firstOrNull()?.onDecodeSuccess(request, endpoint, i) { output ->
       when (output) {
         null -> callInterceptorsOnDecodeSuccess(interceptors.tail(), endpoint, i, callLogic)
-        else -> outputToResponse(StatusCode.Ok, output.output as EndpointOutput<Any?>, output.value)
+        else -> @Suppress("UNCHECKED_CAST")
+        outputToResponse(StatusCode.Ok, output.output as EndpointOutput<Any?>, output.value)
       }
     } ?: callLogic(i)
 
@@ -80,7 +82,8 @@ public class ServerInterpreter(
     interceptors.firstOrNull()?.onDecodeFailure(request, endpoint, failure, failingInput) { output ->
       when (output) {
         null -> callInterceptorsOnDecodeFailure(interceptors.tail(), endpoint, failingInput, failure)
-        else -> outputToResponse(StatusCode.BadRequest, output.output as EndpointOutput<Any?>, output.value)
+        else -> @Suppress("UNCHECKED_CAST")
+        outputToResponse(StatusCode.BadRequest, output.output as EndpointOutput<Any?>, output.value)
       }
     }
 
@@ -92,6 +95,7 @@ public class ServerInterpreter(
           else -> {
             val body = result.bodyInputWithIndex.first
             val raw = requestBody.toRaw(body)
+            @Suppress("UNCHECKED_CAST")
             val codec = body.codec as Codec<Any?, Any, CodecFormat>
             when (val res = codec.decode(raw)) {
               is DecodeResult.Value -> result.setBodyInputValue(res.value)
