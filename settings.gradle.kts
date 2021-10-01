@@ -1,5 +1,5 @@
 rootProject.name = "arrow-endpoint"
-include("arrow-endpoint-model", "core", "examples", "schema-reflect", "test")
+include("core", "examples", "schema-reflect", "test")
 
 // clients
 include("clients", ":clients:ktor-client", ":clients:http4k-client", ":clients:spring-web-client", ":clients:spring-web-flux-client")

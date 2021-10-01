@@ -1,7 +1,7 @@
 object Version {
-  const val kotlin: String = "1.5.30"
-  const val arrow: String = "0.13.2"
-  const val kotlinx: String = "1.5.1"
+  const val kotlin: String = "1.5.31"
+  const val arrow: String = "1.0.0"
+  const val kotlinx: String = "1.5.2"
   const val kotlinxSerializationJson: String = "1.2.2"
   const val ktlint: String = "10.1.0"
   const val ktor: String = "1.6.3"
