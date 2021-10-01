@@ -2,7 +2,6 @@ package arrow.endpoint
 
 import arrow.core.Either
 import arrow.core.prependTo
-import arrow.endpoint.dsl.PathSyntax
 import arrow.endpoint.model.CodecFormat
 import arrow.endpoint.model.Cookie
 import arrow.endpoint.model.Header

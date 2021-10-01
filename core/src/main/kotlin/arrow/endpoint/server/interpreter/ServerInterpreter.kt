@@ -69,7 +69,7 @@ public class ServerInterpreter(
       when (output) {
         null -> callInterceptorsOnDecodeSuccess(interceptors.tail(), endpoint, i, callLogic)
         else -> @Suppress("UNCHECKED_CAST")
-          outputToResponse(StatusCode.Ok, output.output as EndpointOutput<Any?>, output.value)
+        outputToResponse(StatusCode.Ok, output.output as EndpointOutput<Any?>, output.value)
       }
     } ?: callLogic(i)
 
@@ -83,7 +83,7 @@ public class ServerInterpreter(
       when (output) {
         null -> callInterceptorsOnDecodeFailure(interceptors.tail(), endpoint, failingInput, failure)
         else -> @Suppress("UNCHECKED_CAST")
-          outputToResponse(StatusCode.BadRequest, output.output as EndpointOutput<Any?>, output.value)
+        outputToResponse(StatusCode.BadRequest, output.output as EndpointOutput<Any?>, output.value)
       }
     }
 

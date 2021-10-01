@@ -3,13 +3,7 @@ package arrow.endpoint
 import arrow.core.Tuple4
 import arrow.core.Tuple5
 import arrow.core.Tuple6
-import arrow.endpoint.Endpoint
 import arrow.endpoint.Endpoint.Info
-import arrow.endpoint.EndpointInput
-import arrow.endpoint.EndpointOutput
-import arrow.endpoint.PlainCodec
-import arrow.endpoint.ArrowEndpoint
-import arrow.endpoint.and
 import arrow.endpoint.model.Method
 
 public interface MethodSyntax {
