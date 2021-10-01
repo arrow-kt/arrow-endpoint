@@ -3,7 +3,6 @@ package arrow.endpoint
 import arrow.core.Either
 import arrow.core.Tuple4
 import arrow.core.Tuple5
-import arrow.endpoint.dsl.MethodSyntax
 import arrow.endpoint.model.StatusCode
 import arrow.endpoint.server.ServerEndpoint
 
