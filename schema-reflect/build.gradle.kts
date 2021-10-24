@@ -1,4 +1,10 @@
-/*dependencies {
-  implementation(project(Libs.core))
-  runtimeOnly("org.jetbrains.kotlin:kotlin-reflect:1.4.32")
-}*/
+kotlin {
+  sourceSets {
+    jvmMain {
+      dependencies {
+        implementation(project(Libs.core))
+        runtimeOnly("org.jetbrains.kotlin:kotlin-reflect:${Version.kotlin}")
+      }
+    }
+  }
+}

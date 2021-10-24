@@ -23,6 +23,9 @@ subprojects {
           compilations.all {
             kotlinOptions {
               jvmTarget = "1.8"
+              freeCompilerArgs += listOf(
+                "Xopt-in=kotlin.RequiresOptIn"
+              )
             }
           }
         }
@@ -32,14 +35,12 @@ subprojects {
         val commonMain by getting {
           dependencies {
             implementation(Libs.kotlinStdlib)
+            compileOnly(Libs.arrowCore)
           }
         }
 
         val jvmMain by getting {
           dependsOn(commonMain)
-          dependencies {
-            compileOnly(Libs.arrowCore)
-          }
         }
 
         val commonTest by getting {
@@ -48,6 +49,7 @@ subprojects {
             implementation(Libs.kotlinxCoroutines)
             implementation(Libs.kotestAssertions)
             implementation(Libs.kotestProperty)
+            implementation(Libs.arrowCore)
           }
         }
 
@@ -56,7 +58,6 @@ subprojects {
           dependsOn(jvmMain)
           dependencies {
             implementation(Libs.kotestRunner)
-            implementation(Libs.arrowCore)
           }
         }
       }

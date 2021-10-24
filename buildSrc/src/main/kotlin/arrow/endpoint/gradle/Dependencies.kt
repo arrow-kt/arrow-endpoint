@@ -4,7 +4,7 @@ object Version {
   const val kotlinx: String = "1.5.2"
   const val kotlinxSerializationJson: String = "1.2.2"
   const val ktlint: String = "10.1.0"
-  const val ktor: String = "1.6.3"
+  const val ktor: String = "1.6.4"
   const val logbackClassic: String = "1.2.3"
   const val spring: String = "2.4.5"
   const val reactorKotlinExtensions: String = "1.1.3"
@@ -46,6 +46,7 @@ object Libs {
 
   const val mockwebserver: String = "com.squareup.okhttp3:mockwebserver:${Version.http3}"
 
+  const val ktorio: String = "io.ktor:ktor-io:${Version.ktor}"
   const val ktorServerCore: String = "io.ktor:ktor-server-core:${Version.ktor}"
   const val ktorServerNetty: String = "io.ktor:ktor-server-netty:${Version.ktor}"
   const val ktorClientCore: String = "io.ktor:ktor-client-core:${Version.ktor}"
