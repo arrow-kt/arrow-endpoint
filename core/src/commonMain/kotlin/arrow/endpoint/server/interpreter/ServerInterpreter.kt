@@ -1,3 +1,5 @@
+@file:Suppress("MemberVisibilityCanBePrivate")
+
 package arrow.endpoint.server.interpreter
 
 import arrow.endpoint.Codec

@@ -87,7 +87,7 @@ public object DecodeBasicInputs {
     // We decode in the following order: method, path, query, headers (incl. cookies), request, status, body
     // An exact-path check is done after arrow-endpoint.method & path matching
 
-    val basicInputs = input.asListOfBasicInputs().mapIndexed(::IndexedBasicInput)
+    val basicInputs = input.asListOfBasicInputs().mapIndexed(DecodeBasicInputs::IndexedBasicInput)
 
     val methodInputs = basicInputs.filter { (_, input) -> isRequestMethod(input) }
     val pathInputs = basicInputs.filter { (_, input) -> isPath(input) }

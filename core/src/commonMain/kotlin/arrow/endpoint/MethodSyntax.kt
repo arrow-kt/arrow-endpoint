@@ -5,6 +5,7 @@ import arrow.core.Tuple5
 import arrow.core.Tuple6
 import arrow.endpoint.Endpoint.Info
 import arrow.endpoint.model.Method
+import kotlin.jvm.JvmName
 
 public interface MethodSyntax {
 

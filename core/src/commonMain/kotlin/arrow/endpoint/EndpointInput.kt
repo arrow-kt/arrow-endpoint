@@ -5,6 +5,7 @@ import arrow.core.Tuple5
 import arrow.core.Tuple6
 import arrow.endpoint.model.CodecFormat
 import arrow.endpoint.model.Method
+import kotlin.jvm.JvmName
 import arrow.endpoint.model.QueryParams as MQueryParams
 
 /**

@@ -3,7 +3,6 @@ package arrow.endpoint.model
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
-import java.lang.IllegalStateException
 
 /**
  * An HTTP header.

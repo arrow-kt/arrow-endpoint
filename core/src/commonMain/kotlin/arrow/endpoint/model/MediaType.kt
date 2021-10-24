@@ -1,12 +1,13 @@
 package arrow.endpoint.model
 
-import java.nio.charset.Charset
+import kotlinx.io.charsets.Charset
+import kotlinx.io.charsets.name
 
 public data class MediaType(val mainType: String, val subType: String, val charset: String? = null) {
 
   // TODO kotlinx-io-core offers a MPP Charset implementation.
   // Only offers UTF_8 & ISO_8859_1
-  public fun charset(c: Charset): MediaType = charset(c.name())
+  public fun charset(c: Charset): MediaType = charset(c.name)
 
   public fun charset(c: String): MediaType = copy(charset = c)
 

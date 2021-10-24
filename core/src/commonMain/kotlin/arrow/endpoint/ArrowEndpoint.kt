@@ -8,17 +8,17 @@ import arrow.endpoint.model.Header
 import arrow.endpoint.model.Method
 import arrow.endpoint.model.QueryParams
 import arrow.endpoint.model.StatusCode
-import java.io.InputStream
-import java.nio.ByteBuffer
-import java.nio.charset.Charset
-import java.nio.charset.StandardCharsets
+import io.ktor.utils.io.ByteChannel
+import io.ktor.utils.io.ByteReadChannel
+import io.ktor.utils.io.charsets.Charset
+import io.ktor.utils.io.charsets.Charsets
 
 // Turn into top-level functions?
 public object ArrowEndpoint {
 
   public inline operator fun <A> invoke(f: ArrowEndpoint.() -> A): A = f(ArrowEndpoint)
 
-  @JvmName("queryList")
+  //@JvmName("queryList")
   public fun <A> query(name: String, codec: Codec<List<String>, A, CodecFormat.TextPlain>): EndpointInput.Query<A> =
     EndpointInput.Query(name, codec, EndpointIO.Info.empty())
 
@@ -60,26 +60,26 @@ public object ArrowEndpoint {
   public fun stringBody(charset: String): EndpointIO.StringBody<String> =
     stringBody(Charset.forName(charset))
 
-  public fun stringBody(charset: Charset = StandardCharsets.UTF_8): EndpointIO.StringBody<String> =
+  public fun stringBody(charset: Charset = Charsets.UTF_8): EndpointIO.StringBody<String> =
     EndpointIO.StringBody(charset, Codec.string, EndpointIO.Info.empty())
 
   public val htmlBodyUtf8: EndpointIO.StringBody<String> =
     EndpointIO.StringBody(
-      StandardCharsets.UTF_8,
+      Charsets.UTF_8,
       Codec.string.format(CodecFormat.TextHtml),
       EndpointIO.Info.empty()
     )
 
   public fun <A> plainBody(
     codec: PlainCodec<A>,
-    charset: Charset = StandardCharsets.UTF_8
+    charset: Charset = Charsets.UTF_8
   ): EndpointIO.StringBody<A> =
     EndpointIO.StringBody(charset, codec, EndpointIO.Info.empty())
 
   /** A body in any format, read using the given `codec`, from a raw string read using `charset`.*/
   public fun <A, CF : CodecFormat> anyFromStringBody(
     codec: Codec<String, A, CF>,
-    charset: Charset = StandardCharsets.UTF_8
+    charset: Charset = Charsets.UTF_8
   ): EndpointIO.StringBody<A> =
     EndpointIO.StringBody(charset, codec, EndpointIO.Info.empty())
 
@@ -100,10 +100,10 @@ public object ArrowEndpoint {
   public fun byteArrayBody(): EndpointIO.ByteArrayBody<ByteArray> =
     EndpointIO.ByteArrayBody(Codec.byteArray, EndpointIO.Info.empty())
 
-  public fun byteBufferBody(): EndpointIO.ByteBufferBody<ByteBuffer> =
+  public fun byteBufferBody(): EndpointIO.ByteBufferBody<ByteChannel> =
     EndpointIO.ByteBufferBody(Codec.byteBuffer, EndpointIO.Info.empty())
 
-  public fun inputStreamBody(): EndpointIO.InputStreamBody<InputStream> =
+  public fun inputStreamBody(): EndpointIO.InputStreamBody<ByteReadChannel> =
     EndpointIO.InputStreamBody(Codec.inputStream, EndpointIO.Info.empty())
 
   public fun <A> formBody(codec: Codec<String, A, CodecFormat.XWwwFormUrlencoded>): EndpointIO.StringBody<A> =

@@ -3,7 +3,11 @@ package arrow.endpoint.model
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
-import java.nio.charset.Charset
+import io.ktor.utils.io.charsets.Charset
+import io.ktor.utils.io.charsets.Charsets
+import io.ktor.utils.io.charsets.decode
+import io.ktor.utils.io.core.toByteArray
+import kotlin.experimental.and
 
 internal object Rfc3986 {
   private val AlphaNum: Set<Char> = (('a'..'z') + ('A'..'Z') + ('0'..'9')).toSet()
@@ -50,7 +54,7 @@ internal object Rfc3986 {
     // Copied from URLDecoder.decode with additional + handling (first case)
     var needToChange = false
     val numChars = length
-    val sb = StringBuffer(if (numChars > 500) numChars / 2 else numChars)
+    val sb = StringBuilder(if (numChars > 500) numChars / 2 else numChars)
     var i = 0
 
     var c: Char
@@ -78,7 +82,7 @@ internal object Rfc3986 {
           var pos = 0
           while (((i + 2) < numChars) && (c == '%')) {
             val v = try {
-              Integer.parseInt(substring(i + 1, i + 3), 16)
+              substring(i + 1, i + 3).toInt(16)
             } catch (e: NumberFormatException) {
               return UriError.IllegalArgument("URLDecoder: Illegal hex characters in escape (%) pattern - " + e.message)
                 .left()
@@ -95,7 +99,7 @@ internal object Rfc3986 {
           // "%x" will cause an exception to be thrown
           if ((i < numChars) && (c == '%'))
             return UriError.IllegalArgument("URLDecoder: Incomplete trailing escape (%) pattern").left()
-          sb.append(String(bytes, 0, pos, enc))
+          sb.append(bytes.joinToString { it.toString(16)}, startIndex = 0, endIndex = pos)
           needToChange = true
         }
         else -> {
@@ -107,5 +111,12 @@ internal object Rfc3986 {
     return (if (needToChange) sb.toString() else this).right()
   }
 
-  private fun Byte.format(): String = "%02X".format(this)
+  // private fun Byte.format(): String = "%02X".format(this)
+
+  // TODO: previously Jvm specific with String.format("%02x", this), check if this is cohesive
+  private fun Byte.format(): String {
+    val decimal = this.and(0xff.toByte())
+    val hex = decimal.toUInt().toString(16)
+    return if(hex.length.mod(2) == 1) "0$hex" else hex
+  }
 }

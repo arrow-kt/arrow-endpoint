@@ -3,6 +3,7 @@ package arrow.endpoint
 import arrow.core.Tuple4
 import arrow.core.Tuple5
 import arrow.endpoint.model.CodecFormat
+import kotlin.jvm.JvmName
 import arrow.endpoint.model.StatusCode as MStatusCode
 
 // Elements that can occur as Output

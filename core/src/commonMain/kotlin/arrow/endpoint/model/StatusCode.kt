@@ -2,7 +2,6 @@ package arrow.endpoint.model
 
 import arrow.core.Either
 
-@JvmInline
 public value class StatusCode(public val code: Int) {
   public fun isInformational(): Boolean = code / 100 == 1
   public fun isSuccess(): Boolean = code / 100 == 2

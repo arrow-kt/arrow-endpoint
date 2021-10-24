@@ -1,6 +1,5 @@
 package arrow.endpoint.model
 
-@JvmInline
 public value class Method private constructor(public val value: String) {
 
   /**

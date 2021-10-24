@@ -5,6 +5,7 @@ import arrow.core.Tuple4
 import arrow.core.Tuple5
 import arrow.endpoint.model.StatusCode
 import arrow.endpoint.server.ServerEndpoint
+import kotlin.jvm.JvmName
 
 /**
  * An `Endpoint<Input, Error, Output>` for shape `suspend (Input) -> Either<Error, Output>` defines
