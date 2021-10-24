@@ -83,7 +83,7 @@ allprojects {
   apply(plugin = Plugins.ktlint)
   apply(plugin = "org.gradle.idea")
 
-  group = "com.fortysevendegrees"
+  group = "io.arrow-kt"
   version = "0.0.1-SNAPSHOT"
 
   repositories {
