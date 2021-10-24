@@ -1,11 +1,21 @@
-dependencies {
-  compileOnly(project(Libs.core))
-  implementation(Libs.ktorServerCore)
-  implementation(Libs.nettyTransportNativeKqueue)
+kotlin {
+  sourceSets {
+    jvmMain {
+      dependencies {
+        compileOnly(project(Libs.core))
+        implementation(Libs.ktorServerCore)
+        implementation(Libs.nettyTransportNativeKqueue)
+      }
+    }
 
-  testImplementation(project(Libs.core))
-  testImplementation(project(Libs.test))
-  testImplementation(project(Libs.ktorClient))
-  testImplementation(Libs.ktorTest)
-  testImplementation(Libs.ktorServerNetty)
+    jvmTest {
+      dependencies {
+        implementation(project(Libs.core))
+        implementation(project(Libs.test))
+        implementation(project(Libs.ktorClient))
+        implementation(Libs.ktorTest)
+        implementation(Libs.ktorServerNetty)
+      }
+    }
+  }
 }

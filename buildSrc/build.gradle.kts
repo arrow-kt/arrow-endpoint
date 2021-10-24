@@ -3,9 +3,9 @@ plugins {
 }
 
 repositories {
-  jcenter()
-}
-
-kotlinDslPluginOptions {
-  experimentalWarning.set(false)
+  mavenCentral()
+  maven {
+    url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
+  }
+  gradlePluginPortal()
 }

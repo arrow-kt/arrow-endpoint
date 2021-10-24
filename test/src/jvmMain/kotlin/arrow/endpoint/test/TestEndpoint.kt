@@ -1,3 +1,5 @@
+@file:Suppress("MemberVisibilityCanBePrivate")
+
 package arrow.endpoint.test
 
 import arrow.core.Either

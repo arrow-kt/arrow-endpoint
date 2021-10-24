@@ -112,8 +112,8 @@ public fun ApplicationCall.toServerRequest(): ServerRequest {
     request.origin.scheme,
     Authority(null, HostSegment(request.host()), request.port()),
     PathSegments.absoluteOrEmptyS(request.path().removePrefix("/").split("/")),
-    request.queryParameters.entries().flatMap { (name, values) ->
-      values.map { QuerySegment.KeyValue(name, it) }
+    request.queryParameters.flattenEntries().map { (name, values) ->
+      QuerySegment.KeyValue(name, values)
     },
     null
   )

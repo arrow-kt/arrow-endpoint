@@ -1,8 +1,5 @@
-import arrow.endpoint.Codec
-import arrow.endpoint.Endpoint
-import arrow.endpoint.ArrowEndpoint
-import arrow.endpoint.and
-import arrow.endpoint.input
+package arrow.endpoint
+
 import io.kotest.core.spec.style.StringSpec
 
 @Suppress("UNUSED_VARIABLE")
