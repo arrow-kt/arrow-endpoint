@@ -1,3 +1,4 @@
+/*
 dependencies {
   compileOnly(project(Libs.core))
   implementation(Libs.kotlinxCoroutinesReactive)
@@ -7,3 +8,4 @@ dependencies {
   testImplementation(project(Libs.core))
   testImplementation(project(Libs.test))
 }
+*/

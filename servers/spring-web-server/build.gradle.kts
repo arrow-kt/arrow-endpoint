@@ -1,3 +1,4 @@
+/*
 dependencies {
   compileOnly(project(Libs.core))
   implementation(Libs.kotlinxCoroutinesReactive)
@@ -11,3 +12,4 @@ dependencies {
   testImplementation(project(Libs.springClientWebFlux))
   testImplementation(Libs.undertow)
 }
+*/

@@ -1,14 +1,84 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
-  `kotlin-dsl` apply true
-  kotlin("jvm") version Version.kotlin apply false
+  kotlin("multiplatform") version Version.kotlin apply false
   id(Plugins.kotlinSerialization) version Version.kotlin apply false
   id(Plugins.ktlint) version Version.ktlint apply true
+  id("io.kotest.multiplatform") version "5.0.0.5"
+}
+
+subprojects {
+  if (!listOf("clients", "docs", "servers", "examples").contains(name)) {
+    apply(plugin = "org.jetbrains.kotlin.multiplatform")
+
+    kotlin {
+      explicitApi()
+
+      targets {
+        jvm {
+          compilations.all {
+            kotlinOptions {
+              jvmTarget = "1.8"
+            }
+          }
+        }
+      }
+
+      sourceSets {
+        val commonMain by getting {
+          dependencies {
+            implementation(Libs.kotlinStdlib)
+          }
+        }
+
+        val jvmMain by getting {
+          dependsOn(commonMain)
+          dependencies {
+            compileOnly(Libs.arrowCore)
+          }
+        }
+
+        val commonTest by getting {
+          dependsOn(commonMain)
+          dependencies {
+            implementation(Libs.kotlinxCoroutines)
+            implementation(Libs.kotestAssertions)
+            implementation(Libs.kotestProperty)
+          }
+        }
+
+        val jvmTest by getting {
+          dependsOn(commonTest)
+          dependsOn(jvmMain)
+          dependencies {
+            implementation(Libs.kotestRunner)
+            implementation(Libs.arrowCore)
+          }
+        }
+      }
+    }
+
+    tasks.named<Test>("jvmTest") {
+      useJUnitPlatform()
+      testLogging {
+        showExceptions = true
+        showStandardStreams = true
+        events = setOf(
+          TestLogEvent.FAILED,
+          TestLogEvent.PASSED
+        )
+        exceptionFormat = TestExceptionFormat.FULL
+      }
+    }
+  }
 }
 
 allprojects {
-  apply(plugin = "org.jetbrains.kotlin.jvm")
+  apply(plugin = "io.kotest.multiplatform")
   apply(plugin = Plugins.ktlint)
   apply(plugin = "org.gradle.idea")
 
@@ -21,15 +91,6 @@ allprojects {
     maven(url = "https://oss.sonatype.org/content/repositories/snapshots/")
   }
 
-  // Common dependencies
-  dependencies {
-    implementation(Libs.kotlinStdlib)
-    implementation(Libs.arrowCore)
-    testImplementation(Libs.kotestRunner)
-    testImplementation(Libs.kotestAssertions)
-    testImplementation(Libs.kotestProperty)
-  }
-
   tasks.withType<KotlinCompile> {
     kotlinOptions {
       jvmTarget = "1.8"
@@ -37,17 +98,18 @@ allprojects {
     }
   }
 
-  tasks.withType<Test> {
-    useJUnitPlatform()
-  }
-
   ktlint {
     filter {
       exclude("build.gradle.kts") // TODO: fix doesnt inspect kts file with correct indent correctly
     }
   }
-
-  kotlin {
-    explicitApi()
-  }
 }
+
+fun Project.kotlin(configure: Action<KotlinMultiplatformExtension>): Unit =
+  (this as ExtensionAware).extensions.configure("kotlin", configure)
+
+fun KotlinMultiplatformExtension.targets(configure: Action<Any>): Unit =
+  (this as ExtensionAware).extensions.configure("targets", configure)
+
+fun KotlinMultiplatformExtension.sourceSets(configure: Action<NamedDomainObjectContainer<KotlinSourceSet>>): Unit =
+  (this as ExtensionAware).extensions.configure("sourceSets", configure)

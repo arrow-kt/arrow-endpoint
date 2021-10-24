@@ -2,6 +2,7 @@ plugins {
     id(Plugins.kotlinSerialization)
 }
 
+/*
 dependencies {
   compileOnly(project(Libs.core))
   implementation(project(Libs.htt4kClient))
@@ -14,3 +15,4 @@ dependencies {
   api(Libs.kotestProperty)
   implementation(Libs.mockwebserver)
 }
+*/

@@ -1,3 +1,4 @@
+/*
 dependencies {
   compileOnly(project(Libs.core))
   implementation(Libs.http4kCore)
@@ -6,3 +7,4 @@ dependencies {
   testImplementation(project(Libs.test))
   testImplementation(Libs.http4kApache)
 }
+*/

@@ -1,3 +1,4 @@
+/*
 dependencies {
   compileOnly(project(Libs.core))
   implementation(Libs.springBootStarterWeb)
@@ -5,3 +6,4 @@ dependencies {
   testImplementation(project(Libs.core))
   testImplementation(project(Libs.test))
 }
+*/

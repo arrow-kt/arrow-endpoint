@@ -2,7 +2,13 @@ plugins {
   id(Plugins.kotlinSerialization)
 }
 
-dependencies {
-  implementation(project(Libs.core))
-  implementation(Libs.kotlinxSerializationJson)
+kotlin {
+  sourceSets {
+    commonMain {
+      dependencies {
+        implementation(project(Libs.core))
+        implementation(Libs.kotlinxSerializationJson)
+      }
+    }
+  }
 }

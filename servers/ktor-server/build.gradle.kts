@@ -1,3 +1,4 @@
+/*
 dependencies {
   compileOnly(project(Libs.core))
   implementation(Libs.ktorServerCore)
@@ -9,3 +10,4 @@ dependencies {
   testImplementation(Libs.ktorTest)
   testImplementation(Libs.ktorServerNetty)
 }
+*/
