@@ -9,6 +9,8 @@ plugins {
   id(Plugins.kotlinSerialization) version Version.kotlin apply false
   id(Plugins.ktlint) version Version.ktlint apply true
   id("io.kotest.multiplatform") version "5.0.0.5"
+  id("io.arrow-kt.arrow-gradle-config-nexus") version "0.3.2"
+  id("io.arrow-kt.arrow-gradle-config-publish-multiplatform") version "0.3.2"
 }
 
 subprojects {
@@ -84,7 +86,7 @@ allprojects {
   apply(plugin = "org.gradle.idea")
 
   group = "io.arrow-kt"
-  version = "0.0.1-SNAPSHOT"
+  version = "0.1.0-SNAPSHOT"
 
   repositories {
     google()
