@@ -1,3 +1,5 @@
+package arrow.endpoint
+
 import arrow.endpoint.Codec
 import arrow.endpoint.Endpoint
 import arrow.endpoint.ArrowEndpoint
