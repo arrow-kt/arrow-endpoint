@@ -31,18 +31,18 @@ class ResponseSerializerTest : StringSpec({
   }
 
   "Referenced.Other" {
-    val schema = Referenced.Other(
+    val referenced = Referenced.Other(
       Schema()
     ) as Referenced<Schema>
-    val str = json.encodeToString(schema)
+    val str = json.encodeToString(referenced)
   }
 
   "MediaType" {
-    val schema = MediaType(
+    val mediaType = MediaType(
       schema = Referenced.Other(
         value = Schema()
       )
     )
-    val str = json.encodeToString(schema)
+    val str = json.encodeToString(mediaType)
   }
 })
