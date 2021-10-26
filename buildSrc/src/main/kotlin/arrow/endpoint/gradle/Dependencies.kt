@@ -2,7 +2,7 @@ object Version {
   const val kotlin: String = "1.5.31"
   const val arrow: String = "1.0.0"
   const val kotlinx: String = "1.5.2"
-  const val kotlinxSerializationJson: String = "1.2.2"
+  const val kotlinxSerializationJson: String = "1.3.0"
   const val ktlint: String = "10.1.0"
   const val ktor: String = "1.6.4"
   const val logbackClassic: String = "1.2.3"
