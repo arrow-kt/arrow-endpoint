@@ -82,8 +82,6 @@ public fun <I, E, O> Endpoint<I, E, O>.toRequest(baseUrl: String, i: I): Request
 
   return when (val body = info.body) {
     is Body.ByteArray -> r4.body(MemoryBody(body.byteArray))
-    is Body.ByteBuffer -> r4.body(MemoryBody(body.byteBuffer))
-    is Body.InputStream -> r4.body(body.inputStream)
     is Body.String -> r4.body(body.string)
     null -> r4
   }
@@ -150,8 +148,6 @@ private fun EndpointOutput<*>.getOutputParams(
   when (val output = this) {
     is EndpointOutput.Single<*> -> when (val single = (output as EndpointOutput.Single<Any?>)) {
       is EndpointIO.ByteArrayBody -> single.codec.decode(response.body.payload.array())
-      is EndpointIO.ByteBufferBody -> single.codec.decode(response.body.payload)
-      is EndpointIO.InputStreamBody -> single.codec.decode(response.body.stream)
       is EndpointIO.StringBody -> single.codec.decode(response.body.toString())
 
       is EndpointIO.Empty -> single.codec.decode(Unit)

@@ -3,9 +3,8 @@ package arrow.endpoint
 import arrow.core.Tuple4
 import arrow.core.Tuple5
 import arrow.endpoint.model.CodecFormat
-import java.io.InputStream
-import java.nio.ByteBuffer
-import java.nio.charset.Charset
+import io.ktor.utils.io.charsets.Charset
+import kotlin.jvm.JvmName
 
 // Elements that can occur in both input and output
 // Such as body, headers, etc
@@ -83,32 +82,6 @@ public sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
   ) : BinaryBody<ByteArray, T> {
     override fun <B> copyWith(c: Codec<ByteArray, B, CodecFormat>, i: Info<B>): ByteArrayBody<B> =
       ByteArrayBody(c, i)
-
-    override fun toString(): String {
-      val format = codec.format.mediaType
-      return "{body as $format}"
-    }
-  }
-
-  public data class ByteBufferBody<T>(
-    override val codec: Codec<ByteBuffer, T, CodecFormat>,
-    override val info: Info<T>
-  ) : BinaryBody<ByteBuffer, T> {
-    override fun <B> copyWith(c: Codec<ByteBuffer, B, CodecFormat>, i: Info<B>): ByteBufferBody<B> =
-      ByteBufferBody(c, i)
-
-    override fun toString(): String {
-      val format = codec.format.mediaType
-      return "{body as $format}"
-    }
-  }
-
-  public data class InputStreamBody<T>(
-    override val codec: Codec<InputStream, T, CodecFormat>,
-    override val info: Info<T>
-  ) : BinaryBody<InputStream, T> {
-    override fun <B> copyWith(c: Codec<InputStream, B, CodecFormat>, i: Info<B>): InputStreamBody<B> =
-      InputStreamBody(c, i)
 
     override fun toString(): String {
       val format = codec.format.mediaType

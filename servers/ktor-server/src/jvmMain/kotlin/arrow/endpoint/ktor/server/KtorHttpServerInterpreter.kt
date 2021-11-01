@@ -27,7 +27,6 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.RequestConnectionPoint
 import io.ktor.http.content.ByteArrayContent
 import io.ktor.http.content.OutgoingContent
-import io.ktor.http.content.OutputStreamContent
 import io.ktor.http.content.TextContent
 import io.ktor.http.withCharset
 import io.ktor.request.host
@@ -39,8 +38,6 @@ import io.ktor.response.header
 import io.ktor.response.respond
 import io.ktor.util.flattenEntries
 import io.ktor.util.toByteArray
-import io.ktor.utils.io.jvm.javaio.toInputStream
-import java.nio.ByteBuffer
 
 public fun <I, E, O> Application.install(ses: ServerEndpoint<I, E, O>): Unit =
   install(listOf(ses))
@@ -73,20 +70,8 @@ public fun ServerResponse.outgoingContent(): OutgoingContent? =
       body.contentType(),
       HttpStatusCode.fromValue(code.code)
     )
-    is Body.ByteBuffer -> ByteArrayContent(
-      body.toByteArray(),
-      body.contentType(),
-      HttpStatusCode.fromValue(code.code)
-    )
     is Body.String -> TextContent(
       body.string,
-      body.contentType(),
-      HttpStatusCode.fromValue(code.code)
-    )
-    is Body.InputStream -> OutputStreamContent(
-      {
-        body.inputStream.copyTo(this)
-      },
       body.contentType(),
       HttpStatusCode.fromValue(code.code)
     )
@@ -135,8 +120,6 @@ internal class KtorRequestBody(private val ctx: ApplicationCall) : RequestBody {
     val body = ctx.request.receiveChannel()
     return when (bodyType) {
       is EndpointIO.ByteArrayBody -> body.toByteArray()
-      is EndpointIO.ByteBufferBody -> ByteBuffer.wrap(body.toByteArray())
-      is EndpointIO.InputStreamBody -> body.toInputStream()
       is EndpointIO.StringBody -> body.toByteArray().toString(bodyType.charset)
     } as R
   }

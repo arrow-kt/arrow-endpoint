@@ -5,9 +5,7 @@ import arrow.core.left
 import arrow.core.right
 import io.ktor.utils.io.charsets.Charset
 import io.ktor.utils.io.charsets.Charsets
-import io.ktor.utils.io.charsets.decode
 import io.ktor.utils.io.core.toByteArray
-import kotlin.experimental.and
 
 internal object Rfc3986 {
   private val AlphaNum: Set<Char> = (('a'..'z') + ('A'..'Z') + ('0'..'9')).toSet()
@@ -99,7 +97,7 @@ internal object Rfc3986 {
           // "%x" will cause an exception to be thrown
           if ((i < numChars) && (c == '%'))
             return UriError.IllegalArgument("URLDecoder: Incomplete trailing escape (%) pattern").left()
-          sb.append(bytes.joinToString { it.toString(16)}, startIndex = 0, endIndex = pos)
+          sb.append(bytes.joinToString { it.toString(16) }, startIndex = 0, endIndex = pos)
           needToChange = true
         }
         else -> {
@@ -111,12 +109,13 @@ internal object Rfc3986 {
     return (if (needToChange) sb.toString() else this).right()
   }
 
-  // private fun Byte.format(): String = "%02X".format(this)
+  private val hexArray: CharArray
+    get() = "0123456789ABCDEF".toCharArray()
 
-  // TODO: previously Jvm specific with String.format("%02x", this), check if this is cohesive
   private fun Byte.format(): String {
-    val decimal = this.and(0xff.toByte())
-    val hex = decimal.toUInt().toString(16)
-    return if(hex.length.mod(2) == 1) "0$hex" else hex
+    val v = toInt().and(0xFF)
+    val a = hexArray[v ushr 4]
+    val b = hexArray[v and 0x0F]
+    return "$a$b"
   }
 }

@@ -2,7 +2,6 @@ kotlin {
   sourceSets {
     commonMain {
       dependencies {
-        implementation(kotlin("stdlib", Version.kotlin))
         implementation(Libs.kotlinxCoroutines)
         implementation(Libs.ktorio)
       }

@@ -1,10 +1,11 @@
 package arrow.endpoint
 
 import arrow.endpoint.model.CodecFormat
-import io.ktor.utils.io.charsets.Charset
 import java.io.InputStream
 import java.math.BigDecimal
 import java.nio.ByteBuffer
+import kotlin.text.Charsets
+import java.nio.charset.Charset
 import java.time.Duration as JavaDuration
 import java.time.Instant
 import java.time.LocalDate

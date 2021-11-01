@@ -100,12 +100,6 @@ public object ArrowEndpoint {
   public fun byteArrayBody(): EndpointIO.ByteArrayBody<ByteArray> =
     EndpointIO.ByteArrayBody(Codec.byteArray, EndpointIO.Info.empty())
 
-  public fun byteBufferBody(): EndpointIO.ByteBufferBody<ByteChannel> =
-    EndpointIO.ByteBufferBody(Codec.byteBuffer, EndpointIO.Info.empty())
-
-  public fun inputStreamBody(): EndpointIO.InputStreamBody<ByteReadChannel> =
-    EndpointIO.InputStreamBody(Codec.inputStream, EndpointIO.Info.empty())
-
   public fun <A> formBody(codec: Codec<String, A, CodecFormat.XWwwFormUrlencoded>): EndpointIO.StringBody<A> =
     anyFromStringBody(codec)
 

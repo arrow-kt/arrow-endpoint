@@ -37,6 +37,7 @@ subprojects {
         val commonMain by getting {
           dependencies {
             implementation(Libs.kotlinStdlib)
+            compileOnly(Libs.ktorio)
             compileOnly(Libs.arrowCore)
           }
         }
@@ -52,6 +53,7 @@ subprojects {
             implementation(Libs.kotestAssertions)
             implementation(Libs.kotestProperty)
             implementation(Libs.arrowCore)
+            implementation(Libs.ktorio)
           }
         }
 

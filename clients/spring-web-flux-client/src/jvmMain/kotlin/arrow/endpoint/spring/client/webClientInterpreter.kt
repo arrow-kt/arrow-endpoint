@@ -120,14 +120,6 @@ private suspend fun EndpointOutput<*>.getOutputParams(
   when (val output = this) {
     is EndpointOutput.Single<*> -> when (val single = (output as EndpointOutput.Single<Any?>)) {
       is EndpointIO.ByteArrayBody -> single.codec.decode(response.awaitBodyOrNull(ByteArray::class) ?: byteArrayOf())
-      is EndpointIO.ByteBufferBody -> single.codec.decode(
-        response.awaitBodyOrNull(ByteBuffer::class) ?: ByteBuffer.wrap(byteArrayOf())
-      )
-      is EndpointIO.InputStreamBody -> single.codec.decode(
-        ByteArrayInputStream(
-          response.awaitBodyOrNull(ByteArray::class) ?: byteArrayOf()
-        )
-      )
       is EndpointIO.StringBody -> single.codec.decode(response.awaitBodyOrNull(String::class) ?: "")
       is EndpointIO.Empty -> single.codec.decode(Unit)
       is EndpointOutput.FixedStatusCode -> single.codec.decode(Unit)
