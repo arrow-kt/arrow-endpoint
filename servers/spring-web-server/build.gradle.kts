@@ -2,21 +2,21 @@ kotlin {
   sourceSets {
     jvmMain {
       dependencies {
-        compileOnly(project(Libs.core))
-        implementation(Libs.kotlinxCoroutinesReactive)
-        implementation(Libs.kotlinxCoroutinesReactor)
-        implementation(Libs.springBootStarterWebflux)
-        implementation(Libs.reactorKotlinExtensions)
-        implementation(Libs.nettyTransportNativeKqueue)
+        compileOnly(projects.core)
+        implementation(libs.coroutines.reactive)
+        implementation(libs.coroutines.reactor)
+        implementation(libs.spring.boot.starter.webflux)
+        implementation(libs.reactor.kotlin.extensions)
+        implementation(libs.netty.transport.native.kqueue)
       }
     }
 
     jvmTest {
       dependencies {
-        implementation(project(Libs.core))
-        implementation(project(Libs.test))
-        implementation(project(Libs.springClientWebFlux))
-        implementation(Libs.undertow)
+        implementation(projects.core)
+        implementation(projects.test)
+        implementation(projects.clients.springWebFluxClient)
+        implementation(libs.undertow)
       }
     }
   }

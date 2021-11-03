@@ -2,16 +2,16 @@ kotlin {
   sourceSets {
     jvmMain {
       dependencies {
-        compileOnly(project(Libs.core))
-        implementation(Libs.springBootStarterWeb)
-        implementation(Libs.kotlinxCoroutines)
+        compileOnly(projects.core)
+        implementation(libs.spring.boot.starter.web)
+        implementation(libs.coroutines.core)
       }
     }
 
     jvmTest {
       dependencies {
-        implementation(project(Libs.core))
-        implementation(project(Libs.test))
+        implementation(projects.core)
+        implementation(projects.test)
       }
     }
   }
