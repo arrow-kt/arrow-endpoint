@@ -53,8 +53,7 @@ subprojects {
         }
 
         val jvmTest by getting {
-          dependsOn(commonTest)
-          dependsOn(jvmMain)
+          dependsOn(commonMain)
           dependencies {
             implementation(rootProject.libs.kotest.runnerJUnit5)
           }
