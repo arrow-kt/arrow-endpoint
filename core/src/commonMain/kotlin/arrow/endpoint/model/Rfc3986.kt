@@ -5,6 +5,7 @@ import arrow.core.left
 import arrow.core.right
 import io.ktor.utils.io.charsets.Charset
 import io.ktor.utils.io.charsets.Charsets
+import io.ktor.utils.io.core.String
 import io.ktor.utils.io.core.toByteArray
 
 internal object Rfc3986 {
@@ -97,7 +98,7 @@ internal object Rfc3986 {
           // "%x" will cause an exception to be thrown
           if ((i < numChars) && (c == '%'))
             return UriError.IllegalArgument("URLDecoder: Incomplete trailing escape (%) pattern").left()
-          sb.append(bytes.joinToString { it.toString(16) }, startIndex = 0, endIndex = pos)
+          sb.append(String(bytes, 0, pos, enc))
           needToChange = true
         }
         else -> {

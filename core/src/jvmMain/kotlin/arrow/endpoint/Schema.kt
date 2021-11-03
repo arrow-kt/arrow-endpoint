@@ -1,3 +1,4 @@
+@file:JvmName("SchemaUtils")
 package arrow.endpoint
 
 import java.io.InputStream

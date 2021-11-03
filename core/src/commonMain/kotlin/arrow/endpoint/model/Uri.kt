@@ -430,11 +430,18 @@ public sealed class Segment(
 
 public data class HostSegment(
   override val v: String,
-  override val encoding: Encoding
+  override val encoding: Encoding = Standard
 ) : Segment(v, encoding) {
 
   public companion object {
     public val IpV6Pattern: Regex = "[0-9a-fA-F:]+".toRegex()
+    public val Standard: Encoding
+      get() = { s ->
+        when {
+          s.matches(IpV6Pattern) && s.count { it == ':' } >= 2 -> "[$s]"
+          else -> UriCompatibility.encodeDNSHost(s)
+        }
+      }
   }
 
   override fun encoding(e: Encoding): HostSegment = copy(encoding = e)
@@ -519,6 +526,12 @@ public sealed interface QuerySegment {
     public val StandardValue: Encoding = {
       it.encode(Rfc3986.Query - setOf('&'), spaceAsPlus = true, encodePlus = true)
     }
+
+    /** Encodes all reserved characters using [java.net.URLEncoder.encode]. */
+    public val All: Encoding
+      get() = {
+        UriCompatibility.encodeQuery(it, "UTF-8")
+      }
 
     /** Doesn't encode any of the reserved characters, leaving intact all
      * characters allowed in the query string as defined by RFC3986.

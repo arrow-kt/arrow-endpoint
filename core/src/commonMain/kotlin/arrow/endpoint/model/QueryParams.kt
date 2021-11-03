@@ -1,5 +1,8 @@
 package arrow.endpoint.model
 
+import kotlin.jvm.JvmInline
+
+@JvmInline
 public value class QueryParams(internal val ps: List<Pair<String, List<String>>>) {
 
   public constructor(map: Map<String, String>) : this(map.entries.map { (k, v) -> Pair(k, listOf(v)) })

@@ -1,3 +1,5 @@
+@file:JvmName("CodecUtils")
+
 package arrow.endpoint
 
 import arrow.endpoint.model.CodecFormat

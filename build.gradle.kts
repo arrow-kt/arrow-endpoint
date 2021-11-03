@@ -33,18 +33,7 @@ subprojects {
       }
 
       sourceSets {
-        val commonMain by getting {
-          dependencies {
-            implementation(rootProject.libs.kotlin.stdlibCommon)
-          }
-        }
-
-        val jvmMain by getting {
-          dependsOn(commonMain)
-        }
-
         val commonTest by getting {
-          dependsOn(commonMain)
           dependencies {
             implementation(rootProject.libs.coroutines.core)
             implementation(rootProject.libs.kotest.assertionsCore)
@@ -53,7 +42,6 @@ subprojects {
         }
 
         val jvmTest by getting {
-          dependsOn(commonMain)
           dependencies {
             implementation(rootProject.libs.kotest.runnerJUnit5)
           }

@@ -10,9 +10,7 @@ import arrow.endpoint.model.CodecFormat
 import arrow.endpoint.model.Header
 import arrow.endpoint.model.MediaType
 import arrow.endpoint.model.StatusCode
-import java.io.InputStream
-import java.nio.ByteBuffer
-import java.nio.charset.Charset
+import io.ktor.utils.io.charsets.Charset
 
 internal data class OutputValues(
   val body: Body?,
