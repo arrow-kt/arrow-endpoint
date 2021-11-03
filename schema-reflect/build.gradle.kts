@@ -2,8 +2,8 @@ kotlin {
   sourceSets {
     jvmMain {
       dependencies {
-        implementation(projects.core)
-        runtimeOnly(libs.kotlin.reflect)
+        implementation(project(Libs.core))
+        runtimeOnly("org.jetbrains.kotlin:kotlin-reflect:${Version.kotlin}")
       }
     }
   }

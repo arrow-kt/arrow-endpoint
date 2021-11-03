@@ -6,16 +6,16 @@ kotlin {
   sourceSets {
     jvmMain {
       dependencies {
-        implementation(projects.core)
-        implementation(projects.clients.http4k)
-        implementation(projects.clients.springWeb)
-        implementation(projects.clients.springWebFlux)
-        implementation(libs.kotlinx.serialization.json)
-        implementation(libs.http4k.client.apache)
-        api(libs.kotest.runnerJUnit5)
-        api(libs.kotest.assertionsCore)
-        api(libs.kotest.property)
-        implementation(libs.mockwebserver)
+        compileOnly(project(Libs.core))
+        implementation(project(Libs.htt4kClient))
+        implementation(project(Libs.springClientWeb))
+        implementation(project(Libs.springClientWebFlux))
+        implementation(Libs.kotlinxSerializationJson)
+        implementation(Libs.http4kApache)
+        api(Libs.kotestRunner)
+        api(Libs.kotestAssertions)
+        api(Libs.kotestProperty)
+        implementation(Libs.mockwebserver)
       }
     }
   }

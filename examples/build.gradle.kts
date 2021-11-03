@@ -5,15 +5,15 @@ plugins {
 }
 
 dependencies {
-  implementation(projects.core)
-  implementation(projects.servers.ktor)
-  implementation(projects.docs.openapi)
-  implementation(libs.kotlin.stdlibCommon)
-  implementation(libs.arrow.core)
-  implementation(libs.ktor.server.core)
-  implementation(libs.ktor.server.netty)
-  implementation(libs.logback.classic)
-  implementation(libs.kotlinx.serialization.json)
+  implementation(project(Libs.core))
+  implementation(project(Libs.ktorServer))
+  implementation(project(Libs.openApiDocs))
+  implementation(Libs.kotlinStdlib)
+  implementation(Libs.arrowCore)
+  implementation(Libs.ktorServerCore)
+  implementation(Libs.ktorServerNetty)
+  implementation(Libs.logbackClassic)
+  implementation(Libs.kotlinxSerializationJson)
 }
 
 application {
