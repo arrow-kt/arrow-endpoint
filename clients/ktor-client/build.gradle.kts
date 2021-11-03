@@ -2,14 +2,15 @@ kotlin {
   sourceSets {
     jvmMain {
       dependencies {
-        implementation(projects.core)
+        compileOnly(projects.core)
         implementation(libs.ktor.client.core)
       }
     }
     jvmTest {
       dependencies {
-        implementation(projects.test)
+        implementation(projects.core)
         implementation(libs.ktor.client.cio)
+        implementation(projects.test)
       }
     }
   }

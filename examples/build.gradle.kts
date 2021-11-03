@@ -1,15 +1,14 @@
 plugins {
-  id(Plugins.kotlinSerialization)
   kotlin("jvm")
   application
 }
 
+apply(plugin = "kotlinx-serialization")
+
 dependencies {
   implementation(projects.core)
-  implementation(projects.servers.ktor)
-  implementation(projects.docs.openapi)
-  implementation(libs.kotlin.stdlibCommon)
-  implementation(libs.arrow.core)
+  implementation(projects.servers.ktorServer)
+  implementation(projects.docs.openapiDocs)
   implementation(libs.ktor.server.core)
   implementation(libs.ktor.server.netty)
   implementation(libs.logback.classic)

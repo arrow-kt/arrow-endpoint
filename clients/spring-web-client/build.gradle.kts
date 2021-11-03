@@ -2,7 +2,7 @@ kotlin {
   sourceSets {
     jvmMain {
       dependencies {
-        implementation(projects.core)
+        compileOnly(projects.core)
         implementation(libs.spring.boot.starter.web)
         implementation(libs.coroutines.core)
       }
@@ -10,6 +10,7 @@ kotlin {
 
     jvmTest {
       dependencies {
+        implementation(projects.core)
         implementation(projects.test)
       }
     }

@@ -5,12 +5,11 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
-  kotlin("multiplatform") version Version.kotlin apply false
-  id(Plugins.kotlinSerialization) version Version.kotlin apply false
-  id(Plugins.ktlint) version Version.ktlint apply true
-  id("io.kotest.multiplatform") version "5.0.0.5"
-  id("io.arrow-kt.arrow-gradle-config-nexus") version "0.5.1"
-  id("io.arrow-kt.arrow-gradle-config-publish-multiplatform") version "0.5.1"
+  alias(libs.plugins.kotlin.multiplatform) apply false
+  alias(libs.plugins.kotlinxSerialization) apply false
+  alias(libs.plugins.kotest.multiplatform)
+  alias(libs.plugins.arrowGradleConfig.nexus)
+  alias(libs.plugins.arrowGradleConfig.publishMultiplatform)
 }
 
 subprojects {
@@ -34,32 +33,17 @@ subprojects {
       }
 
       sourceSets {
-        val commonMain by getting {
-          dependencies {
-            implementation(Libs.kotlinStdlib)
-            compileOnly(Libs.arrowCore)
-          }
-        }
-
-        val jvmMain by getting {
-          dependsOn(commonMain)
-        }
-
         val commonTest by getting {
-          dependsOn(commonMain)
           dependencies {
-            implementation(Libs.kotlinxCoroutines)
-            implementation(Libs.kotestAssertions)
-            implementation(Libs.kotestProperty)
-            implementation(Libs.arrowCore)
+            implementation(rootProject.libs.coroutines.core)
+            implementation(rootProject.libs.kotest.assertionsCore)
+            implementation(rootProject.libs.kotest.property)
           }
         }
 
         val jvmTest by getting {
-          dependsOn(commonTest)
-          dependsOn(jvmMain)
           dependencies {
-            implementation(Libs.kotestRunner)
+            implementation(rootProject.libs.kotest.runnerJUnit5)
           }
         }
       }
@@ -82,7 +66,6 @@ subprojects {
 
 allprojects {
   apply(plugin = "io.kotest.multiplatform")
-  apply(plugin = Plugins.ktlint)
   apply(plugin = "org.gradle.idea")
 
   group = "io.arrow-kt"
@@ -98,12 +81,6 @@ allprojects {
     kotlinOptions {
       jvmTarget = "1.8"
       freeCompilerArgs = listOf("-Xjsr305=strict")
-    }
-  }
-
-  ktlint {
-    filter {
-      exclude("build.gradle.kts") // TODO: fix doesnt inspect kts file with correct indent correctly
     }
   }
 }

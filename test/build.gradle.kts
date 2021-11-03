@@ -1,18 +1,16 @@
-plugins {
-  id(Plugins.kotlinSerialization)
-}
+apply(plugin = "kotlinx-serialization")
 
 kotlin {
   sourceSets {
     jvmMain {
       dependencies {
-        implementation(projects.core)
-        implementation(projects.clients.http4k)
-        implementation(projects.clients.springWeb)
-        implementation(projects.clients.springWebFlux)
+        compileOnly(projects.core)
+        implementation(projects.clients.http4kClient)
+        implementation(projects.clients.springWebClient)
+        implementation(projects.clients.springWebFluxClient)
         implementation(libs.kotlinx.serialization.json)
         implementation(libs.http4k.client.apache)
-        api(libs.kotest.runnerJUnit5)
+        api(libs.kotest.frameworkEngine)
         api(libs.kotest.assertionsCore)
         api(libs.kotest.property)
         implementation(libs.mockwebserver)
