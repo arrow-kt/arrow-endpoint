@@ -2,19 +2,19 @@ kotlin {
   sourceSets {
     jvmMain {
       dependencies {
-        compileOnly(project(Libs.core))
-        implementation(Libs.ktorServerCore)
-        implementation(Libs.nettyTransportNativeKqueue)
+        compileOnly(projects.core)
+        implementation(libs.ktor.server.core)
+        implementation(libs.netty.transport.native.kqueue)
       }
     }
 
     jvmTest {
       dependencies {
-        implementation(project(Libs.core))
-        implementation(project(Libs.test))
-        implementation(project(Libs.ktorClient))
-        implementation(Libs.ktorTest)
-        implementation(Libs.ktorServerNetty)
+        implementation(projects.core)
+        implementation(projects.test)
+        implementation(projects.clients.ktorClient)
+        implementation(libs.ktor.test)
+        implementation(libs.ktor.server.netty)
       }
     }
   }

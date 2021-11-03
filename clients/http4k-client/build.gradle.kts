@@ -2,16 +2,16 @@ kotlin {
   sourceSets {
     jvmMain {
       dependencies {
-        compileOnly(project(Libs.core))
-        implementation(Libs.http4kCore)
+        compileOnly(projects.core)
+        implementation(libs.http4k.core)
       }
     }
 
     jvmTest {
       dependencies {
-        implementation(project(Libs.core))
-        implementation(project(Libs.test))
-        implementation(Libs.http4kApache)
+        implementation(projects.core)
+        implementation(projects.test)
+        implementation(libs.http4k.client.apache)
       }
     }
   }
