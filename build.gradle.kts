@@ -37,6 +37,7 @@ subprojects {
           dependencies {
             implementation(rootProject.libs.coroutines.core)
             implementation(rootProject.libs.kotest.assertionsCore)
+            implementation(rootProject.libs.kotest.frameworkEngine)
             implementation(rootProject.libs.kotest.property)
           }
         }

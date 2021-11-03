@@ -8,7 +8,7 @@ fun Schema.Companion.person(): Schema<Person> =
   Schema.Product(
     Schema.ObjectInfo("arrow.endpoint.Person"),
     listOf(
-      Pair(FieldName("name"), Schema.string),
-      Pair(FieldName("age"), Schema.int)
+      Pair(FieldName("name"), string),
+      Pair(FieldName("age"), int)
     )
   )
