@@ -9,8 +9,8 @@ plugins {
   id(Plugins.kotlinSerialization) version Version.kotlin apply false
   id(Plugins.ktlint) version Version.ktlint apply true
   id("io.kotest.multiplatform") version "5.0.0.5"
-  id("io.arrow-kt.arrow-gradle-config-nexus") version "0.3.2"
-  id("io.arrow-kt.arrow-gradle-config-publish-multiplatform") version "0.3.2"
+  id("io.arrow-kt.arrow-gradle-config-nexus") version "0.5.1"
+  id("io.arrow-kt.arrow-gradle-config-publish-multiplatform") version "0.5.1"
 }
 
 subprojects {
