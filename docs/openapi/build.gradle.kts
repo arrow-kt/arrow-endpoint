@@ -1,5 +1,5 @@
 plugins {
-  id(Plugins.kotlinSerialization)
+  alias(libs.plugins.kotlinxSerialization)
 }
 
 kotlin {

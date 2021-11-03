@@ -1,9 +1,11 @@
 @file:OptIn(ExperimentalSerializationApi::class)
+
 package arrow.endpoint.docs.openapi
 
 import arrow.core.NonEmptyList
 import arrow.core.getOrElse
 import arrow.endpoint.model.StatusCode
+import java.math.BigDecimal
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
@@ -13,25 +15,27 @@ import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.element
 import kotlinx.serialization.descriptors.SerialKind
 import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.descriptors.buildClassSerialDescriptor
 import kotlinx.serialization.descriptors.buildSerialDescriptor
+import kotlinx.serialization.descriptors.element
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import java.math.BigDecimal
 
 internal object StatusCodeAsIntSerializer : KSerializer<StatusCode> {
-  override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("StatusCode", PrimitiveKind.INT)
+  override val descriptor: SerialDescriptor =
+    PrimitiveSerialDescriptor("StatusCode", PrimitiveKind.INT)
   override fun serialize(encoder: Encoder, value: StatusCode) = encoder.encodeInt(value.code)
   override fun deserialize(decoder: Decoder): StatusCode = StatusCode(decoder.decodeInt())
 }
 
 internal object BigDecimalAsStringSerializer : KSerializer<BigDecimal> {
-  override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("BigDecimal", PrimitiveKind.STRING)
-  override fun serialize(encoder: Encoder, value: BigDecimal) = encoder.encodeString(value.toString())
+  override val descriptor: SerialDescriptor =
+    PrimitiveSerialDescriptor("BigDecimal", PrimitiveKind.STRING)
+  override fun serialize(encoder: Encoder, value: BigDecimal) =
+    encoder.encodeString(value.toString())
   override fun deserialize(decoder: Decoder): BigDecimal = BigDecimal(decoder.decodeString())
 }
 
@@ -73,47 +77,53 @@ internal class NelDescriptor(val elementDescriptor: SerialDescriptor) : SerialDe
   override fun toString(): String = "$serialName($elementDescriptor)"
 }
 
-internal class NelSerializer<T>(private val elementSerializer: KSerializer<T>) : KSerializer<NonEmptyList<T>> {
+internal class NelSerializer<T>(private val elementSerializer: KSerializer<T>) :
+  KSerializer<NonEmptyList<T>> {
   override val descriptor: SerialDescriptor = NelDescriptor(elementSerializer.descriptor)
 
   override fun serialize(encoder: Encoder, value: NonEmptyList<T>) {
     val size = value.size
     val composite = encoder.beginCollection(descriptor, size)
-    value.forEachIndexed { i, t -> composite.encodeSerializableElement(descriptor, i, elementSerializer, t) }
+    value.forEachIndexed { i, t ->
+      composite.encodeSerializableElement(descriptor, i, elementSerializer, t)
+    }
     composite.endStructure(descriptor)
   }
 
   override fun deserialize(decoder: Decoder): NonEmptyList<T> {
     val compositeDecoder = decoder.beginStructure(descriptor)
     val size = compositeDecoder.decodeCollectionSize(descriptor)
-    val list = if (compositeDecoder.decodeSequentially()) {
-      List(size) { index ->
-        compositeDecoder.decodeSerializableElement(descriptor, index, elementSerializer)
+    val list =
+      if (compositeDecoder.decodeSequentially()) {
+        List(size) { index ->
+          compositeDecoder.decodeSerializableElement(descriptor, index, elementSerializer)
+        }
+      } else {
+        val builder = ArrayList<T>(size)
+        while (true) {
+          val index = compositeDecoder.decodeElementIndex(descriptor)
+          if (index == CompositeDecoder.DECODE_DONE) break
+          builder.add(
+            index,
+            compositeDecoder.decodeSerializableElement(descriptor, index, elementSerializer)
+          )
+        }
+        builder
       }
-    } else {
-      val builder = ArrayList<T>(size)
-      while (true) {
-        val index = compositeDecoder.decodeElementIndex(descriptor)
-        if (index == CompositeDecoder.DECODE_DONE) break
-        builder.add(index, compositeDecoder.decodeSerializableElement(descriptor, index, elementSerializer))
-      }
-      builder
-    }
     compositeDecoder.endStructure(descriptor)
-    return NonEmptyList.fromList(list)
-      .getOrElse { throw SerializationException("Found empty list but expected NonEmptyList") }
+    return NonEmptyList.fromList(list).getOrElse {
+      throw SerializationException("Found empty list but expected NonEmptyList")
+    }
   }
 }
 
-internal class ReferencedSerializer<T>(
-  private val dataSerializer: KSerializer<T>
-) : KSerializer<Referenced<T>> {
+internal class ReferencedSerializer<T>(private val dataSerializer: KSerializer<T>) :
+  KSerializer<Referenced<T>> {
 
-  private val refDescriptor = buildClassSerialDescriptor("Reference") {
-    element<String>(RefKey)
-  }
+  private val refDescriptor = buildClassSerialDescriptor("Reference") { element<String>(RefKey) }
 
-  // TODO review SerialDescriptor. Should it describe the actual type or the arrow.endpoint.docs.openapi.json model
+  // TODO review SerialDescriptor. Should it describe the actual type or the
+  // arrow.endpoint.docs.openapi.json model
   override val descriptor: SerialDescriptor =
     buildClassSerialDescriptor("arrow.endpoint.docs.openapi.Referenced") {
       element("Ref", refDescriptor, isOptional = true)
@@ -212,8 +222,7 @@ public object ResponsesDescriptor : SerialDescriptor {
   override val elementsCount: Int = 2
   private val valueDescriptor: SerialDescriptor =
     Referenced.serializer(Response.serializer()).descriptor
-  private val keyDescriptor: SerialDescriptor =
-    StatusCodeAsIntSerializer.descriptor
+  private val keyDescriptor: SerialDescriptor = StatusCodeAsIntSerializer.descriptor
 
   override fun getElementName(index: Int): String = index.toString()
   override fun getElementIndex(name: String): Int =

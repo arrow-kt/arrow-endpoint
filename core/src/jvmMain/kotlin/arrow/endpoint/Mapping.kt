@@ -9,9 +9,10 @@ import arrow.core.nonFatalOrThrow
 /**
  * A bi-directional mapping between values of type `L` and values of type `H`.
  *
- * Low-level values of type `L` can be **decoded** to a higher-level value of type `H`. The decoding can fail;
- * this is represented by a result of type [DecodeResult.Failure]. Failures might occur due to format errors, wrong
- * arity, exceptions, or validation errors. Validators can be added through the `validate` arrow.endpoint.method.
+ * Low-level values of type `L` can be **decoded** to a higher-level value of type `H`. The decoding
+ * can fail; this is represented by a result of type [DecodeResult.Failure]. Failures might occur
+ * due to format errors, wrong arity, exceptions, or validation errors. Validators can be added
+ * through the `validate` arrow.endpoint.method.
  *
  * High-level values of type `H` can be **encoded** as a low-level value of type `L`.
  *
@@ -46,8 +47,7 @@ public interface Mapping<L, H> {
       override fun rawDecode(l: L): DecodeResult<HH> =
         this@Mapping.rawDecode(l).flatMap(codec::rawDecode)
 
-      override fun encode(h: HH): L =
-        this@Mapping.encode(codec.encode(h))
+      override fun encode(h: HH): L = this@Mapping.encode(codec.encode(h))
     }
 
   public companion object {
@@ -57,7 +57,10 @@ public interface Mapping<L, H> {
         override fun encode(h: L): L = h
       }
 
-    public fun <L, H> fromDecode(rawDecode: (L) -> DecodeResult<H>, encode: (H) -> L): Mapping<L, H> =
+    public fun <L, H> fromDecode(
+      rawDecode: (L) -> DecodeResult<H>,
+      encode: (H) -> L
+    ): Mapping<L, H> =
       object : Mapping<L, H> {
         override fun rawDecode(l: L): DecodeResult<H> = rawDecode(l)
         override fun encode(h: H): L = encode(h)
@@ -67,16 +70,21 @@ public interface Mapping<L, H> {
       fromDecode(decode.andThen { DecodeResult.Value(it) }, encode)
 
     /**
-     * A mapping which, during encoding, adds the given `prefix`.
-     * When decoding, the prefix is removed (case insensitive,if present), otherwise an error is reported.
+     * A mapping which, during encoding, adds the given `prefix`. When decoding, the prefix is
+     * removed (case insensitive,if present), otherwise an error is reported.
      */
     public fun stringPrefixCaseInsensitive(prefix: String): Mapping<String, String> {
       val prefixLength = prefix.length
       val prefixLower = prefix.lowercase()
 
       return fromDecode({ value ->
-        if (value.lowercase().startsWith(prefixLower)) DecodeResult.Value(value.substring(prefixLength))
-        else DecodeResult.Failure.Error(value, IllegalArgumentException("The given value doesn't start with $prefix"))
+        if (value.lowercase().startsWith(prefixLower))
+          DecodeResult.Value(value.substring(prefixLength))
+        else
+          DecodeResult.Failure.Error(
+            value,
+            IllegalArgumentException("The given value doesn't start with $prefix")
+          )
       }) { v -> "$prefix$v" }
     }
   }
@@ -100,14 +108,22 @@ public sealed class DecodeResult<out A> {
     public data class Mismatch(val expected: String, val actual: String) : Failure()
     public data class Error(val original: String, val error: Throwable) : Failure() {
       public companion object {
-        public data class JsonDecodeException(val errors: List<JsonError>, val underlying: Throwable) : Exception(
-          if (errors.isEmpty()) underlying.message else errors.joinToString(transform = JsonError::message),
-          underlying
-        )
+        public data class JsonDecodeException(
+          val errors: List<JsonError>,
+          val underlying: Throwable
+        ) :
+          Exception(
+            if (errors.isEmpty()) underlying.message
+            else errors.joinToString(transform = JsonError::message),
+            underlying
+          )
 
         public data class JsonError(val msg: String, val path: List<FieldName>) {
           public fun message(): String {
-            val at = if (path.isNotEmpty()) " at '${path.joinToString(separator = ".") { it.encodedName }}'" else ""
+            val at =
+              if (path.isNotEmpty())
+                " at '${path.joinToString(separator = ".") { it.encodedName }}'"
+              else ""
             return msg + at
           }
         }
@@ -119,9 +135,12 @@ public sealed class DecodeResult<out A> {
     o.map { Value(it) }.getOrElse { Failure.Missing }
 }
 
-public fun <A> Iterable<DecodeResult<A>>.sequence(): DecodeResult<List<A>> = traverseDecodeResult(::identity)
+public fun <A> Iterable<DecodeResult<A>>.sequence(): DecodeResult<List<A>> =
+  traverseDecodeResult(::identity)
 
-public inline fun <A, B> Iterable<A>.traverseDecodeResult(f: (A) -> DecodeResult<B>): DecodeResult<List<B>> {
+public inline fun <A, B> Iterable<A>.traverseDecodeResult(
+  f: (A) -> DecodeResult<B>
+): DecodeResult<List<B>> {
   val acc = mutableListOf<B>()
   forEach { a ->
     when (val res = f(a)) {

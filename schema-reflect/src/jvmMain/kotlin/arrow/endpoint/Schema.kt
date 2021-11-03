@@ -13,13 +13,12 @@ import java.time.OffsetDateTime
 import java.time.OffsetTime
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
-import java.util.UUID
 import java.util.Date
+import java.util.UUID
 import kotlin.reflect.KClass
 import kotlin.reflect.KVisibility
 
-public inline fun <reified A : Any> Schema.Companion.reflect(): Schema<A> =
-  A::class.schema()
+public inline fun <reified A : Any> Schema.Companion.reflect(): Schema<A> = A::class.schema()
 
 @OptIn(ExperimentalUnsignedTypes::class)
 @Suppress("NO_REFLECTION_IN_CLASS_PATH", "UNCHECKED_CAST")
@@ -56,13 +55,16 @@ public fun <A : Any> KClass<A>.schema(): Schema<A> =
     this == UUID::class -> Schema.string()
     isSealed -> Schema.Coproduct(objectInfo(), sealedSubclassSchemas())
     isData -> Schema.Product(objectInfo(), properties())
-    else -> (this as? KClass<Enum<*>>)?.let {
-      Schema.Enum(
-        objectInfo(),
-        // MPP reflection??
-        it.java.enumConstants?.toList()?.map { Schema.EnumValue(it.name, it.ordinal) } ?: emptyList()
-      )
-    } ?: TODO("No schema supported for $this")
+    else ->
+      (this as? KClass<Enum<*>>)?.let {
+        Schema.Enum(
+          objectInfo(),
+          // MPP reflection??
+          it.java.enumConstants?.toList()?.map { Schema.EnumValue(it.name, it.ordinal) }
+            ?: emptyList()
+        )
+      }
+        ?: TODO("No schema supported for $this")
   }
 
 @Suppress("NO_REFLECTION_IN_CLASS_PATH")
@@ -74,11 +76,13 @@ public fun KClass<*>.objectInfo(): Schema.ObjectInfo =
 
 @Suppress("NO_REFLECTION_IN_CLASS_PATH")
 public fun KClass<*>.properties(): List<Pair<FieldName, Schema<*>>> =
-  constructors.firstOrNull { it.visibility == KVisibility.PUBLIC }
-    ?.parameters.orEmpty().mapNotNull {
+  constructors
+    .firstOrNull { it.visibility == KVisibility.PUBLIC }
+    ?.parameters
+    .orEmpty()
+    .mapNotNull {
       val pName = it.name
       val cl = it.type.classifier as? KClass<*>
 
-      if (pName != null && cl != null) FieldName(pName) to cl.schema()
-      else null
+      if (pName != null && cl != null) FieldName(pName) to cl.schema() else null
     }

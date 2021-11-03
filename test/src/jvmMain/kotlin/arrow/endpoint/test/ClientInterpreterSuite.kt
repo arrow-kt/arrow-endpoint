@@ -14,7 +14,6 @@ import arrow.endpoint.test.TestEndpoint.in_byte_array_out_byte_array
 import arrow.endpoint.test.TestEndpoint.in_byte_buffer_out_byte_buffer
 import arrow.endpoint.test.TestEndpoint.in_header_out_string
 import arrow.endpoint.test.TestEndpoint.in_input_stream_out_input_stream
-import arrow.endpoint.test.TestEndpoint.out_value_form_exact_match
 import arrow.endpoint.test.TestEndpoint.in_json_out_json
 import arrow.endpoint.test.TestEndpoint.in_mapped_path_out_string
 import arrow.endpoint.test.TestEndpoint.in_mapped_path_path_out_string
@@ -30,16 +29,17 @@ import arrow.endpoint.test.TestEndpoint.in_query_out_string
 import arrow.endpoint.test.TestEndpoint.in_query_params_out_string
 import arrow.endpoint.test.TestEndpoint.in_query_query_out_string
 import arrow.endpoint.test.TestEndpoint.in_string_out_status
-import arrow.endpoint.test.TestEndpoint.out_reified_status
 import arrow.endpoint.test.TestEndpoint.in_string_out_string
 import arrow.endpoint.test.TestEndpoint.in_unit_out_json_unit
+import arrow.endpoint.test.TestEndpoint.out_reified_status
+import arrow.endpoint.test.TestEndpoint.out_value_form_exact_match
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
+import java.io.ByteArrayInputStream
+import java.nio.ByteBuffer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.mockwebserver.MockWebServer
-import java.io.ByteArrayInputStream
-import java.nio.ByteBuffer
 
 public abstract class ClientInterpreterSuite : FreeSpec() {
   private val server = MockWebServer()
@@ -55,13 +55,11 @@ public abstract class ClientInterpreterSuite : FreeSpec() {
     endpoint: Endpoint<I, E, O>,
     baseUrl: String,
     input: I
-  ): DecodeResult<Either<E, O>> =
-    requestAndStatusCode(endpoint, baseUrl, input).first
+  ): DecodeResult<Either<E, O>> = requestAndStatusCode(endpoint, baseUrl, input).first
 
   init {
     beforeSpec {
-      @Suppress("BlockingMethodInNonBlockingContext")
-      withContext(Dispatchers.IO) { server.start() }
+      @Suppress("BlockingMethodInNonBlockingContext") withContext(Dispatchers.IO) { server.start() }
       baseUrl = server.url("/").toString()
     }
     @Suppress("BlockingMethodInNonBlockingContext")
@@ -72,11 +70,12 @@ public abstract class ClientInterpreterSuite : FreeSpec() {
       input: I,
       expected: Either<E, O>,
       logic: suspend (input: I) -> Either<E, O>
-    ): Unit = endpoint.details().invoke {
-      server.dispatcher = endpoint.logic(logic).toDispatcher()
-      val result = request(endpoint, baseUrl, input).map(::normalise)
-      result shouldBe DecodeResult.Value(normalise(expected))
-    }
+    ): Unit =
+      endpoint.details().invoke {
+        server.dispatcher = endpoint.logic(logic).toDispatcher()
+        val result = request(endpoint, baseUrl, input).map(::normalise)
+        result shouldBe DecodeResult.Value(normalise(expected))
+      }
 
     fun <E, O> test(
       endpoint: Endpoint<Unit, E, O>,
@@ -89,11 +88,13 @@ public abstract class ClientInterpreterSuite : FreeSpec() {
       input: I,
       expected: Pair<Either<E, O>, StatusCode>,
       logic: suspend (input: I) -> Either<E, O>
-    ): Unit = endpoint.details().invoke {
-      server.dispatcher = endpoint.logic(logic).toDispatcher()
-      val (res, code) = requestAndStatusCode(endpoint, baseUrl, input)
-      Pair(res.map(::normalise), code) shouldBe Pair(DecodeResult.Value(normalise(expected.first)), expected.second)
-    }
+    ): Unit =
+      endpoint.details().invoke {
+        server.dispatcher = endpoint.logic(logic).toDispatcher()
+        val (res, code) = requestAndStatusCode(endpoint, baseUrl, input)
+        Pair(res.map(::normalise), code) shouldBe
+          Pair(DecodeResult.Value(normalise(expected.first)), expected.second)
+      }
 
     fun <E, O> test(
       endpoint: Endpoint<Unit, E, O>,
@@ -103,18 +104,23 @@ public abstract class ClientInterpreterSuite : FreeSpec() {
 
     test(Endpoint.input(EndpointInput.empty()), Unit, Either.Right(Unit)) { it.right() }
     test(in_query_out_string, "apple", Either.Right("apple")) { it.right() }
-    test(in_query_query_out_string, Pair("apple", 10), Either.Right("(apple, 10)")) { it.toString().right() }
+    test(in_query_query_out_string, Pair("apple", 10), Either.Right("(apple, 10)")) {
+      it.toString().right()
+    }
     test(in_header_out_string, "Admin", Either.Right("Admin")) { it.right() }
-    test(in_path_path_out_string, Pair("apple", 10), Either.Right("(apple, 10)")) { it.toString().right() }
+    test(in_path_path_out_string, Pair("apple", 10), Either.Right("(apple, 10)")) {
+      it.toString().right()
+    }
     test(in_string_out_string, "delicious", Either.Right("delicious")) { it.right() }
-    test(in_mapped_query_out_string, "apple".toList(), Either.Right("apple")) { it.joinToString("").right() }
+    test(in_mapped_query_out_string, "apple".toList(), Either.Right("apple")) {
+      it.joinToString("").right()
+    }
     test(in_mapped_path_out_string, Fruit("kiwi"), Either.Right("kiwi")) { it.name.right() }
 
-    test(
-      in_mapped_path_path_out_string,
-      FruitAmount("apple", 10),
-      Either.Right("(apple, 10)")
-    ) { (n, i) -> "($n, $i)".right() }
+    test(in_mapped_path_path_out_string, FruitAmount("apple", 10), Either.Right("(apple, 10)")) {
+      (n, i) ->
+      "($n, $i)".right()
+    }
 
     test(
       in_query_mapped_path_path_out_string,
@@ -122,16 +128,17 @@ public abstract class ClientInterpreterSuite : FreeSpec() {
       Either.Right("(apple, 10, red)")
     ) { (fruitAmount, color) -> "(${fruitAmount.fruit}, ${fruitAmount.amount}, $color)".right() }
 
-    test(in_query_out_mapped_string, "apple", Either.Right("apple".toList())) { it.toList().right() }
-
-    test(in_query_out_mapped_string_header, "apple", Either.Right(FruitAmount("apple", 5))) {
-      FruitAmount(
-        it,
-        5
-      ).right()
+    test(in_query_out_mapped_string, "apple", Either.Right("apple".toList())) {
+      it.toList().right()
     }
 
-    test(in_json_out_json, FruitAmount("orange", 11), Either.Right(FruitAmount("orange", 11))) { it.right() }
+    test(in_query_out_mapped_string_header, "apple", Either.Right(FruitAmount("apple", 5))) {
+      FruitAmount(it, 5).right()
+    }
+
+    test(in_json_out_json, FruitAmount("orange", 11), Either.Right(FruitAmount("orange", 11))) {
+      it.right()
+    }
 
     test(
       in_byte_array_out_byte_array,
@@ -156,8 +163,10 @@ public abstract class ClientInterpreterSuite : FreeSpec() {
       QueryParams(mapOf("name" to "apple", "weight" to "42", "kind" to "very good")),
       Either.Right("kind=very good&name=apple&weight=42")
     ) {
-      it.all().sortedBy(Pair<String, List<String>>::first)
-        .joinToString("&") { p -> "${p.first}=${p.second.firstOrNull() ?: ""}" }.right()
+      it.all()
+        .sortedBy(Pair<String, List<String>>::first)
+        .joinToString("&") { p -> "${p.first}=${p.second.firstOrNull() ?: ""}" }
+        .right()
     }
 
     test(
@@ -197,10 +206,9 @@ public abstract class ClientInterpreterSuite : FreeSpec() {
       Pair("fruit: apple".right().right(), StatusCode.Ok)
     ) { "fruit: apple".right().right() }
 
-    test(
-      out_reified_status.name("status 2/2"),
-      Pair(29.left().right(), StatusCode.Accepted)
-    ) { 29.left().right() }
+    test(out_reified_status.name("status 2/2"), Pair(29.left().right(), StatusCode.Accepted)) {
+      29.left().right()
+    }
 
     test(
       out_value_form_exact_match.name("first exact status of 2"),

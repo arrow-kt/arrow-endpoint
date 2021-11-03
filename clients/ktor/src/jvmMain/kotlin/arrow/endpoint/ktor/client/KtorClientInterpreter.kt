@@ -63,43 +63,46 @@ public suspend fun <I, E, O> HttpClient.execute(
   return Triple(request.build(), response, result)
 }
 
-public fun <I, E, O> Endpoint<I, E, O>.toRequestBuilder(baseUrl: String, input: I): HttpRequestBuilder =
+public fun <I, E, O> Endpoint<I, E, O>.toRequestBuilder(
+  baseUrl: String,
+  input: I
+): HttpRequestBuilder =
   HttpRequestBuilder().apply {
     val info = this@toRequestBuilder.input.requestInfo(input, baseUrl)
     method = info.method.toMethod()
     url.takeFrom(info.baseUrlWithPath)
-    info.cookies.forEach { (name, value) ->
-      cookie(name, value)
-    }
+    info.cookies.forEach { (name, value) -> cookie(name, value) }
     info.headers.forEach { (name, value) ->
-      @Suppress("EXPERIMENTAL_API_USAGE_FUTURE_ERROR")
-      headers.append(name, value)
+      @Suppress("EXPERIMENTAL_API_USAGE_FUTURE_ERROR") headers.append(name, value)
     }
     info.queryParams.all().forEach { (name, params) ->
-      @Suppress("EXPERIMENTAL_API_USAGE_FUTURE_ERROR")
-      url.parameters.appendAll(name, params)
+      @Suppress("EXPERIMENTAL_API_USAGE_FUTURE_ERROR") url.parameters.appendAll(name, params)
     }
-    body = when (val body = info.body) {
-      is Body.ByteArray -> ByteArrayContent(body.byteArray/* contentType,  statusCode*/)
-      is Body.ByteBuffer -> ByteArrayContent(body.byteBuffer.array())
-      is Body.InputStream -> ByteArrayContent(body.inputStream.readBytes())
+    body =
+      when (val body = info.body) {
+        is Body.ByteArray -> ByteArrayContent(body.byteArray /* contentType,  statusCode*/)
+        is Body.ByteBuffer -> ByteArrayContent(body.byteBuffer.array())
+        is Body.InputStream -> ByteArrayContent(body.inputStream.readBytes())
 
-      // TODO fix ContentType
-      is Body.String -> TextContent(body.string, ContentType.Text.Plain)
-      null -> EmptyContent
-    }
+        // TODO fix ContentType
+        is Body.String -> TextContent(body.string, ContentType.Text.Plain)
+        null -> EmptyContent
+      }
   }
 
 @Suppress("UNCHECKED_CAST")
-public suspend fun <I, E, O> Endpoint<I, E, O>.parseResponse(response: HttpResponse): DecodeResult<Either<E, O>> {
+public suspend fun <I, E, O> Endpoint<I, E, O>.parseResponse(
+  response: HttpResponse
+): DecodeResult<Either<E, O>> {
   val code = StatusCode(response.status.value)
   val output = if (code.isSuccess()) output else errorOutput
   val headers = response.headers
   val params = output.outputParams(response, headers, code)
-  val result = params.map {
-    val v = it.asAny
-    if (code.isSuccess()) Either.Right(v as O) else Either.Left(v as E)
-  }
+  val result =
+    params.map {
+      val v = it.asAny
+      if (code.isSuccess()) Either.Right(v as O) else Either.Left(v as E)
+    }
   return when (result) {
     is DecodeResult.Failure.Error -> {
       DecodeResult.Failure.Error(
@@ -157,10 +160,16 @@ private suspend fun EndpointOutput<*>.outputParams(
         is EndpointIO.Header -> codec.decode(headers.getAll(name).orEmpty())
         is EndpointOutput.FixedStatusCode -> codec.decode(Unit)
         is EndpointOutput.StatusCode -> codec.decode(code)
-        is EndpointOutput.OneOf<*, *> -> mappings.firstOrNull { it.statusCode == null || it.statusCode == code }
-          ?.let { mapping -> mapping.output.outputParams(response, headers, code).flatMap { p -> (codec as Mapping<Any?, Any?>).decode(p.asAny) } }
-          ?: DecodeResult.Failure.Error(response.status.description, IllegalArgumentException("Cannot find mapping for status code $code in outputs $this"))
-
+        is EndpointOutput.OneOf<*, *> ->
+          mappings.firstOrNull { it.statusCode == null || it.statusCode == code }?.let { mapping ->
+            mapping.output.outputParams(response, headers, code).flatMap { p ->
+              (codec as Mapping<Any?, Any?>).decode(p.asAny)
+            }
+          }
+            ?: DecodeResult.Failure.Error(
+              response.status.description,
+              IllegalArgumentException("Cannot find mapping for status code $code in outputs $this")
+            )
         is EndpointOutput.MappedPair<*, *, *, *> ->
           output.outputParams(response, headers, code).flatMap { p ->
             (mapping as Mapping<Any?, Any?>).decode(p.asAny)
@@ -171,17 +180,12 @@ private suspend fun EndpointOutput<*>.outputParams(
           }
       }.map(Params::ParamsAsAny)
     is EndpointIO.Pair<*, *, *> -> handleOutputPair(first, second, combine, response, headers, code)
-    is EndpointOutput.Pair<*, *, *> -> handleOutputPair(
-      first,
-      second,
-      combine,
-      response,
-      headers,
-      code
-    )
-    is EndpointOutput.Void -> DecodeResult.Failure.Error(
-      "",
-      IllegalArgumentException("Cannot convert a void output to a value!")
-    )
+    is EndpointOutput.Pair<*, *, *> ->
+      handleOutputPair(first, second, combine, response, headers, code)
+    is EndpointOutput.Void ->
+      DecodeResult.Failure.Error(
+        "",
+        IllegalArgumentException("Cannot convert a void output to a value!")
+      )
   }
 }

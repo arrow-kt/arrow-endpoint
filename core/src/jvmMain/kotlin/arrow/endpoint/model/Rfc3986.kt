@@ -20,33 +20,35 @@ internal object Rfc3986 {
 
   val SegmentWithBrackets: Set<Char> = Query + setOf('[', ']')
 
-  /** @param spaceAsPlus In the query, space is encoded as a `+`. In other
-   * contexts, it should be %-encoded as `%20`.
-   * @param encodePlus Should `+` (which is the encoded form of space
-   * in the query) be %-encoded.
+  /**
+   * @param spaceAsPlus In the query, space is encoded as a `+`. In other contexts, it should be
+   * %-encoded as `%20`.
+   * @param encodePlus Should `+` (which is the encoded form of space in the query) be %-encoded.
    */
   fun String.encode(
     allowedCharacters: Set<Char>,
     spaceAsPlus: Boolean = false,
     encodePlus: Boolean = false
-  ): String =
-    buildString {
-      // based on https://gist.github.com/teigen/5865923
-      for (b in toByteArray(Charsets.UTF_8)) {
-        val c = (b.toInt() and 0xff).toChar()
-        when {
-          c == '+' && encodePlus -> append("%2B")
-          allowedCharacters.contains(c) -> append(c)
-          c == ' ' && spaceAsPlus -> append('+')
-          else -> {
-            append("%")
-            append(b.format())
-          }
+  ): String = buildString {
+    // based on https://gist.github.com/teigen/5865923
+    for (b in toByteArray(Charsets.UTF_8)) {
+      val c = (b.toInt() and 0xff).toChar()
+      when {
+        c == '+' && encodePlus -> append("%2B")
+        allowedCharacters.contains(c) -> append(c)
+        c == ' ' && spaceAsPlus -> append('+')
+        else -> {
+          append("%")
+          append(b.format())
         }
       }
     }
+  }
 
-  fun String.decode(plusAsSpace: Boolean = false, enc: Charset = Charsets.UTF_8): Either<UriError, String> {
+  fun String.decode(
+    plusAsSpace: Boolean = false,
+    enc: Charset = Charsets.UTF_8
+  ): Either<UriError, String> {
     // Copied from URLDecoder.decode with additional + handling (first case)
     var needToChange = false
     val numChars = length
@@ -77,14 +79,19 @@ internal object Rfc3986 {
           if (bytes == null) bytes = ByteArray((numChars - i) / 3)
           var pos = 0
           while (((i + 2) < numChars) && (c == '%')) {
-            val v = try {
-              Integer.parseInt(substring(i + 1, i + 3), 16)
-            } catch (e: NumberFormatException) {
-              return UriError.IllegalArgument("URLDecoder: Illegal hex characters in escape (%) pattern - " + e.message)
-                .left()
-            }
+            val v =
+              try {
+                Integer.parseInt(substring(i + 1, i + 3), 16)
+              } catch (e: NumberFormatException) {
+                return UriError.IllegalArgument(
+                    "URLDecoder: Illegal hex characters in escape (%) pattern - " + e.message
+                  )
+                  .left()
+              }
             if (v < 0)
-              return UriError.IllegalArgument("URLDecoder: Illegal hex characters in escape (%) pattern - negative value")
+              return UriError.IllegalArgument(
+                  "URLDecoder: Illegal hex characters in escape (%) pattern - negative value"
+                )
                 .left()
             bytes[pos] = v.toByte()
             pos += 1
@@ -94,7 +101,8 @@ internal object Rfc3986 {
           // A trailing, incomplete byte encoding such as
           // "%x" will cause an exception to be thrown
           if ((i < numChars) && (c == '%'))
-            return UriError.IllegalArgument("URLDecoder: Incomplete trailing escape (%) pattern").left()
+            return UriError.IllegalArgument("URLDecoder: Incomplete trailing escape (%) pattern")
+              .left()
           sb.append(String(bytes, 0, pos, enc))
           needToChange = true
         }

@@ -2,8 +2,8 @@ kotlin {
   sourceSets {
     jvmMain {
       dependencies {
-        implementation(projects.core)
-        implementation(libs.ktor.client.core)
+        api(projects.core)
+        api(libs.ktor.client.core)
       }
     }
     jvmTest {

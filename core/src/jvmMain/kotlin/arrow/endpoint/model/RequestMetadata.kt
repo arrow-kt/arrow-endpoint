@@ -1,12 +1,13 @@
 package arrow.endpoint.model
 
-import java.nio.charset.Charset
 import java.io.InputStream as JInputStream
 import java.nio.ByteBuffer as JByteBuffer
+import java.nio.charset.Charset
 import kotlin.ByteArray as KByteArray
 import kotlin.String as KString
 
 public data class Address(val hostname: KString, val port: Int)
+
 public data class ConnectionInfo(val local: Address?, val remote: Address?, val secure: Boolean?)
 
 public data class ServerRequest(
@@ -16,8 +17,9 @@ public data class ServerRequest(
   public val uri: Uri,
   public val headers: List<Header>,
   /**
-   * Can differ from `uri.path()`, if the endpoint is deployed in a context.
-   * If the routes are mounted within a context (e.g. using a router), we have to match against what comes after the context.
+   * Can differ from `uri.path()`, if the endpoint is deployed in a context. If the routes are
+   * mounted within a context (e.g. using a router), we have to match against what comes after the
+   * context.
    */
   public val pathSegments: List<KString>,
   public val queryParameters: QueryParams
@@ -44,7 +46,10 @@ public sealed interface Body {
     override fun toByteArray(): KByteArray = string.toByteArray(charset)
   }
 
-  public data class ByteArray(public val byteArray: KByteArray, public override val format: CodecFormat) : Body {
+  public data class ByteArray(
+    public val byteArray: KByteArray,
+    public override val format: CodecFormat
+  ) : Body {
     override fun toByteArray(): KByteArray = byteArray
 
     override fun equals(other: Any?): Boolean {
@@ -69,8 +74,10 @@ public sealed interface Body {
     }
   }
 
-  public data class ByteBuffer(public val byteBuffer: JByteBuffer, public override val format: CodecFormat) :
-    Body {
+  public data class ByteBuffer(
+    public val byteBuffer: JByteBuffer,
+    public override val format: CodecFormat
+  ) : Body {
     override fun toByteArray(): KByteArray {
       val array = KByteArray(byteBuffer.remaining())
       byteBuffer.get(array)
@@ -78,16 +85,14 @@ public sealed interface Body {
     }
   }
 
-  public data class InputStream(public val inputStream: JInputStream, public override val format: CodecFormat) :
-    Body {
+  public data class InputStream(
+    public val inputStream: JInputStream,
+    public override val format: CodecFormat
+  ) : Body {
     override fun toByteArray(): KByteArray = inputStream.readBytes()
   }
 }
 
-public data class ServerResponse(
-  val code: StatusCode,
-  val headers: List<Header>,
-  val body: Body?
-) {
+public data class ServerResponse(val code: StatusCode, val headers: List<Header>, val body: Body?) {
   override fun toString(): KString = "ServerResponse($code, ${headers.toStringSafe()}, $body)"
 }

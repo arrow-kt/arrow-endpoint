@@ -43,16 +43,11 @@ import io.ktor.utils.io.jvm.javaio.toInputStream
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 
-public fun <I, E, O> Application.install(ses: ServerEndpoint<I, E, O>): Unit =
-  install(listOf(ses))
+public fun <I, E, O> Application.install(ses: ServerEndpoint<I, E, O>): Unit = install(listOf(ses))
 
 public fun Application.install(ses: List<ServerEndpoint<*, *, *>>): Unit =
   intercept(ApplicationCallPipeline.ApplicationPhase.Call) {
-    val interpreter = ServerInterpreter(
-      call.toServerRequest(),
-      KtorRequestBody(call),
-      emptyList()
-    )
+    val interpreter = ServerInterpreter(call.toServerRequest(), KtorRequestBody(call), emptyList())
 
     interpreter.invoke(ses)?.let {
       it.headers.forEach { (name, value) ->
@@ -69,36 +64,28 @@ public fun Application.install(ses: List<ServerEndpoint<*, *, *>>): Unit =
 
 public fun ServerResponse.outgoingContent(): OutgoingContent? =
   when (val body = body) {
-    is Body.ByteArray -> ByteArrayContent(
-      body.toByteArray(),
-      body.contentType(),
-      HttpStatusCode.fromValue(code.code)
-    )
-    is Body.ByteBuffer -> ByteArrayContent(
-      body.toByteArray(),
-      body.contentType(),
-      HttpStatusCode.fromValue(code.code)
-    )
-    is Body.String -> TextContent(
-      body.string,
-      body.contentType(),
-      HttpStatusCode.fromValue(code.code)
-    )
-    is Body.InputStream -> OutputStreamContent(
-      {
-        body.inputStream.copyTo(this)
-      },
-      body.contentType(),
-      HttpStatusCode.fromValue(code.code)
-    )
+    is Body.ByteArray ->
+      ByteArrayContent(body.toByteArray(), body.contentType(), HttpStatusCode.fromValue(code.code))
+    is Body.ByteBuffer ->
+      ByteArrayContent(body.toByteArray(), body.contentType(), HttpStatusCode.fromValue(code.code))
+    is Body.String ->
+      TextContent(body.string, body.contentType(), HttpStatusCode.fromValue(code.code))
+    is Body.InputStream ->
+      OutputStreamContent(
+        { body.inputStream.copyTo(this) },
+        body.contentType(),
+        HttpStatusCode.fromValue(code.code)
+      )
     else -> null
   }
 
 private fun Body.contentType(): ContentType =
   when (format) {
     is CodecFormat.Json -> ContentType.Application.Json
-    is CodecFormat.TextPlain -> ContentType.Text.Plain.withCharset(charsetOrNull() ?: StandardCharsets.UTF_8)
-    is CodecFormat.TextHtml -> ContentType.Text.Html.withCharset(charsetOrNull() ?: StandardCharsets.UTF_8)
+    is CodecFormat.TextPlain ->
+      ContentType.Text.Plain.withCharset(charsetOrNull() ?: StandardCharsets.UTF_8)
+    is CodecFormat.TextHtml ->
+      ContentType.Text.Html.withCharset(charsetOrNull() ?: StandardCharsets.UTF_8)
     is CodecFormat.OctetStream -> ContentType.Application.OctetStream
     is CodecFormat.Zip -> ContentType.Application.Zip
     is CodecFormat.XWwwFormUrlencoded -> ContentType.Application.FormUrlEncoded
@@ -108,15 +95,16 @@ private fun Body.contentType(): ContentType =
   }
 
 public fun ApplicationCall.toServerRequest(): ServerRequest {
-  val uri = Uri(
-    request.origin.scheme,
-    Authority(null, HostSegment(request.host()), request.port()),
-    PathSegments.absoluteOrEmptyS(request.path().removePrefix("/").split("/")),
-    request.queryParameters.flattenEntries().map { (name, values) ->
-      QuerySegment.KeyValue(name, values)
-    },
-    null
-  )
+  val uri =
+    Uri(
+      request.origin.scheme,
+      Authority(null, HostSegment(request.host()), request.port()),
+      PathSegments.absoluteOrEmptyS(request.path().removePrefix("/").split("/")),
+      request.queryParameters.flattenEntries().map { (name, values) ->
+        QuerySegment.KeyValue(name, values)
+      },
+      null
+    )
   return ServerRequest(
     protocol = request.httpVersion,
     connectionInfo = ConnectionInfo(request.origin.toAddress(), null, null),
@@ -139,6 +127,7 @@ internal class KtorRequestBody(private val ctx: ApplicationCall) : RequestBody {
       is EndpointIO.ByteBufferBody -> ByteBuffer.wrap(body.toByteArray())
       is EndpointIO.InputStreamBody -> body.toInputStream()
       is EndpointIO.StringBody -> body.toByteArray().toString(bodyType.charset)
-    } as R
+    } as
+      R
   }
 }

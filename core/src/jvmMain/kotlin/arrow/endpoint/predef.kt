@@ -10,7 +10,11 @@ internal object UrlencodedData {
     s.split("&").mapNotNull { kv ->
       val res = kv.split(Regex("="), 2)
       when (res.size) {
-        2 -> Pair(URLDecoder.decode(res[0], charset.toString()), URLDecoder.decode(res[1], charset.toString()))
+        2 ->
+          Pair(
+            URLDecoder.decode(res[0], charset.toString()),
+            URLDecoder.decode(res[1], charset.toString())
+          )
         else -> null
       }
     }
@@ -23,13 +27,13 @@ internal object UrlencodedData {
 
 internal fun <A, B> Set<A>.map(transform: (A) -> B): Set<B> {
   val destination = mutableSetOf<B>()
-  for (item in this)
-    destination.add(transform(item))
+  for (item in this) destination.add(transform(item))
   return destination
 }
 
-internal fun <E> Iterable<E>.updated(index: Int, elem: E): List<E> =
-  mapIndexed { i, existing -> if (i == index) elem else existing }
+internal fun <E> Iterable<E>.updated(index: Int, elem: E): List<E> = mapIndexed { i, existing ->
+  if (i == index) elem else existing
+}
 
 internal fun basicInputSortIndex(i: EndpointInput.Basic<*, *, *>): Int =
   when (i) {
@@ -41,9 +45,9 @@ internal fun basicInputSortIndex(i: EndpointInput.Basic<*, *, *>): Int =
     is EndpointInput.QueryParams<*> -> 2
     is EndpointInput.Cookie<*> -> 3
     is EndpointIO.Header<*> -> 3
-//  is EndpointIO.Headers<*> -> 3
-//  is EndpointIO.FixedHeader<*> -> 3
-//  is EndpointInput.ExtractFromRequest<*> -> 4
+    //  is EndpointIO.Headers<*> -> 3
+    //  is EndpointIO.FixedHeader<*> -> 3
+    //  is EndpointInput.ExtractFromRequest<*> -> 4
     is EndpointIO.Body<*, *> -> 6
     is EndpointIO.Empty<*> -> 7
   }

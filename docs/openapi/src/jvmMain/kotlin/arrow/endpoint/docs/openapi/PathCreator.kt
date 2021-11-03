@@ -9,7 +9,7 @@ import arrow.endpoint.model.Method
 
 internal class PathCreator(
   private val schemas: Map<Schema.ObjectInfo, String>,
-//  securitySchemes: SecuritySchemes,
+  //  securitySchemes: SecuritySchemes,
   private val options: OpenAPIDocsOptions
 ) {
 
@@ -21,25 +21,30 @@ internal class PathCreator(
     val defaultId = options.operationIdGenerator(pathComponents, method)
 
     val operation = endpointToOperation(defaultId, e, inputs)
-    val pathItem = PathItem(
-      summary = null,
-      description = null,
-      get = if (method == Method.GET) operation else null,
-      put = if (method == Method.PUT) operation else null,
-      post = if (method == Method.POST) operation else null,
-      delete = if (method == Method.DELETE) operation else null,
-      options = if (method == Method.OPTIONS) operation else null,
-      head = if (method == Method.HEAD) operation else null,
-      patch = if (method == Method.PATCH) operation else null,
-      trace = if (method == Method.TRACE) operation else null,
-      servers = emptyList(),
-      parameters = emptyList()
-    )
+    val pathItem =
+      PathItem(
+        summary = null,
+        description = null,
+        get = if (method == Method.GET) operation else null,
+        put = if (method == Method.PUT) operation else null,
+        post = if (method == Method.POST) operation else null,
+        delete = if (method == Method.DELETE) operation else null,
+        options = if (method == Method.OPTIONS) operation else null,
+        head = if (method == Method.HEAD) operation else null,
+        patch = if (method == Method.PATCH) operation else null,
+        trace = if (method == Method.TRACE) operation else null,
+        servers = emptyList(),
+        parameters = emptyList()
+      )
 
     return Pair(e.renderPath(renderQueryParam = null, includeAuth = false), pathItem)
   }
 
-  private fun endpointToOperation(defaultId: String, e: Endpoint<*, *, *>, inputs: List<EndpointInput.Basic<*, *, *>>): Operation {
+  private fun endpointToOperation(
+    defaultId: String,
+    e: Endpoint<*, *, *>,
+    inputs: List<EndpointInput.Basic<*, *, *>>
+  ): Operation {
     val parameters: List<Parameter> = operationParameters(inputs)
     val body: List<Referenced<RequestBody>> = operationInputBody(inputs)
     val responses = e.toOperationResponses(schemas)
@@ -59,9 +64,15 @@ internal class PathCreator(
   }
 
   private fun EndpointIO.Body<*, *>.toRequestBody(): RequestBody =
-    RequestBody(info.description, codec.toMediaTypeMap(schemas, info.examples), codec.schema().isNotOptional())
+    RequestBody(
+      info.description,
+      codec.toMediaTypeMap(schemas, info.examples),
+      codec.schema().isNotOptional()
+    )
 
-  private fun operationInputBody(inputs: List<EndpointInput.Basic<*, *, *>>): List<Referenced<RequestBody>> =
+  private fun operationInputBody(
+    inputs: List<EndpointInput.Basic<*, *, *>>
+  ): List<Referenced<RequestBody>> =
     inputs.mapNotNull {
       when (it) {
         is EndpointIO.Body<*, *> -> Referenced.Other(it.toRequestBody())
@@ -76,7 +87,7 @@ internal class PathCreator(
         is EndpointInput.PathCapture -> pathCaptureToParameter(it)
         is EndpointIO.Header -> headerToParameter(it)
         is EndpointInput.Cookie -> cookieToParameter(it)
-//        is EndpointIO . FixedHeader [_]    => fixedHeaderToParameter(f)
+        //        is EndpointIO . FixedHeader [_]    => fixedHeaderToParameter(f)
         else -> null
       }
     }
@@ -94,17 +105,19 @@ internal class PathCreator(
     query.toParameter(schemas.referenceOr(query.codec))
 
   private fun namedPathComponents(inputs: List<EndpointInput.Basic<*, *, *>>): List<String> =
-    inputs.mapNotNull {
-      when (it) {
-        is EndpointInput.PathCapture -> Either.Left(it.name)
-        is EndpointInput.FixedPath -> Either.Right(it.s)
-        else -> null
+    inputs
+      .mapNotNull {
+        when (it) {
+          is EndpointInput.PathCapture -> Either.Left(it.name)
+          is EndpointInput.FixedPath -> Either.Right(it.s)
+          else -> null
+        }
       }
-    }.fold(emptyList()) { acc, component ->
-      when (component) {
-        is Either.Left ->
-          component.value?.let { acc + it } ?: throw IllegalStateException("All path captures should be named")
-        is Either.Right -> acc + component.value
+      .fold(emptyList()) { acc, component ->
+        when (component) {
+          is Either.Left -> component.value?.let { acc + it }
+              ?: throw IllegalStateException("All path captures should be named")
+          is Either.Right -> acc + component.value
+        }
       }
-    }
 }
