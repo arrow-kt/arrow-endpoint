@@ -23,7 +23,7 @@ tasks {
       setEvents(listOf("passed", "skipped", "failed", "standardOut", "standardError"))
     }
   }
-  withType<KotlinCompile>() {
+  withType<KotlinCompile> {
     kotlinOptions {
       freeCompilerArgs = freeCompilerArgs + listOf("-Xskip-runtime-version-check")
       jvmTarget = "1.8"
@@ -42,12 +42,5 @@ allprojects {
 
   repositories {
     mavenCentral()
-  }
-
-  tasks.withType<KotlinCompile> {
-    kotlinOptions {
-      jvmTarget = "1.8"
-      freeCompilerArgs = listOf("-Xjsr305=strict")
-    }
   }
 }
