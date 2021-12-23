@@ -1,13 +1,13 @@
 [versions]
 kotlin = "1.6.10"
 arrow = "1.0.1"
-arrowGradleConfig = "0.5.1"
-coroutines = "1.6.0-RC3"
+arrowGradleConfig = "0.6.0"
+coroutines = "1.6.0"
 kotlinxSerialization = "1.6.10"
 dokka = "1.6.0"
 kotlinxSerializationJson = "1.3.1"
 ktor = "1.6.7"
-logbackClassic = "1.2.7"
+logbackClassic = "1.2.10"
 spring = "2.6.2"
 reactorKotlinExtensions = "1.1.5"
 undertow = "2.2.14.Final"
@@ -15,9 +15,9 @@ kotest = "5.0.3"
 kotestGradle = "5.0.3"
 graphQL = "16.2"
 kotlinGraphQL = "4.0.0-alpha.17"
-http4k = "4.16.3.0"
-nettyTransport = "4.1.70.Final"
-http3 = "4.9.2"
+http4k = "4.17.5.0"
+nettyTransport = "4.1.72.Final"
+http3 = "4.9.3"
 githooks = "0.0.2"
 
 [libraries]
@@ -63,11 +63,12 @@ kotest-runnerJUnit5 = { module = "io.kotest:kotest-runner-junit5", version.ref =
 
 [plugins]
 arrowGradleConfig-formatter = { id = "io.arrow-kt.arrow-gradle-config-formatter", version.ref = "arrowGradleConfig" }
-arrowGradleConfig-multiplatform = { id = "io.arrow-kt.arrow-gradle-config-multiplatform", version.ref = "arrowGradleConfig" }
+arrowGradleConfig-kotlin = { id = "io.arrow-kt.arrow-gradle-config-kotlin", version.ref = "arrowGradleConfig" }
 arrowGradleConfig-nexus = { id = "io.arrow-kt.arrow-gradle-config-nexus", version.ref = "arrowGradleConfig" }
-arrowGradleConfig-publishMultiplatform = { id = "io.arrow-kt.arrow-gradle-config-publish-multiplatform", version.ref = "arrowGradleConfig" }
+arrowGradleConfig-publish = { id = "io.arrow-kt.arrow-gradle-config-publish", version.ref = "arrowGradleConfig" }
 kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref ="kotlinxSerialization" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 kotest-multiplatform = { id = "io.kotest.multiplatform", version.ref = "kotestGradle" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 githooks = { id = "com.github.jakemarsden.git-hooks", version.ref = "githooks" }

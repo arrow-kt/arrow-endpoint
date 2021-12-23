@@ -1,12 +1,18 @@
+@Suppress("DSL_SCOPE_VIOLATION")
+plugins {
+  id(libs.plugins.kotlin.jvm.get().pluginId)
+  alias(libs.plugins.arrowGradleConfig.kotlin)
+  alias(libs.plugins.arrowGradleConfig.publish)
+}
+
 apply(plugin = "kotlinx-serialization")
 
-kotlin {
-  sourceSets {
-    commonMain {
-      dependencies {
-        implementation(projects.core)
-        implementation(libs.kotlinx.serialization.json)
-      }
-    }
-  }
+dependencies {
+  api(projects.core)
+  implementation(libs.kotlinx.serialization.json)
+
+  testImplementation(rootProject.libs.coroutines.core)
+  testImplementation(rootProject.libs.kotest.assertionsCore)
+  testImplementation(rootProject.libs.kotest.property)
+  testImplementation(rootProject.libs.kotest.runnerJUnit5)
 }

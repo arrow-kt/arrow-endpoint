@@ -1,14 +1,13 @@
-import org.jetbrains.kotlin.ir.backend.js.compile
-
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-  kotlin("jvm")
+  id(libs.plugins.kotlin.jvm.get().pluginId)
   application
 }
 
 apply(plugin = "kotlinx-serialization")
 
 dependencies {
-  implementation(projects.core)
+  api(projects.core)
   implementation(projects.servers.ktorServer)
   implementation(projects.docs.openapiDocs)
   implementation(libs.ktor.server.core)
