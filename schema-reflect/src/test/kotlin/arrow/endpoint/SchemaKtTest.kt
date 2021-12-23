@@ -50,7 +50,7 @@ class SchemaKtTest : StringSpec({
   }
 
   "enum derivation" {
-    Schema.reflect<Test>() shouldBe Schema.enum()
+    Schema.reflect<Test>() shouldBe Schema.enum<Test>()
   }
 
   "public data class derivation" {
