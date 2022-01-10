@@ -1,18 +1,18 @@
-kotlin {
-  sourceSets {
-    jvmMain {
-      dependencies {
-        compileOnly(project(Libs.core))
-        implementation(Libs.http4kCore)
-      }
-    }
+@Suppress("DSL_SCOPE_VIOLATION")
+plugins {
+  id(libs.plugins.kotlin.jvm.get().pluginId)
+  alias(libs.plugins.arrowGradleConfig.kotlin)
+  alias(libs.plugins.arrowGradleConfig.publish)
+}
 
-    jvmTest {
-      dependencies {
-        implementation(project(Libs.core))
-        implementation(project(Libs.test))
-        implementation(Libs.http4kApache)
-      }
-    }
-  }
+dependencies {
+  api(projects.core)
+  api(libs.http4k.core)
+
+  testImplementation(projects.test)
+  testImplementation(libs.http4k.client.apache)
+  testImplementation(libs.coroutines.core)
+  testImplementation(libs.kotest.assertionsCore)
+  testImplementation(libs.kotest.property)
+  testImplementation(libs.kotest.runnerJUnit5)
 }

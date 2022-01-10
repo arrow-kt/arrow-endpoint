@@ -1,19 +1,21 @@
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-  id(Plugins.kotlinSerialization)
-  kotlin("jvm")
+  id(libs.plugins.kotlin.jvm.get().pluginId)
   application
 }
 
+apply(plugin = "kotlinx-serialization")
+
 dependencies {
-  implementation(project(Libs.core))
-  implementation(project(Libs.ktorServer))
-  implementation(project(Libs.openApiDocs))
-  implementation(Libs.kotlinStdlib)
-  implementation(Libs.arrowCore)
-  implementation(Libs.ktorServerCore)
-  implementation(Libs.ktorServerNetty)
-  implementation(Libs.logbackClassic)
-  implementation(Libs.kotlinxSerializationJson)
+  api(projects.core)
+  implementation(projects.servers.ktorServer)
+  implementation(projects.docs.openapiDocs)
+  implementation(libs.ktor.server.core)
+  implementation(libs.ktor.server.netty)
+  implementation(libs.spring.boot.starter.webflux)
+  implementation(libs.logback.classic)
+  implementation(libs.kotlinx.serialization.json)
+  implementation(project(":servers:spring-web-server"))
 }
 
 application {

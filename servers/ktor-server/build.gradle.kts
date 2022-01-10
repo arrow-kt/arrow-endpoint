@@ -1,21 +1,20 @@
-kotlin {
-  sourceSets {
-    jvmMain {
-      dependencies {
-        compileOnly(project(Libs.core))
-        implementation(Libs.ktorServerCore)
-        implementation(Libs.nettyTransportNativeKqueue)
-      }
-    }
+@Suppress("DSL_SCOPE_VIOLATION")
+plugins {
+  id(libs.plugins.kotlin.jvm.get().pluginId)
+  alias(libs.plugins.arrowGradleConfig.kotlin)
+  alias(libs.plugins.arrowGradleConfig.publish)
+}
 
-    jvmTest {
-      dependencies {
-        implementation(project(Libs.core))
-        implementation(project(Libs.test))
-        implementation(project(Libs.ktorClient))
-        implementation(Libs.ktorTest)
-        implementation(Libs.ktorServerNetty)
-      }
-    }
-  }
+dependencies {
+  api(projects.core)
+  api(libs.ktor.server.core)
+
+  testImplementation(projects.test)
+  testImplementation(projects.clients.ktorClient)
+  testImplementation(libs.ktor.test)
+  testImplementation(libs.ktor.server.netty)
+  testImplementation(libs.coroutines.core)
+  testImplementation(libs.kotest.assertionsCore)
+  testImplementation(libs.kotest.property)
+  testImplementation(libs.kotest.runnerJUnit5)
 }

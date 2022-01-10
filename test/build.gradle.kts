@@ -1,22 +1,20 @@
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-  id(Plugins.kotlinSerialization)
+  id(libs.plugins.kotlin.jvm.get().pluginId)
 }
 
-kotlin {
-  sourceSets {
-    jvmMain {
-      dependencies {
-        compileOnly(project(Libs.core))
-        implementation(project(Libs.htt4kClient))
-        implementation(project(Libs.springClientWeb))
-        implementation(project(Libs.springClientWebFlux))
-        implementation(Libs.kotlinxSerializationJson)
-        implementation(Libs.http4kApache)
-        api(Libs.kotestRunner)
-        api(Libs.kotestAssertions)
-        api(Libs.kotestProperty)
-        implementation(Libs.mockwebserver)
-      }
-    }
-  }
+apply(plugin = "kotlinx-serialization")
+
+dependencies {
+  api(projects.core)
+  api(libs.kotest.frameworkEngine)
+  api(libs.kotest.assertionsCore)
+  api(libs.kotest.property)
+
+  implementation(projects.clients.http4kClient)
+  implementation(projects.clients.springWebClient)
+  implementation(projects.clients.springWebFluxClient)
+  implementation(libs.kotlinx.serialization.json)
+  implementation(libs.http4k.client.apache)
+  implementation(libs.mockwebserver)
 }
