@@ -14,6 +14,7 @@ import arrow.endpoint.model.Method
 import arrow.endpoint.model.StatusCode
 import io.ktor.client.HttpClient
 import io.ktor.client.call.receive
+import io.ktor.client.features.*
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.HttpRequestData
 import io.ktor.client.request.cookie
@@ -48,7 +49,11 @@ public suspend operator fun <I, E, O> HttpClient.invoke(
   input: I
 ): DecodeResult<Either<E, O>> {
   val request = endpoint.toRequestBuilder(baseUrl, input)
-  val response = HttpStatement(request, this).execute()
+  val response = try{
+    HttpStatement(request, this).execute()
+  } catch (ex: ClientRequestException) {
+    ex.response
+  }
   return endpoint.parseResponse(response)
 }
 
