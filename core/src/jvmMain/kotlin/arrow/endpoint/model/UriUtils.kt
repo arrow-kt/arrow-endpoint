@@ -1,5 +1,3 @@
-@file:JvmName("UriUtils")
-
 package arrow.endpoint.model
 
 import java.net.URI

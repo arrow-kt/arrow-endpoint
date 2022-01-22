@@ -2,6 +2,8 @@ package arrow.endpoint
 
 import arrow.core.Option
 import kotlin.reflect.KProperty1
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 
 public data class SchemaInfo<A>(
   val description: String? = null,
@@ -103,12 +105,16 @@ public sealed interface Schema<A> {
   public object Unsigned : NumberModifier
 
   public sealed interface NumberSize
+
   @Suppress("ClassName")
   public object `8` : NumberSize
+
   @Suppress("ClassName")
   public object `16` : NumberSize
+
   @Suppress("ClassName")
   public object `32` : NumberSize
+
   @Suppress("ClassName")
   public object `64` : NumberSize
 
@@ -435,6 +441,10 @@ public sealed interface Schema<A> {
     public val unit: Schema<Unit> = Product.empty
 
     public val byteArray: Schema<ByteArray> = binary()
+
+    @OptIn(ExperimentalTime::class)
+    public val duration: Schema<Duration>
+      get() = Schema.String()
 
     public fun <A : kotlin.Enum<A>> enum(name: kotlin.String, enumValues: Array<out A>): Schema<A> =
       Enum(

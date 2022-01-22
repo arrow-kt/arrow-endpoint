@@ -11,6 +11,10 @@ import arrow.endpoint.model.CodecFormat
 import arrow.endpoint.model.Cookie
 import arrow.endpoint.model.Uri
 import arrow.endpoint.model.UriError
+import io.ktor.utils.io.charsets.Charset
+import io.ktor.utils.io.charsets.Charsets
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 
 public typealias PlainCodec<A> = Codec<String, A, CodecFormat.TextPlain>
 public typealias JsonCodec<A> = Codec<String, A, CodecFormat.Json>
@@ -116,6 +120,15 @@ public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
     public val float: Codec<String, Float, CodecFormat.TextPlain> = stringCodec(Schema.float) { it.toFloat() }
     public val double: Codec<String, Double, CodecFormat.TextPlain> = stringCodec(Schema.double) { it.toDouble() }
     public val boolean: Codec<String, Boolean, CodecFormat.TextPlain> = stringCodec(Schema.boolean) { it.toBoolean() }
+    public val formSeqCodecUtf8: Codec<String, List<Pair<String, String>>, CodecFormat.XWwwFormUrlencoded>
+      get() = formSeqCodec(Charsets.UTF_8)
+
+    public val formMapCodecUtf8: Codec<String, Map<String, String>, CodecFormat.XWwwFormUrlencoded>
+      get() = formMapCodec(Charsets.UTF_8)
+
+    @OptIn(ExperimentalTime::class)
+    public val duration: Codec<String, Duration, CodecFormat.TextPlain>
+      get() = stringCodec(Schema.duration, Duration::parse)
 
     public val uri: PlainCodec<Uri> =
       string.mapDecode(
@@ -260,6 +273,17 @@ public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
         override fun encode(h: H): L = g(h)
         override fun schema(): Schema<H> = schema
         override val format: CF = cf
+      }
+
+    public fun formMapCodec(charset: Charset): Codec<String, Map<String, String>, CodecFormat.XWwwFormUrlencoded> =
+      formSeqCodec(charset).map({ it.toMap() }) { it.toList() }
+
+    public fun formSeqCodec(charset: Charset): Codec<String, List<Pair<String, String>>, CodecFormat.XWwwFormUrlencoded> =
+      string.format(CodecFormat.XWwwFormUrlencoded).map({ UrlencodedData.decode(it, charset) }) {
+        UrlencodedData.encode(
+          it,
+          charset
+        )
       }
 
     public fun <A, CF : CodecFormat> anyStringCodec(
