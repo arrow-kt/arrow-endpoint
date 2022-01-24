@@ -10,6 +10,7 @@ import arrow.endpoint.Mapping
 import arrow.endpoint.Params
 import arrow.endpoint.client.requestInfo
 import arrow.endpoint.model.Body
+import arrow.endpoint.model.InputStream
 import arrow.endpoint.model.Method
 import arrow.endpoint.model.StatusCode
 import io.ktor.client.HttpClient
@@ -86,8 +87,8 @@ public fun <I, E, O> Endpoint<I, E, O>.toRequestBuilder(baseUrl: String, input: 
     }
     body = when (val body = info.body) {
       is Body.ByteArray -> ByteArrayContent(body.byteArray/* contentType,  statusCode*/)
-      is Body.ByteBuffer -> ByteArrayContent(body.byteBuffer.array())
-      is Body.InputStream -> ByteArrayContent(body.inputStream.readBytes())
+      is arrow.endpoint.model.ByteBuffer -> ByteArrayContent(body.byteBuffer.array())
+      is InputStream -> ByteArrayContent(body.inputStream.readBytes())
 
       // TODO fix ContentType
       is Body.String -> TextContent(body.string, ContentType.Text.Plain)
