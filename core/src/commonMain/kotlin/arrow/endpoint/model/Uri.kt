@@ -73,8 +73,9 @@ public data class Uri(
       ).right()
     }
 
-    private fun getUserInfoOrNull(match: MatchResult, schemeSpecificPart: String): Either<UriError, UserInfo>? =
-      (match.groups as? MatchNamedGroupCollection)?.get("userinfo")?.value?.let { range ->
+    /*private fun getUserInfoOrNull(match: MatchResult, schemeSpecificPart: String): Either<UriError, UserInfo>? =
+      // (match.groups as? MatchNamedGroupCollection)?.get("userinfo")?.value?.let { range ->
+      match.groups?.get("userinfo")?.value?.let { range ->
         schemeSpecificPart.substring(range).split(":").let { userInfoParts ->
           when {
             userInfoParts.isEmpty() -> return null
@@ -115,14 +116,14 @@ public data class Uri(
           port in 1..65535 -> port.right()
           else -> UriError.InvalidPort.left()
         }
-      }
+      }*/
 
     private fun Int.isDefaultPort(scheme: String) = when (scheme) {
       "https" -> 443 == this
       else -> 80 == this
     }
 
-    private fun getPathSegmentsOrEmpty(match: MatchResult, schemeSpecificPart: String): Either<UriError, PathSegments> =
+    /*private fun getPathSegmentsOrEmpty(match: MatchResult, schemeSpecificPart: String): Either<UriError, PathSegments> =
       PathSegments.absoluteOrEmptyS(
         match.groups["path"]?.range?.let { range ->
           val pathPart = schemeSpecificPart.substring(range)
@@ -132,9 +133,9 @@ public data class Uri(
               .map { segment -> segment.decode().fold({ return it.left() }, { it }) }
           }
         } ?: emptyList()
-      ).right()
+      ).right()*/
 
-    private fun getQuerySegmentsOrEmpty(
+    /*private fun getQuerySegmentsOrEmpty(
       match: MatchResult,
       schemeSpecificPart: String
     ): Either<UriError, List<QuerySegment>> =
@@ -225,8 +226,6 @@ public data class Uri(
   }
 
   public fun path(): List<String> = pathSegments.segments.map { it.v }
-
-  //
 
   public fun addParam(k: String, v: String?): Uri = v?.let { addParams(listOf(Pair(k, v))) } ?: this
 
