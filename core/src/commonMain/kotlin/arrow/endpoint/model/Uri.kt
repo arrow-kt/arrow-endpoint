@@ -50,45 +50,44 @@ public data class Uri(
       parse(url).orNull()
 
     public fun parse(url: String): Either<UriError, Uri> =
-      TODO()
-    /*either.eager {
-      val trimmedUrl = url.trimStart()
-      val scheme = schemePattern.find(trimmedUrl)?.value?.substringBefore(':')?.lowercase() ?: ""
+      either.eager {
+        val trimmedUrl = url.trimStart()
+        val scheme = schemePattern.find(trimmedUrl)?.value?.substringBefore(':')?.lowercase() ?: ""
 
         val schemeSpecificPart = when (scheme) {
           "http", "https" -> trimmedUrl.substring(scheme.length + 1).lowercase()
           else -> UriError.UnexpectedScheme("Unexpected scheme: $scheme").left().bind()
         }
 
-        val match: MatchResult = schemeSpecificPartPattern.matchEntire(schemeSpecificPart)
-          ?: UriError.CantParse("Can't parse $trimmedUrl").left().bind()
+        val matches: List<MatchResult> =
+          schemeSpecificPartPattern.findAll(schemeSpecificPart).toList()
 
         Uri(
           scheme = scheme.decode().bind(),
           authority = Authority(
-            userInfo = getUserInfoOrNull(match, schemeSpecificPart)?.bind(),
-            hostSegment = getHost(match, schemeSpecificPart).bind(),
-            port = getPort(match, schemeSpecificPart, scheme)?.bind(),
+            userInfo = getUserInfoOrNull(matches.first(), schemeSpecificPart).bind(),
+            hostSegment = getHost(matches.first(), schemeSpecificPart).bind(),
+            port = getPort(matches.first(), schemeSpecificPart, scheme)?.bind(),
           ),
-          pathSegments = getPathSegmentsOrEmpty(match, schemeSpecificPart).bind(),
-          querySegments = getQuerySegmentsOrEmpty(match, schemeSpecificPart).bind(),
-          fragmentSegment = getFragmentSegmentOrNull(match, schemeSpecificPart).bind()
+          pathSegments = getPathSegmentsOrEmpty(matches.first(), schemeSpecificPart).bind(),
+          querySegments = getQuerySegmentsOrEmpty(matches.first(), schemeSpecificPart).bind(),
+          fragmentSegment = getFragmentSegmentOrNull(matches.first(), schemeSpecificPart).bind()
         )
       }
 
     private fun getUserInfoOrNull(match: MatchResult, schemeSpecificPart: String): Either<UriError, UserInfo>? =
-      // (match.groups as? MatchNamedGroupCollection)?.get("userinfo")?.value?.let { range ->
-      match.groups?.get("userinfo")?.value?.let { range ->
-        schemeSpecificPart.substring(range).split(":").let { userInfoParts ->
-          when {
-            userInfoParts.isEmpty() -> return null
-            else -> UserInfo(
-              userInfoParts.first().decode().fold({ return it.left() }, { it }),
-              userInfoParts.drop(1).lastOrNull()?.decode()?.fold({ return it.left() }, { it })
-            )
-          }
-        }.right()
-      }
+        // (match.groups as? MatchNamedGroupCollection)?.get("userinfo")?.value?.let { range ->
+        (match.groups as? MatchNamedGroupCollection)?.get("userinfo")?.value?.let { range ->
+          schemeSpecificPart.substring(range).split(":").let { userInfoParts ->
+            when {
+              userInfoParts.isEmpty() ->  null
+              else -> UserInfo(
+                userInfoParts.first().decode().fold({ it.left() }, { it }),
+                userInfoParts.drop(1).lastOrNull()?.decode().fold({ it.left() }, { it })
+              )
+            }
+          }.right()
+        }
 
     private fun getHost(match: MatchResult, schemeSpecificPart: String): Either<UriError, HostSegment> =
       (match.groups as? MatchNamedGroupCollection)?.get("host")?.range?.let { range ->
@@ -119,14 +118,14 @@ public data class Uri(
           port in 1..65535 -> port.right()
           else -> UriError.InvalidPort.left()
         }
-      }*/
+      } * /
 
     private fun Int.isDefaultPort(scheme: String) = when (scheme) {
       "https" -> 443 == this
       else -> 80 == this
     }
 
-    /*private fun getPathSegmentsOrEmpty(match: MatchResult, schemeSpecificPart: String): Either<UriError, PathSegments> =
+    private fun getPathSegmentsOrEmpty(match: MatchResult, schemeSpecificPart: String): Either<UriError, PathSegments> =
       PathSegments.absoluteOrEmptyS(
         match.groups["path"]?.range?.let { range ->
           val pathPart = schemeSpecificPart.substring(range)
@@ -136,9 +135,9 @@ public data class Uri(
               .map { segment -> segment.decode().fold({ return it.left() }, { it }) }
           }
         } ?: emptyList()
-      ).right()*/
+      ).right()
 
-    /*private fun getQuerySegmentsOrEmpty(
+    private fun getQuerySegmentsOrEmpty(
       match: MatchResult,
       schemeSpecificPart: String
     ): Either<UriError, List<QuerySegment>> =
@@ -172,7 +171,7 @@ public data class Uri(
           true -> FragmentSegment(v = fragment.decode().fold({ return it.left() }, { it }))
           false -> null
         }.right()
-      } ?: null.right()*/
+      } ?: null.right()
   }
 
   /** Replace the scheme. Does not validate the new scheme value. */
