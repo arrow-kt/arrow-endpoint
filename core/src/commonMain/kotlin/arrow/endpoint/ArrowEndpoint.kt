@@ -8,6 +8,8 @@ import arrow.endpoint.model.Header
 import arrow.endpoint.model.Method
 import arrow.endpoint.model.QueryParams
 import arrow.endpoint.model.StatusCode
+import io.ktor.utils.io.ByteChannel
+import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.charsets.Charset
 import io.ktor.utils.io.charsets.Charsets
 import kotlin.jvm.JvmName

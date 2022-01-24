@@ -3,9 +3,8 @@ package arrow.endpoint
 import arrow.core.Tuple4
 import arrow.core.Tuple5
 import arrow.endpoint.model.CodecFormat
-import java.io.InputStream
-import java.nio.ByteBuffer
-import java.nio.charset.Charset
+import io.ktor.utils.io.charsets.Charset
+import kotlin.jvm.JvmName
 
 // Elements that can occur in both input and output
 // Such as body, headers, etc

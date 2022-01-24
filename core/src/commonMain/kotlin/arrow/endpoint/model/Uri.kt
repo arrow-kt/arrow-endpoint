@@ -74,7 +74,7 @@ public data class Uri(
     }
 
     private fun getUserInfoOrNull(match: MatchResult, schemeSpecificPart: String): Either<UriError, UserInfo>? =
-      match.groups["userinfo"]?.range?.let { range ->
+      (match.groups as? MatchNamedGroupCollection)?.get("userinfo")?.value?.let { range ->
         schemeSpecificPart.substring(range).split(":").let { userInfoParts ->
           when {
             userInfoParts.isEmpty() -> return null
@@ -87,7 +87,7 @@ public data class Uri(
       }
 
     private fun getHost(match: MatchResult, schemeSpecificPart: String): Either<UriError, HostSegment> =
-      match.groups["host"]?.range?.let { range ->
+      (match.groups as? MatchNamedGroupCollection)?.get("host")?.range?.let { range ->
         schemeSpecificPart.substring(range).removeSurrounding(prefix = "[", suffix = "]").let { host: String ->
           if (host.isNotEmpty() && host != " " && host != "\n" && host != "%20") HostSegment(
             v = host.decode().fold({ return it.left() }, { it })
