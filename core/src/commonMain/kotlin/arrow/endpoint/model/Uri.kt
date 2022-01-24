@@ -3,8 +3,8 @@
 package arrow.endpoint.model
 
 import arrow.core.Either
+import arrow.core.computations.either
 import arrow.core.left
-import arrow.core.right
 import arrow.endpoint.model.Rfc3986.decode
 import arrow.endpoint.model.Rfc3986.encode
 import kotlin.jvm.JvmInline
@@ -43,37 +43,40 @@ public data class Uri(
     private val schemeSpecificPartPattern =
       Regex("^?(//(?<authority>((?<userinfo>[^/?#]*)@)?(?<host>(\\[[^\\]]*\\]|[^/?#:]*))(:(?<port>[^/?#]*))?))?(?<path>[^?#]*)(\\?(?<query>[^#]*))?(#(?<fragment>.*))?")
 
+    private val uriPartsRegex =
+      Regex("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?")
+
     public operator fun invoke(url: String): Uri? =
       parse(url).orNull()
 
     public fun parse(url: String): Either<UriError, Uri> =
       TODO()
-    /*{
+    /*either.eager {
       val trimmedUrl = url.trimStart()
       val scheme = schemePattern.find(trimmedUrl)?.value?.substringBefore(':')?.lowercase() ?: ""
 
-      val schemeSpecificPart = when (scheme) {
-        "http", "https" -> trimmedUrl.substring(scheme.length + 1).lowercase()
-        else -> return UriError.UnexpectedScheme("Unexpected scheme: $scheme").left()
+        val schemeSpecificPart = when (scheme) {
+          "http", "https" -> trimmedUrl.substring(scheme.length + 1).lowercase()
+          else -> UriError.UnexpectedScheme("Unexpected scheme: $scheme").left().bind()
+        }
+
+        val match: MatchResult = schemeSpecificPartPattern.matchEntire(schemeSpecificPart)
+          ?: UriError.CantParse("Can't parse $trimmedUrl").left().bind()
+
+        Uri(
+          scheme = scheme.decode().bind(),
+          authority = Authority(
+            userInfo = getUserInfoOrNull(match, schemeSpecificPart)?.bind(),
+            hostSegment = getHost(match, schemeSpecificPart).bind(),
+            port = getPort(match, schemeSpecificPart, scheme)?.bind(),
+          ),
+          pathSegments = getPathSegmentsOrEmpty(match, schemeSpecificPart).bind(),
+          querySegments = getQuerySegmentsOrEmpty(match, schemeSpecificPart).bind(),
+          fragmentSegment = getFragmentSegmentOrNull(match, schemeSpecificPart).bind()
+        )
       }
 
-      val match: MatchResult = schemeSpecificPartPattern.matchEntire(schemeSpecificPart)
-        ?: return UriError.CantParse("Can't parse $trimmedUrl").left()
-
-      return Uri(
-        scheme = scheme.decode().fold({ return it.left() }, { it }),
-        authority = Authority(
-          userInfo = getUserInfoOrNull(match, schemeSpecificPart)?.fold({ return it.left() }, { it }),
-          hostSegment = getHost(match, schemeSpecificPart).fold({ return it.left() }, { it }),
-          port = getPort(match, schemeSpecificPart, scheme)?.fold({ return it.left() }, { it }),
-        ),
-        pathSegments = getPathSegmentsOrEmpty(match, schemeSpecificPart).fold({ return it.left() }, { it }),
-        querySegments = getQuerySegmentsOrEmpty(match, schemeSpecificPart).fold({ return it.left() }, { it }),
-        fragmentSegment = getFragmentSegmentOrNull(match, schemeSpecificPart).fold({ return it.left() }, { it })
-      ).right()
-    }
-
-    /*private fun getUserInfoOrNull(match: MatchResult, schemeSpecificPart: String): Either<UriError, UserInfo>? =
+    private fun getUserInfoOrNull(match: MatchResult, schemeSpecificPart: String): Either<UriError, UserInfo>? =
       // (match.groups as? MatchNamedGroupCollection)?.get("userinfo")?.value?.let { range ->
       match.groups?.get("userinfo")?.value?.let { range ->
         schemeSpecificPart.substring(range).split(":").let { userInfoParts ->
@@ -363,10 +366,12 @@ public data class Uri(
 public sealed interface UriError {
   @JvmInline
   public value class UnexpectedScheme(public val errorMessage: String) : UriError
+
   @JvmInline
   public value class CantParse(public val errorMessage: String) : UriError
   public object InvalidHost : UriError
   public object InvalidPort : UriError
+
   @JvmInline
   public value class IllegalArgument(public val errorMessage: String) : UriError
 }
@@ -513,11 +518,6 @@ public sealed interface PathSegments {
 public sealed interface QuerySegment {
 
   public companion object {
-    /** Encodes all reserved characters using [java.net.URLEncoder.encode]. */
-    public val All: Encoding = {
-      UriCompatibility.encodeQuery(it, "UTF-8")
-    }
-
     /** Encodes only the `&` and `=` reserved characters, which are usually used to separate query parameter names and
      * values.
      */
@@ -531,6 +531,12 @@ public sealed interface QuerySegment {
     public val StandardValue: Encoding = {
       it.encode(Rfc3986.Query - setOf('&'), spaceAsPlus = true, encodePlus = true)
     }
+
+    /** Encodes all reserved characters [jvm target] using [java.net.URLEncoder.encode]. */
+    public val All: Encoding
+      get() = {
+        UriCompatibility.encodeQuery(it, "UTF-8")
+      }
 
     /** Doesn't encode any of the reserved characters, leaving intact all
      * characters allowed in the query string as defined by RFC3986.

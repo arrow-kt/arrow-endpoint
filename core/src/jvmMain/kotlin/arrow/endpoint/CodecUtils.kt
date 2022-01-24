@@ -73,20 +73,3 @@ public val Codec.Companion.inputStream: Codec<InputStream, InputStream, CodecFor
 
 public val Codec.Companion.byteBuffer: Codec<ByteBuffer, ByteBuffer, CodecFormat.OctetStream>
   get() = id(CodecFormat.OctetStream, Schema.byteBuffer)
-
-public val Codec.Companion.formSeqCodecUtf8: Codec<String, List<Pair<String, String>>, CodecFormat.XWwwFormUrlencoded>
-  get() = formSeqCodec(Charsets.UTF_8)
-
-public val Codec.Companion.formMapCodecUtf8: Codec<String, Map<String, String>, CodecFormat.XWwwFormUrlencoded>
-  get() = formMapCodec(Charsets.UTF_8)
-
-public fun formMapCodec(charset: Charset): Codec<String, Map<String, String>, CodecFormat.XWwwFormUrlencoded> =
-  formSeqCodec(charset).map({ it.toMap() }) { it.toList() }
-
-public fun formSeqCodec(charset: Charset): Codec<String, List<Pair<String, String>>, CodecFormat.XWwwFormUrlencoded> =
-  Codec.string.format(CodecFormat.XWwwFormUrlencoded).map({ UrlencodedData.decode(it, charset) }) {
-    UrlencodedData.encode(
-      it,
-      charset
-    )
-  }

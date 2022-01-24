@@ -1,8 +1,8 @@
 package arrow.endpoint
 
+import io.ktor.utils.io.charsets.Charset
 import java.net.URLDecoder
 import java.net.URLEncoder
-import java.nio.charset.Charset
 
 internal actual object UrlencodedData {
   actual fun decode(s: String, charset: Charset): List<Pair<String, String>> =
