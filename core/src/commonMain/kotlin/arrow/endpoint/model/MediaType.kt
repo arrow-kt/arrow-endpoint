@@ -1,7 +1,7 @@
 package arrow.endpoint.model
 
-import kotlinx.io.charsets.Charset
-import kotlinx.io.charsets.name
+import io.ktor.utils.io.charsets.Charset
+import io.ktor.utils.io.charsets.name
 
 public data class MediaType(val mainType: String, val subType: String, val charset: String? = null) {
 

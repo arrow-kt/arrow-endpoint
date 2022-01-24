@@ -8,17 +8,16 @@ import arrow.endpoint.model.Header
 import arrow.endpoint.model.Method
 import arrow.endpoint.model.QueryParams
 import arrow.endpoint.model.StatusCode
-import io.ktor.utils.io.ByteChannel
-import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.charsets.Charset
 import io.ktor.utils.io.charsets.Charsets
+import kotlin.jvm.JvmName
 
-// Turn into top-level functions?
+// TODO: Turn into top-level functions?
 public object ArrowEndpoint {
 
   public inline operator fun <A> invoke(f: ArrowEndpoint.() -> A): A = f(ArrowEndpoint)
 
-  //@JvmName("queryList")
+  @JvmName("queryList")
   public fun <A> query(name: String, codec: Codec<List<String>, A, CodecFormat.TextPlain>): EndpointInput.Query<A> =
     EndpointInput.Query(name, codec, EndpointIO.Info.empty())
 
