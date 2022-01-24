@@ -106,17 +106,13 @@ public sealed interface Schema<A> {
 
   public sealed interface NumberSize
 
-  @Suppress("ClassName")
-  public object `8` : NumberSize
+  public object Eight : NumberSize
 
-  @Suppress("ClassName")
-  public object `16` : NumberSize
+  public object Sixteen : NumberSize
 
-  @Suppress("ClassName")
-  public object `32` : NumberSize
+  public object ThirtyTwo : NumberSize
 
-  @Suppress("ClassName")
-  public object `64` : NumberSize
+  public object SixtyFour : NumberSize
 
   public sealed interface Number<A> : Schema<A> {
     public val modifier: NumberModifier
@@ -124,70 +120,70 @@ public sealed interface Schema<A> {
 
     public data class Byte<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
       override val modifier: NumberModifier = Signed
-      override val size: NumberSize = `8`
+      override val size: NumberSize = Eight
       override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = Byte(transform(info))
       override fun toString(): kotlin.String = "byte"
     }
 
     public data class UByte<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
       override val modifier: NumberModifier = Unsigned
-      override val size: NumberSize = `8`
+      override val size: NumberSize = Eight
       override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = UByte(transform(info))
       override fun toString(): kotlin.String = "unsigned byte"
     }
 
     public data class Short<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
       override val modifier: NumberModifier = Signed
-      override val size: NumberSize = `16`
+      override val size: NumberSize = Sixteen
       override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = Short(transform(info))
       override fun toString(): kotlin.String = "short"
     }
 
     public data class UShort<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
       override val modifier: NumberModifier = Unsigned
-      override val size: NumberSize = `16`
+      override val size: NumberSize = Sixteen
       override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = UShort(transform(info))
       override fun toString(): kotlin.String = "unsigned short"
     }
 
     public data class Int<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
       override val modifier: NumberModifier = Signed
-      override val size: NumberSize = `32`
+      override val size: NumberSize = ThirtyTwo
       override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = Int(transform(info))
       override fun toString(): kotlin.String = "int32"
     }
 
     public data class UInt<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
       override val modifier: NumberModifier = Unsigned
-      override val size: NumberSize = `32`
+      override val size: NumberSize = ThirtyTwo
       override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = UInt(transform(info))
       override fun toString(): kotlin.String = "unsigned int32"
     }
 
     public data class Long<A>(override val info: SchemaInfo<A> = SchemaInfo(format = "int64")) : Number<A> {
       override val modifier: NumberModifier = Signed
-      override val size: NumberSize = `64`
+      override val size: NumberSize = SixtyFour
       override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = Long(transform(info))
       override fun toString(): kotlin.String = "int64"
     }
 
     public data class ULong<A>(override val info: SchemaInfo<A> = SchemaInfo()) : Number<A> {
       override val modifier: NumberModifier = Unsigned
-      override val size: NumberSize = `64`
+      override val size: NumberSize = SixtyFour
       override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = ULong(transform(info))
       override fun toString(): kotlin.String = "unsigned int64"
     }
 
     public data class Float<A>(override val info: SchemaInfo<A> = SchemaInfo(format = "float")) : Number<A> {
       override val modifier: NumberModifier = Signed
-      override val size: NumberSize = `32`
+      override val size: NumberSize = ThirtyTwo
       override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = Float(transform(info))
       override fun toString(): kotlin.String = "float"
     }
 
     public data class Double<A>(override val info: SchemaInfo<A> = SchemaInfo(format = "double")) : Number<A> {
       override val modifier: NumberModifier = Signed
-      override val size: NumberSize = `64`
+      override val size: NumberSize = SixtyFour
       override fun <B> transformInfo(transform: (SchemaInfo<A>) -> SchemaInfo<B>): Schema<B> = Double(transform(info))
       override fun toString(): kotlin.String = "double"
     }
@@ -452,11 +448,15 @@ public sealed interface Schema<A> {
         enumValues.map { EnumValue(it.name, it.ordinal) }
       )
 
+    // TODO: [This reflection API is not supported yet in JavaScript
+    @Suppress("Unsupported")
     public inline fun <reified A : kotlin.Enum<A>> enum(): Schema<A> =
       enum(requireNotNull(A::class.qualifiedName) { "Qualified name on KClass should never be null." }, enumValues())
   }
 }
 
+// TODO: [This reflection API is not supported yet in JavaScript
+@Suppress("Unsupported")
 public inline fun <reified A> Schema<A>.asOpenProduct(): Schema<Map<String, A>> =
   Schema.OpenProduct(
     Schema.ObjectInfo(
@@ -466,6 +466,8 @@ public inline fun <reified A> Schema<A>.asOpenProduct(): Schema<Map<String, A>> 
     this
   )
 
+// TODO: [This reflection API is not supported yet in JavaScript
+@Suppress("Unsupported")
 public inline fun <reified A> Schema.Companion.product(
   vararg properties: Pair<KProperty1<A, *>, Schema<*>>
 ): Schema<A> =
