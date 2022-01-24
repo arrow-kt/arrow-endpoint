@@ -6,7 +6,6 @@ import arrow.core.right
 import io.ktor.utils.io.charsets.Charset
 import io.ktor.utils.io.charsets.Charsets
 import io.ktor.utils.io.core.toByteArray
-import kotlin.experimental.and
 
 internal object Rfc3986 {
   private val AlphaNum: Set<Char> = (('a'..'z') + ('A'..'Z') + ('0'..'9')).toSet()
@@ -98,7 +97,7 @@ internal object Rfc3986 {
           // "%x" will cause an exception to be thrown
           if ((i < numChars) && (c == '%'))
             return UriError.IllegalArgument("URLDecoder: Incomplete trailing escape (%) pattern").left()
-          sb.append(bytes.joinToString { it.toString(16) }, startIndex = 0, endIndex = pos)
+          sb.appendRange(bytes.joinToString { it.toString(16) }, startIndex = 0, endIndex = pos)
           needToChange = true
         }
         else -> {
