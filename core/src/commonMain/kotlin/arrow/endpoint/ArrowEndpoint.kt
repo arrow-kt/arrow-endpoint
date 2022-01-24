@@ -8,8 +8,6 @@ import arrow.endpoint.model.Header
 import arrow.endpoint.model.Method
 import arrow.endpoint.model.QueryParams
 import arrow.endpoint.model.StatusCode
-import io.ktor.utils.io.ByteChannel
-import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.charsets.Charset
 import io.ktor.utils.io.charsets.Charsets
 import kotlin.jvm.JvmName
@@ -100,12 +98,6 @@ public object ArrowEndpoint {
 
   public fun byteArrayBody(): EndpointIO.ByteArrayBody<ByteArray> =
     EndpointIO.ByteArrayBody(Codec.byteArray, EndpointIO.Info.empty())
-
-  public fun byteBufferBody(): EndpointIO.ByteBufferBody<ByteChannel> =
-    EndpointIO.ByteBufferBody(Codec.byteBuffer, EndpointIO.Info.empty())
-
-  public fun inputStreamBody(): EndpointIO.InputStreamBody<ByteReadChannel> =
-    EndpointIO.InputStreamBody(Codec.inputStream, EndpointIO.Info.empty())
 
   public fun <A> formBody(codec: Codec<String, A, CodecFormat.XWwwFormUrlencoded>): EndpointIO.StringBody<A> =
     anyFromStringBody(codec)

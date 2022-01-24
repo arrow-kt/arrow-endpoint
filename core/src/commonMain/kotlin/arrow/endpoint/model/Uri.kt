@@ -440,7 +440,7 @@ public data class HostSegment(
 ) : Segment(v, encoding) {
 
   public companion object {
-    public val IpV6Pattern: Regex = "[0-9a-fA-F:]+".toRegex()
+    private val IpV6Pattern: Regex = "[0-9a-fA-F:]+".toRegex()
     public val Standard: Encoding = { s ->
       when {
         s.matches(IpV6Pattern) && s.count { it == ':' } >= 2 -> "[$s]"
@@ -518,6 +518,12 @@ public sealed interface PathSegments {
 public sealed interface QuerySegment {
 
   public companion object {
+    /** Encodes all reserved characters [jvm target] using [java.net.URLEncoder.encode]. */
+    public val All: Encoding
+      get() = {
+        UriCompatibility.encodeQuery(it, "UTF-8")
+      }
+
     /** Encodes only the `&` and `=` reserved characters, which are usually used to separate query parameter names and
      * values.
      */
@@ -531,12 +537,6 @@ public sealed interface QuerySegment {
     public val StandardValue: Encoding = {
       it.encode(Rfc3986.Query - setOf('&'), spaceAsPlus = true, encodePlus = true)
     }
-
-    /** Encodes all reserved characters [jvm target] using [java.net.URLEncoder.encode]. */
-    public val All: Encoding
-      get() = {
-        UriCompatibility.encodeQuery(it, "UTF-8")
-      }
 
     /** Doesn't encode any of the reserved characters, leaving intact all
      * characters allowed in the query string as defined by RFC3986.

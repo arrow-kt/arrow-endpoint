@@ -11,12 +11,10 @@ import arrow.endpoint.EndpointOutput
 import arrow.endpoint.Schema
 import arrow.endpoint.ArrowEndpoint.anyJsonBody
 import arrow.endpoint.ArrowEndpoint.byteArrayBody
-import arrow.endpoint.ArrowEndpoint.byteBufferBody
 import arrow.endpoint.ArrowEndpoint.cookie
 import arrow.endpoint.ArrowEndpoint.fixedPath
 import arrow.endpoint.ArrowEndpoint.formBody
 import arrow.endpoint.ArrowEndpoint.header
-import arrow.endpoint.ArrowEndpoint.inputStreamBody
 import arrow.endpoint.ArrowEndpoint.oneOf
 import arrow.endpoint.ArrowEndpoint.path
 import arrow.endpoint.ArrowEndpoint.paths
@@ -151,25 +149,6 @@ public object TestEndpoint {
       .input(byteArrayBody())
       .output(byteArrayBody())
       .name("echo byte array")
-
-  public val in_byte_buffer_out_byte_buffer: Endpoint<ByteBuffer, Unit, ByteBuffer> =
-    Endpoint.post { "api" / "echo" }
-      .input(byteBufferBody())
-      .output(byteBufferBody())
-      .name("echo byte buffer")
-
-  public val in_input_stream_out_input_stream: Endpoint<InputStream, Unit, InputStream> =
-    Endpoint.post { "api" / "echo" }
-      .input(inputStreamBody())
-      .output(inputStreamBody())
-      .name("echo input stream")
-
-  public val in_string_out_stream_with_header: Endpoint<String, Unit, Pair<InputStream, Long?>> =
-    Endpoint.post { "api" / "echo" }
-      .input(stringBody())
-      .output(inputStreamBody())
-      .output(header("Content-Length", Codec.listFirstOrNull(Codec.long)))
-      .name("input string output stream with header")
 
   @OptIn(ExperimentalSerializationApi::class)
   public val in_unit_out_json_unit: Endpoint<Unit, Unit, Unit> =

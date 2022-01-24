@@ -66,20 +66,6 @@ public sealed interface Body {
       return result
     }
   }
-
-  /*public data class ByteBuffer(public val byteBuffer: JByteBuffer, public override val format: CodecFormat) :
-    Body {
-    override fun toByteArray(): KByteArray {
-      val array = KByteArray(byteBuffer.remaining())
-      byteBuffer.get(array)
-      return array
-    }
-  }
-
-  public data class InputStream(public val inputStream: JInputStream, public override val format: CodecFormat) :
-    Body {
-    override fun toByteArray(): KByteArray = inputStream.readBytes()
-  }*/
 }
 
 public data class ServerResponse(

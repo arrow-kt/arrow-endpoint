@@ -135,8 +135,6 @@ internal class KtorRequestBody(private val ctx: ApplicationCall) : RequestBody {
     val body = ctx.request.receiveChannel()
     return when (bodyType) {
       is EndpointIO.ByteArrayBody -> body.toByteArray()
-      is EndpointIO.ByteBufferBody -> ByteBuffer.wrap(body.toByteArray())
-      is EndpointIO.InputStreamBody -> body.toInputStream()
       is EndpointIO.StringBody -> body.toByteArray().toString(bodyType.charset)
     } as R
   }

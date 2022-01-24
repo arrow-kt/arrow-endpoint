@@ -1,7 +1,6 @@
 package arrow.endpoint
 
 import arrow.endpoint.model.CodecFormat
-import io.ktor.utils.io.charsets.Charset
 import java.io.InputStream
 import java.math.BigDecimal
 import java.nio.ByteBuffer
