@@ -59,25 +59,24 @@ public data class Uri(
           else -> UriError.UnexpectedScheme("Unexpected scheme: $scheme").left().bind()
         }
 
-        val matches: List<MatchResult> =
-          schemeSpecificPartPattern.findAll(schemeSpecificPart).toList()
+        val match: MatchResult = schemeSpecificPartPattern.matchEntire(schemeSpecificPart)
+          ?: UriError.CantParse("Can't parse $trimmedUrl").left().bind()
 
         Uri(
           scheme = scheme.decode().bind(),
           authority = Authority(
-            userInfo = getUserInfoOrNull(matches.first(), schemeSpecificPart).bind(),
-            hostSegment = getHost(matches.first(), schemeSpecificPart).bind(),
-            port = getPort(matches.first(), schemeSpecificPart, scheme)?.bind(),
+            userInfo = getUserInfoOrNull(match, schemeSpecificPart)?.bind(),
+            hostSegment = getHost(match, schemeSpecificPart).bind(),
+            port = getPort(match, schemeSpecificPart, scheme)?.bind(),
           ),
-          pathSegments = getPathSegmentsOrEmpty(matches.first(), schemeSpecificPart).bind(),
-          querySegments = getQuerySegmentsOrEmpty(matches.first(), schemeSpecificPart).bind(),
-          fragmentSegment = getFragmentSegmentOrNull(matches.first(), schemeSpecificPart).bind()
+          pathSegments = getPathSegmentsOrEmpty(match, schemeSpecificPart).bind(),
+          querySegments = getQuerySegmentsOrEmpty(match, schemeSpecificPart).bind(),
+          fragmentSegment = getFragmentSegmentOrNull(match, schemeSpecificPart).bind()
         )
       }
 
     private fun getUserInfoOrNull(match: MatchResult, schemeSpecificPart: String): Either<UriError, UserInfo>? =
-        // (match.groups as? MatchNamedGroupCollection)?.get("userinfo")?.value?.let { range ->
-        (match.groups as? MatchNamedGroupCollection)?.get("userinfo")?.value?.let { range ->
+        (match.groups as? MatchNamedGroupCollection)?.get("userinfo")?.?.let { range ->
           schemeSpecificPart.substring(range).split(":").let { userInfoParts ->
             when {
               userInfoParts.isEmpty() ->  null
