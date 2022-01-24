@@ -52,8 +52,6 @@ internal class RequestBody(val ctx: RecordedRequest) : RequestBody {
   override suspend fun <R> toRaw(bodyType: EndpointIO.Body<R, *>): R {
     return when (bodyType) {
       is EndpointIO.ByteArrayBody -> withContext(Dispatchers.IO) { ctx.body.readByteArray() }
-      is EndpointIO.ByteBufferBody -> withContext(Dispatchers.IO) { ByteBuffer.wrap(ctx.body.readByteArray()) }
-      is EndpointIO.InputStreamBody -> ctx.body.inputStream()
       is EndpointIO.StringBody -> withContext(Dispatchers.IO) { ctx.body.readByteArray().toString(bodyType.charset) }
     } as R
   }
@@ -78,8 +76,6 @@ public fun RecordedRequest.toServerRequest(): ServerRequest =
 public fun MockResponse.setBody(response: ServerResponse): MockResponse =
   when (val r = response.body) {
     is Body.ByteArray -> setBody(Buffer().apply { write(r.byteArray) })
-    is Body.ByteBuffer -> setBody(Buffer().apply { write(r.byteBuffer) })
-    is Body.InputStream -> setBody(Buffer().apply { readFrom(r.inputStream) })
     is Body.String -> setBody(r.string)
     else -> this
   }

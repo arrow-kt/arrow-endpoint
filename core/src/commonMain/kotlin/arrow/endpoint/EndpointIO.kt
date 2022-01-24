@@ -89,32 +89,6 @@ public sealed interface EndpointIO<A> : EndpointInput<A>, EndpointOutput<A> {
     }
   }
 
-  public data class ByteBufferBody<T>(
-    override val codec: Codec<ByteBuffer, T, CodecFormat>,
-    override val info: Info<T>
-  ) : BinaryBody<ByteBuffer, T> {
-    override fun <B> copyWith(c: Codec<ByteBuffer, B, CodecFormat>, i: Info<B>): ByteBufferBody<B> =
-      ByteBufferBody(c, i)
-
-    override fun toString(): String {
-      val format = codec.format.mediaType
-      return "{body as $format}"
-    }
-  }
-
-  public data class InputStreamBody<T>(
-    override val codec: Codec<InputStream, T, CodecFormat>,
-    override val info: Info<T>
-  ) : BinaryBody<InputStream, T> {
-    override fun <B> copyWith(c: Codec<InputStream, B, CodecFormat>, i: Info<B>): InputStreamBody<B> =
-      InputStreamBody(c, i)
-
-    override fun toString(): String {
-      val format = codec.format.mediaType
-      return "{body as $format}"
-    }
-  }
-
   public data class Info<T>(val description: String?, val examples: List<Example<T>>, val deprecated: Boolean) {
     public fun description(d: String): Info<T> = copy(description = d)
     public fun example(): T? = examples.firstOrNull()?.value

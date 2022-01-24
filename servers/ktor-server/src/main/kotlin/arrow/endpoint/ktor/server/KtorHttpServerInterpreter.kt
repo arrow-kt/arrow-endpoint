@@ -96,8 +96,8 @@ public fun ServerResponse.outgoingContent(): OutgoingContent? =
 private fun Body.contentType(): ContentType =
   when (format) {
     is CodecFormat.Json -> ContentType.Application.Json
-    is CodecFormat.TextPlain -> ContentType.Text.Plain.withCharset(charsetOrNull() ?: Charsets.UTF_8)
-    is CodecFormat.TextHtml -> ContentType.Text.Html.withCharset(charsetOrNull() ?: Charsets.UTF_8)
+    is CodecFormat.TextPlain -> ContentType.Text.Plain.withCharset(charsetOrNull() ?: StandardCharsets.UTF_8)
+    is CodecFormat.TextHtml -> ContentType.Text.Html.withCharset(charsetOrNull() ?: StandardCharsets.UTF_8)
     is CodecFormat.OctetStream -> ContentType.Application.OctetStream
     is CodecFormat.Zip -> ContentType.Application.Zip
     is CodecFormat.XWwwFormUrlencoded -> ContentType.Application.FormUrlEncoded
