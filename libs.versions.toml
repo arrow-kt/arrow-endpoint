@@ -1,7 +1,7 @@
 [versions]
 kotlin = "1.6.10"
 arrow = "1.0.1"
-arrowGradleConfig = "0.9.0"
+arrowGradleConfig = "0.9.1-alpha.3"
 coroutines = "1.6.0"
 kotlinxSerialization = "1.6.10"
 dokka = "1.6.10"
@@ -66,6 +66,7 @@ arrowGradleConfig-formatter = { id = "io.arrow-kt.arrow-gradle-config-formatter"
 arrowGradleConfig-kotlin = { id = "io.arrow-kt.arrow-gradle-config-kotlin", version.ref = "arrowGradleConfig" }
 arrowGradleConfig-nexus = { id = "io.arrow-kt.arrow-gradle-config-nexus", version.ref = "arrowGradleConfig" }
 arrowGradleConfig-publish = { id = "io.arrow-kt.arrow-gradle-config-publish", version.ref = "arrowGradleConfig" }
+arrowGradleConfig-versioning = { id = "io.arrow-kt.arrow-gradle-config-versioning", version.ref = "arrowGradleConfig" }
 kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref ="kotlinxSerialization" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 kotest-multiplatform = { id = "io.kotest.multiplatform", version.ref = "kotestGradle" }

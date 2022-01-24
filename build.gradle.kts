@@ -4,9 +4,11 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
   base
   alias(libs.plugins.dokka)
+  alias(libs.plugins.kotlin.multiplatform) apply false
   alias(libs.plugins.kotest.multiplatform) apply false
   alias(libs.plugins.kotlinxSerialization) apply false
   alias(libs.plugins.arrowGradleConfig.nexus)
+  alias(libs.plugins.arrowGradleConfig.versioning)
 }
 
 allprojects {

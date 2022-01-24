@@ -27,7 +27,6 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.RequestConnectionPoint
 import io.ktor.http.content.ByteArrayContent
 import io.ktor.http.content.OutgoingContent
-import io.ktor.http.content.OutputStreamContent
 import io.ktor.http.content.TextContent
 import io.ktor.http.withCharset
 import io.ktor.request.host
@@ -39,8 +38,6 @@ import io.ktor.response.header
 import io.ktor.response.respond
 import io.ktor.util.flattenEntries
 import io.ktor.util.toByteArray
-import io.ktor.utils.io.jvm.javaio.toInputStream
-import java.nio.ByteBuffer
 
 public fun <I, E, O> Application.install(ses: ServerEndpoint<I, E, O>): Unit =
   install(listOf(ses))
@@ -73,20 +70,8 @@ public fun ServerResponse.outgoingContent(): OutgoingContent? =
       body.contentType(),
       HttpStatusCode.fromValue(code.code)
     )
-    is Body.ByteBuffer -> ByteArrayContent(
-      body.toByteArray(),
-      body.contentType(),
-      HttpStatusCode.fromValue(code.code)
-    )
     is Body.String -> TextContent(
       body.string,
-      body.contentType(),
-      HttpStatusCode.fromValue(code.code)
-    )
-    is Body.InputStream -> OutputStreamContent(
-      {
-        body.inputStream.copyTo(this)
-      },
       body.contentType(),
       HttpStatusCode.fromValue(code.code)
     )
@@ -96,8 +81,8 @@ public fun ServerResponse.outgoingContent(): OutgoingContent? =
 private fun Body.contentType(): ContentType =
   when (format) {
     is CodecFormat.Json -> ContentType.Application.Json
-    is CodecFormat.TextPlain -> ContentType.Text.Plain.withCharset(charsetOrNull() ?: StandardCharsets.UTF_8)
-    is CodecFormat.TextHtml -> ContentType.Text.Html.withCharset(charsetOrNull() ?: StandardCharsets.UTF_8)
+    is CodecFormat.TextPlain -> ContentType.Text.Plain.withCharset(charsetOrNull() ?: Charsets.UTF_8)
+    is CodecFormat.TextHtml -> ContentType.Text.Html.withCharset(charsetOrNull() ?: Charsets.UTF_8)
     is CodecFormat.OctetStream -> ContentType.Application.OctetStream
     is CodecFormat.Zip -> ContentType.Application.Zip
     is CodecFormat.XWwwFormUrlencoded -> ContentType.Application.FormUrlEncoded
