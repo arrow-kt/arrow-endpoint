@@ -11,9 +11,7 @@ import arrow.endpoint.model.StatusCode
 import arrow.endpoint.test.TestEndpoint.delete_endpoint
 import arrow.endpoint.test.TestEndpoint.in_4query_out_4header_extended
 import arrow.endpoint.test.TestEndpoint.in_byte_array_out_byte_array
-import arrow.endpoint.test.TestEndpoint.in_byte_buffer_out_byte_buffer
 import arrow.endpoint.test.TestEndpoint.in_header_out_string
-import arrow.endpoint.test.TestEndpoint.in_input_stream_out_input_stream
 import arrow.endpoint.test.TestEndpoint.out_value_form_exact_match
 import arrow.endpoint.test.TestEndpoint.in_json_out_json
 import arrow.endpoint.test.TestEndpoint.in_mapped_path_out_string
@@ -137,18 +135,6 @@ public abstract class ClientInterpreterSuite : FreeSpec() {
       in_byte_array_out_byte_array,
       "banana kiwi".toByteArray(),
       Either.Right("banana kiwi".toByteArray())
-    ) { it.right() }
-
-    test(
-      in_byte_buffer_out_byte_buffer,
-      ByteBuffer.wrap("mango".toByteArray()),
-      Either.Right(ByteBuffer.wrap("mango".toByteArray()))
-    ) { it.right() }
-
-    test(
-      in_input_stream_out_input_stream,
-      ByteArrayInputStream("mango".toByteArray()),
-      Either.Right(ByteArrayInputStream("mango".toByteArray()))
     ) { it.right() }
 
     test(
