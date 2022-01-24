@@ -76,7 +76,7 @@ public data class Uri(
       }
 
     private fun getUserInfoOrNull(match: MatchResult, schemeSpecificPart: String): Either<UriError, UserInfo>? =
-        (match.groups as? MatchNamedGroupCollection)?.get("userinfo")?.?.let { range ->
+        (match.groups as? MatchNamedGroupCollection)?.get("userinfo")?.value?.let { range ->
           schemeSpecificPart.substring(range).split(":").let { userInfoParts ->
             when {
               userInfoParts.isEmpty() ->  null
