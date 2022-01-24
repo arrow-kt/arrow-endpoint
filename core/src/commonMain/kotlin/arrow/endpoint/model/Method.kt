@@ -1,5 +1,8 @@
 package arrow.endpoint.model
 
+import kotlin.jvm.JvmInline
+
+@JvmInline
 public value class Method private constructor(public val value: String) {
 
   /**
