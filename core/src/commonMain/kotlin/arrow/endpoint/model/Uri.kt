@@ -5,6 +5,7 @@ package arrow.endpoint.model
 import arrow.core.Either
 import arrow.core.computations.either
 import arrow.core.left
+import arrow.core.right
 import arrow.endpoint.model.Rfc3986.decode
 import arrow.endpoint.model.Rfc3986.encode
 import kotlin.jvm.JvmInline
@@ -65,32 +66,32 @@ public data class Uri(
         Uri(
           scheme = scheme.decode().bind(),
           authority = Authority(
-            userInfo = getUserInfoOrNull(match, schemeSpecificPart)?.bind(),
-            hostSegment = getHost(match, schemeSpecificPart).bind(),
-            port = getPort(match, schemeSpecificPart, scheme)?.bind(),
+            userInfo = getUserInfoOrNull(match)?.bind(),
+            hostSegment = getHost(match).bind(),
+            port = getPort(match, scheme)?.bind(),
           ),
-          pathSegments = getPathSegmentsOrEmpty(match, schemeSpecificPart).bind(),
-          querySegments = getQuerySegmentsOrEmpty(match, schemeSpecificPart).bind(),
-          fragmentSegment = getFragmentSegmentOrNull(match, schemeSpecificPart).bind()
+          pathSegments = getPathSegmentsOrEmpty(match).bind(),
+          querySegments = getQuerySegmentsOrEmpty(match).bind(),
+          fragmentSegment = getFragmentSegmentOrNull(match).bind()
         )
       }
 
-    private fun getUserInfoOrNull(match: MatchResult, schemeSpecificPart: String): Either<UriError, UserInfo>? =
-        (match.groups as? MatchNamedGroupCollection)?.get("userinfo")?.value?.let { range ->
-          schemeSpecificPart.substring(range).split(":").let { userInfoParts ->
-            when {
-              userInfoParts.isEmpty() ->  null
-              else -> UserInfo(
-                userInfoParts.first().decode().fold({ it.left() }, { it }),
-                userInfoParts.drop(1).lastOrNull()?.decode().fold({ it.left() }, { it })
-              )
-            }
-          }.right()
-        }
+    private fun getUserInfoOrNull(match: MatchResult): Either<UriError, UserInfo>? =
+      (match.groups as? MatchNamedGroupCollection)?.get("userinfo")?.value?.let { value ->
+        value.split(":").let { userInfoParts ->
+          when {
+            userInfoParts.isEmpty() -> return null
+            else -> UserInfo(
+              userInfoParts.first().decode().fold({ return it.left() }, { it }),
+              userInfoParts.drop(1).lastOrNull()?.decode()?.fold({ return it.left() }, { it })
+            )
+          }
+        }.right()
+      }
 
-    private fun getHost(match: MatchResult, schemeSpecificPart: String): Either<UriError, HostSegment> =
-      (match.groups as? MatchNamedGroupCollection)?.get("host")?.range?.let { range ->
-        schemeSpecificPart.substring(range).removeSurrounding(prefix = "[", suffix = "]").let { host: String ->
+    private fun getHost(match: MatchResult): Either<UriError, HostSegment> =
+      (match.groups as? MatchNamedGroupCollection)?.get("host")?.value?.let { value ->
+        value.removeSurrounding(prefix = "[", suffix = "]").let { host: String ->
           if (host.isNotEmpty() && host != " " && host != "\n" && host != "%20") HostSegment(
             v = host.decode().fold({ return it.left() }, { it })
           ).right()
@@ -98,9 +99,9 @@ public data class Uri(
         }
       } ?: UriError.InvalidHost.left()
 
-    private fun getPort(match: MatchResult, schemeSpecificPart: String, scheme: String): Either<UriError, Int>? =
-      match.groups["port"]?.range?.let { range ->
-        val port: Int? = schemeSpecificPart.substring(range).let {
+    private fun getPort(match: MatchResult, scheme: String): Either<UriError, Int>? =
+      (match.groups as? MatchNamedGroupCollection)?.get("port")?.value?.let { value ->
+        val port: Int? = value.let {
           when {
             it.isEmpty() -> null
             else -> {
@@ -117,17 +118,16 @@ public data class Uri(
           port in 1..65535 -> port.right()
           else -> UriError.InvalidPort.left()
         }
-      } * /
+      }
 
     private fun Int.isDefaultPort(scheme: String) = when (scheme) {
       "https" -> 443 == this
       else -> 80 == this
     }
 
-    private fun getPathSegmentsOrEmpty(match: MatchResult, schemeSpecificPart: String): Either<UriError, PathSegments> =
+    private fun getPathSegmentsOrEmpty(match: MatchResult): Either<UriError, PathSegments> =
       PathSegments.absoluteOrEmptyS(
-        match.groups["path"]?.range?.let { range ->
-          val pathPart = schemeSpecificPart.substring(range)
+        (match.groups as? MatchNamedGroupCollection)?.get("path")?.value?.let { pathPart ->
           when {
             pathPart.isEmpty() -> emptyList()
             else -> pathPart.removePrefix("/").split("/")
@@ -137,11 +137,9 @@ public data class Uri(
       ).right()
 
     private fun getQuerySegmentsOrEmpty(
-      match: MatchResult,
-      schemeSpecificPart: String
+      match: MatchResult
     ): Either<UriError, List<QuerySegment>> =
-      match.groups["query"]?.range?.let { range ->
-        val querySegments: String = schemeSpecificPart.substring(range)
+      (match.groups as? MatchNamedGroupCollection)?.get("query")?.value?.let { querySegments ->
         when (querySegments.contains("&") || querySegments.contains("=")) {
           true -> {
             querySegments.split("&").map { querySegment ->
@@ -160,12 +158,8 @@ public data class Uri(
         }.right()
       } ?: emptyList<QuerySegment>().right()
 
-    private fun getFragmentSegmentOrNull(
-      match: MatchResult,
-      schemeSpecificPart: String
-    ): Either<UriError, FragmentSegment?> =
-      match.groups["fragment"]?.range?.let { range ->
-        val fragment = schemeSpecificPart.substring(range)
+    private fun getFragmentSegmentOrNull(match: MatchResult): Either<UriError, FragmentSegment?> =
+      (match.groups as? MatchNamedGroupCollection)?.get("fragment")?.value?.let { fragment ->
         when (fragment.isNotEmpty()) {
           true -> FragmentSegment(v = fragment.decode().fold({ return it.left() }, { it }))
           false -> null

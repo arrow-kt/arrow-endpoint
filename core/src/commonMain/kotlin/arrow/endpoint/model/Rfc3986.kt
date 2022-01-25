@@ -76,29 +76,32 @@ internal object Rfc3986 {
            */
           // (numChars-i)/3 is an upper bound for the number
           // of remaining bytes
-          if (bytes == null) bytes = ByteArray((numChars - i) / 3)
-          var pos = 0
-          while (((i + 2) < numChars) && (c == '%')) {
-            val v = try {
-              substring(i + 1, i + 3).toInt(16)
-            } catch (e: NumberFormatException) {
-              return UriError.IllegalArgument("URLDecoder: Illegal hex characters in escape (%) pattern - " + e.message)
-                .left()
+          if (bytes == null) {
+            bytes = ByteArray((numChars - i) / 3)
+          } else {
+            var pos = 0
+            while (((i + 2) < numChars) && (c == '%')) {
+              val v = try {
+                substring(i + 1, i + 3).toInt(16)
+              } catch (e: NumberFormatException) {
+                return UriError.IllegalArgument("URLDecoder: Illegal hex characters in escape (%) pattern - " + e.message)
+                  .left()
+              }
+              if (v < 0)
+                return UriError.IllegalArgument("URLDecoder: Illegal hex characters in escape (%) pattern - negative value")
+                  .left()
+              bytes[pos] = v.toByte()
+              pos += 1
+              i += 3
+              if (i < numChars) c = elementAt(i)
             }
-            if (v < 0)
-              return UriError.IllegalArgument("URLDecoder: Illegal hex characters in escape (%) pattern - negative value")
-                .left()
-            bytes[pos] = v.toByte()
-            pos += 1
-            i += 3
-            if (i < numChars) c = elementAt(i)
+            // A trailing, incomplete byte encoding such as
+            // "%x" will cause an exception to be thrown
+            if ((i < numChars) && (c == '%'))
+              return UriError.IllegalArgument("URLDecoder: Incomplete trailing escape (%) pattern").left()
+            sb.append(io.ktor.utils.io.core.String(bytes, charset = enc))
+            needToChange = true
           }
-          // A trailing, incomplete byte encoding such as
-          // "%x" will cause an exception to be thrown
-          if ((i < numChars) && (c == '%'))
-            return UriError.IllegalArgument("URLDecoder: Incomplete trailing escape (%) pattern").left()
-          sb.appendRange(bytes.joinToString { it.toString(16) }, startIndex = 0, endIndex = pos)
-          needToChange = true
         }
         else -> {
           sb.append(c)
