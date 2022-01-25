@@ -73,8 +73,8 @@ public data class Uri(
     }
 
     private fun getUserInfoOrNull(match: MatchResult, schemeSpecificPart: String): Either<UriError, UserInfo>? =
-      match.groups["userinfo"]?.range?.let { range ->
-        schemeSpecificPart.substring(range).split(":").let { userInfoParts ->
+      match.groups["userinfo"]?.value?.let { value ->
+        value.split(":").let { userInfoParts ->
           when {
             userInfoParts.isEmpty() -> return null
             else -> UserInfo(
@@ -86,8 +86,8 @@ public data class Uri(
       }
 
     private fun getHost(match: MatchResult, schemeSpecificPart: String): Either<UriError, HostSegment> =
-      match.groups["host"]?.range?.let { range ->
-        schemeSpecificPart.substring(range).removeSurrounding(prefix = "[", suffix = "]").let { host: String ->
+      match.groups["host"]?.value?.let { value ->
+        value.removeSurrounding(prefix = "[", suffix = "]").let { host: String ->
           if (host.isNotEmpty() && host != " " && host != "\n" && host != "%20") HostSegment(
             v = host.decode().fold({ return it.left() }, { it })
           ).right()
@@ -96,8 +96,8 @@ public data class Uri(
       } ?: UriError.InvalidHost.left()
 
     private fun getPort(match: MatchResult, schemeSpecificPart: String, scheme: String): Either<UriError, Int>? =
-      match.groups["port"]?.range?.let { range ->
-        val port: Int? = schemeSpecificPart.substring(range).let {
+      match.groups["port"]?.value?.let { value ->
+        val port: Int? = value.let {
           when {
             it.isEmpty() -> null
             else -> {
@@ -123,8 +123,7 @@ public data class Uri(
 
     private fun getPathSegmentsOrEmpty(match: MatchResult, schemeSpecificPart: String): Either<UriError, PathSegments> =
       PathSegments.absoluteOrEmptyS(
-        match.groups["path"]?.range?.let { range ->
-          val pathPart = schemeSpecificPart.substring(range)
+        match.groups["path"]?.value?.let { pathPart ->
           when {
             pathPart.isEmpty() -> emptyList()
             else -> pathPart.removePrefix("/").split("/")
@@ -137,8 +136,7 @@ public data class Uri(
       match: MatchResult,
       schemeSpecificPart: String
     ): Either<UriError, List<QuerySegment>> =
-      match.groups["query"]?.range?.let { range ->
-        val querySegments: String = schemeSpecificPart.substring(range)
+      match.groups["query"]?.value?.let { querySegments ->
         when (querySegments.contains("&") || querySegments.contains("=")) {
           true -> {
             querySegments.split("&").map { querySegment ->
@@ -161,8 +159,7 @@ public data class Uri(
       match: MatchResult,
       schemeSpecificPart: String
     ): Either<UriError, FragmentSegment?> =
-      match.groups["fragment"]?.range?.let { range ->
-        val fragment = schemeSpecificPart.substring(range)
+      match.groups["fragment"]?.value?.let { fragment ->
         when (fragment.isNotEmpty()) {
           true -> FragmentSegment(v = fragment.decode().fold({ return it.left() }, { it }))
           false -> null
@@ -368,10 +365,12 @@ public data class Uri(
 public sealed interface UriError {
   @JvmInline
   public value class UnexpectedScheme(public val errorMessage: String) : UriError
+
   @JvmInline
   public value class CantParse(public val errorMessage: String) : UriError
   public object InvalidHost : UriError
   public object InvalidPort : UriError
+
   @JvmInline
   public value class IllegalArgument(public val errorMessage: String) : UriError
 }
