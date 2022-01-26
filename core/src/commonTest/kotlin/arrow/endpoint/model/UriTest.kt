@@ -183,7 +183,7 @@ class UriTest : FunSpec() {
     for ((groupName, testCases: List<Pair<String, String>>) in testScheme) {
       for ((i: Int, pair: Pair<String, String>) in testCases.withIndex()) {
         test("[$groupName] should interpolate to ${pair.second} (${i + 1})") {
-          Uri.parse(pair.first).fold(
+          parseToUri(pair.first).fold(
             { uriError -> (uriError as UriError.UnexpectedScheme).errorMessage shouldBe pair.second },
             { it.toString() shouldBe pair.second }
           )
@@ -210,77 +210,77 @@ class UriTest : FunSpec() {
     }
 
     test("hostname characters") {
-      Uri.parse("http://\n/").fold({ it shouldBe UriError.InvalidHost }, { fail("Expecting an error") })
-      Uri.parse("http:// /").fold({ it shouldBe UriError.InvalidHost }, { fail("Expecting an error") })
-      Uri.parse("http://%20/").fold({ it shouldBe UriError.InvalidHost }, { fail("Expecting an error") })
-      Uri.parse("http://abcd")
+      parseToUri("http://\n/").fold({ it shouldBe UriError.InvalidHost }, { fail("Expecting an error") })
+      parseToUri("http:// /").fold({ it shouldBe UriError.InvalidHost }, { fail("Expecting an error") })
+      parseToUri("http://%20/").fold({ it shouldBe UriError.InvalidHost }, { fail("Expecting an error") })
+      parseToUri("http://abcd")
         .fold({ fail("this should work") }, { UriCompatibility.encodeDNSHost(it.host().toString()) shouldBe "abcd" })
-      Uri.parse("http://ABCD")
+      parseToUri("http://ABCD")
         .fold({ fail("this should work") }, { UriCompatibility.encodeDNSHost(it.host().toString()) shouldBe "abcd" })
-      Uri.parse("http://σ")
+      parseToUri("http://σ")
         .fold({ fail("this should work") }, { UriCompatibility.encodeDNSHost(it.host().toString()) shouldBe "xn--4xa" })
-      Uri.parse("http://Σ")
+      parseToUri("http://Σ")
         .fold({ fail("this should work") }, { UriCompatibility.encodeDNSHost(it.host().toString()) shouldBe "xn--4xa" })
-      Uri.parse("http://AB\u00ADCD")
+      parseToUri("http://AB\u00ADCD")
         .fold({ fail("this should work") }, { UriCompatibility.encodeDNSHost(it.host().toString()) shouldBe "abcd" })
-      Uri.parse("http://\u2121")
+      parseToUri("http://\u2121")
         .fold({ fail("this should work") }, { UriCompatibility.encodeDNSHost(it.host().toString()) shouldBe "tel" })
-      Uri.parse("http://\uD87E\uDE1D").fold(
+      parseToUri("http://\uD87E\uDE1D").fold(
         { fail("this should work") },
         { UriCompatibility.encodeDNSHost(it.host().toString()) shouldBe "xn--pu5l" }
       )
     }
 
     test("hostname ipv6") {
-      Uri.parse("http://[::1]/")
+      parseToUri("http://[::1]/")
         .fold({ fail("this should work") }, { it.host().toString() shouldBe "::1" })
-      Uri.parse("http://[::1]/").fold({ fail("this should work") }, { it.toString() shouldBe "http://[::1]/" })
-      Uri.parse("http://[::1]:8080/").fold({ fail("this should work") }, { it.port() shouldBe 8080 })
-      Uri.parse("http://user:password@[::1]/")
+      parseToUri("http://[::1]/").fold({ fail("this should work") }, { it.toString() shouldBe "http://[::1]/" })
+      parseToUri("http://[::1]:8080/").fold({ fail("this should work") }, { it.port() shouldBe 8080 })
+      parseToUri("http://user:password@[::1]/")
         .fold({ fail("this should work") }, { it.authority?.userInfo?.password shouldBe "password" })
-      Uri.parse("http://user:password@[::1]:8080/")
+      parseToUri("http://user:password@[::1]:8080/")
         .fold({ fail("this should work") }, { it.host().toString() shouldBe "::1" })
-      Uri.parse("http://[%3A%3A%31]/")
+      parseToUri("http://[%3A%3A%31]/")
         .fold({ fail("this should work") }, { it.host().toString() shouldBe "::1" })
     }
 
     test("port") {
-      Uri.parse("http://host:80/").fold({ fail("this should work") }, { it.toString() shouldBe "http://host/" })
-      Uri.parse("http://host:99/").fold({ fail("this should work") }, { it.toString() shouldBe "http://host:99/" })
-      Uri.parse("http://host:/").fold({ fail("this should work") }, { it.toString() shouldBe "http://host/" })
-      Uri.parse("http://host:65535/").fold({ fail("this should work") }, { it.port() shouldBe 65535 })
-      Uri.parse("http://host:0/").fold({ it shouldBe UriError.InvalidPort }, { fail("Expecting an error") })
-      Uri.parse("http://host:65536/").fold({ it shouldBe UriError.InvalidPort }, { fail("Expecting an error") })
-      Uri.parse("http://host:-1/").fold({ it shouldBe UriError.InvalidPort }, { fail("Expecting an error") })
-      Uri.parse("http://host:a/").fold({ it shouldBe UriError.InvalidPort }, { fail("Expecting an error") })
-      Uri.parse("http://host:%39%39/").fold({ it shouldBe UriError.InvalidPort }, { fail("Expecting an error") })
+      parseToUri("http://host:80/").fold({ fail("this should work") }, { it.toString() shouldBe "http://host/" })
+      parseToUri("http://host:99/").fold({ fail("this should work") }, { it.toString() shouldBe "http://host:99/" })
+      parseToUri("http://host:/").fold({ fail("this should work") }, { it.toString() shouldBe "http://host/" })
+      parseToUri("http://host:65535/").fold({ fail("this should work") }, { it.port() shouldBe 65535 })
+      parseToUri("http://host:0/").fold({ it shouldBe UriError.InvalidPort }, { fail("Expecting an error") })
+      parseToUri("http://host:65536/").fold({ it shouldBe UriError.InvalidPort }, { fail("Expecting an error") })
+      parseToUri("http://host:-1/").fold({ it shouldBe UriError.InvalidPort }, { fail("Expecting an error") })
+      parseToUri("http://host:a/").fold({ it shouldBe UriError.InvalidPort }, { fail("Expecting an error") })
+      parseToUri("http://host:%39%39/").fold({ it shouldBe UriError.InvalidPort }, { fail("Expecting an error") })
     }
 
     test("paths") {
-      Uri.parse("http://host/%00")
+      parseToUri("http://host/%00")
         .fold({ fail("this should work") }, { it.path() shouldContainExactly listOf("\u0000") })
-      Uri.parse("http://host/a/%E2%98%83/c")
+      parseToUri("http://host/a/%E2%98%83/c")
         .fold({ fail("this should work") }, { it.path() shouldContainExactly listOf("a", "\u2603", "c") })
-      Uri.parse("http://host/a/%F0%9F%8D%A9/c")
+      parseToUri("http://host/a/%F0%9F%8D%A9/c")
         .fold({ fail("this should work") }, { it.path() shouldContainExactly listOf("a", "\uD83C\uDF69", "c") })
-      Uri.parse("http://host/a/%62/c")
+      parseToUri("http://host/a/%62/c")
         .fold({ fail("this should work") }, { it.path() shouldContainExactly listOf("a", "b", "c") })
-      Uri.parse("http://host/a/%7A/c")
+      parseToUri("http://host/a/%7A/c")
         .fold({ fail("this should work") }, { it.path() shouldContainExactly listOf("a", "z", "c") })
-      Uri.parse("http://host/a/%7a/c")
+      parseToUri("http://host/a/%7a/c")
         .fold({ fail("this should work") }, { it.path() shouldContainExactly listOf("a", "z", "c") })
-      Uri.parse("http://host/a%f/b")
+      parseToUri("http://host/a%f/b")
         .fold({ it::class shouldBeSameInstanceAs UriError.IllegalArgument::class }, { fail("Expecting an error") })
-      Uri.parse("http://host/%/b")
+      parseToUri("http://host/%/b")
         .fold({ it::class shouldBeSameInstanceAs UriError.IllegalArgument::class }, { fail("Expecting an error") })
-      Uri.parse("http://host/%")
+      parseToUri("http://host/%")
         .fold({ it::class shouldBeSameInstanceAs UriError.IllegalArgument::class }, { fail("Expecting an error") })
-      Uri.parse("http://github.com/%%30%30")
+      parseToUri("http://github.com/%%30%30")
         .fold({ it::class shouldBeSameInstanceAs UriError.IllegalArgument::class }, { fail("Expecting an error") })
     }
 
     test("[query parameter values] should interpolate correctly") {
-      Uri.parse("http://example.com?x=a=b")
+      parseToUri("http://example.com?x=a=b")
         .fold(
           { fail("this should work") },
           {
@@ -288,7 +288,7 @@ class UriTest : FunSpec() {
               .toString() shouldBe "http://example.com?x=a=b"
           }
         )
-      Uri.parse("http://host/?a=!$(),/:;?@[]\\^`{|}~")
+      parseToUri("http://host/?a=!$(),/:;?@[]\\^`{|}~")
         .fold(
           { fail("this should work") },
           {
@@ -299,7 +299,7 @@ class UriTest : FunSpec() {
     }
 
     test("[fragments] should interpolate correctly") {
-      Uri.parse("http://host/#=[]:;\"~|?#@^/$*").fold(
+      parseToUri("http://host/#=[]:;\"~|?#@^/$*").fold(
         { fail("this should work, error: $it") },
         { uri ->
           uri.fragmentSegmentEncoding { FragmentSegment.RelaxedWithBrackets(it) }

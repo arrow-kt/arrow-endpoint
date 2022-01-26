@@ -5,7 +5,7 @@ package arrow.endpoint.model
 import java.net.URI
 
 public fun Uri(javaUri: URI): Uri? =
-  Uri.parse(javaUri.toString()).orNull()
+  parseToUri(javaUri.toString()).orNull()
 
 public fun Uri.toJavaUri(): URI = URI(toString())
 

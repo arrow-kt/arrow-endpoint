@@ -10,7 +10,7 @@ import arrow.core.andThen
 import arrow.endpoint.model.CodecFormat
 import arrow.endpoint.model.Cookie
 import arrow.endpoint.model.Uri
-import arrow.endpoint.model.UriError
+import arrow.endpoint.model.parseToUri
 import io.ktor.utils.io.charsets.Charset
 import io.ktor.utils.io.charsets.Charsets
 import kotlin.time.Duration
@@ -133,8 +133,8 @@ public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
     public val uri: PlainCodec<Uri> =
       string.mapDecode(
         { raw ->
-          Uri.parse(raw).fold(
-            { _: UriError -> DecodeResult.Failure.Error(raw, IllegalArgumentException(this.toString())) },
+          parseToUri(raw).fold(
+            { DecodeResult.Failure.Error(raw, IllegalArgumentException(this.toString())) },
             { DecodeResult.Value(it) }
           )
         },
