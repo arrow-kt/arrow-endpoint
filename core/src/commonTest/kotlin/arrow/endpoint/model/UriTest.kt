@@ -51,9 +51,9 @@ class UriTest : FunSpec() {
       "http://abc/x" to "http://abc/x",
     ),
     "ipv6" to listOf(
-     "http://[::1]/x" to "http://[::1]/x",
-     "http://[1::3:4:5:6:7:8]/x" to "http://[1::3:4:5:6:7:8]/x",
-     "http://[2001:0abcd:1bcde:2cdef::9f2e:0690:6969]/x" to "http://[2001:0abcd:1bcde:2cdef::9f2e:0690:6969]/x",
+      "http://[::1]/x" to "http://[::1]/x",
+      "http://[1::3:4:5:6:7:8]/x" to "http://[1::3:4:5:6:7:8]/x",
+      "http://[2001:0abcd:1bcde:2cdef::9f2e:0690:6969]/x" to "http://[2001:0abcd:1bcde:2cdef::9f2e:0690:6969]/x",
       "http://[::1]:8080/x" to "http://[::1]:8080/x",
       "http://[2001:0abcd:1bcde:2cdef::9f2e:0690:6969]/x" to "http://[2001:0abcd:1bcde:2cdef::9f2e:0690:6969]/x",
       "http://[2001:0db8:85a3:0000:0000:8a2e:0370:7334]:8080" to "http://[2001:0db8:85a3:0000:0000:8a2e:0370:7334]:8080",
@@ -149,7 +149,7 @@ class UriTest : FunSpec() {
   )
 
   init {
-    /*for ((groupName, testCases: List<Pair<String, String>>) in testData) {
+    for ((groupName, testCases: List<Pair<String, String>>) in testData) {
       for ((i: Int, pair: Pair<String, String>) in testCases.withIndex()) {
         test("[$groupName] should interpolate to ${pair.second} (${i + 1})") {
           val uri = parseToUri(pair.first).shouldBeRight()
@@ -208,22 +208,19 @@ class UriTest : FunSpec() {
         toString() shouldBe "http://host/path"
         authority?.userInfo.toString() shouldBe ":password%40"
       }
-    }*/
+    }
 
     test("hostname characters") {
-      /*parseToUri("http://\n/").shouldBeLeft().shouldBeTypeOf<UriError.InvalidHost>()
+      parseToUri("http://\n/").shouldBeLeft().shouldBeTypeOf<UriError.InvalidHost>()
       parseToUri("http:// /").shouldBeLeft().shouldBeTypeOf<UriError.InvalidHost>()
-      parseToUri("http://%20/").shouldBeLeft().shouldBeTypeOf<UriError.InvalidHost>()*/
-      parseToUri("http://abcd")
-        .fold({ fail("this should work") }, {
-          UriCompatibility.encodeDNSHost(it.host().toString()) shouldBe "abcd"
-        })
-      parseToUri("http://ABCD")
-        .fold({ fail("this should work") }, {
-          UriCompatibility.encodeDNSHost(it.host().toString()) shouldBe "abcd"
-        })
-    }
-      /*parseToUri("http://σ")
+      parseToUri("http://%20/").shouldBeLeft().shouldBeTypeOf<UriError.InvalidHost>()
+      parseToUri("http://abcd").fold(
+        { fail("this should work") },
+        { UriCompatibility.encodeDNSHost(it.host().toString()) shouldBe "abcd" })
+      parseToUri("http://ABCD").fold(
+        { fail("this should work") },
+        { UriCompatibility.encodeDNSHost(it.host().toString()) shouldBe "abcd" })
+      parseToUri("http://σ")
         .fold({ fail("this should work") }, { UriCompatibility.encodeDNSHost(it.host().toString()) shouldBe "xn--4xa" })
       parseToUri("http://Σ")
         .fold({ fail("this should work") }, { UriCompatibility.encodeDNSHost(it.host().toString()) shouldBe "xn--4xa" })
@@ -312,6 +309,6 @@ class UriTest : FunSpec() {
             .toString() shouldBe "http://host/#=[]:;%22~%7C?%23@%5E/$*"
         }
       )
-    }*/
+    }
   }
 }

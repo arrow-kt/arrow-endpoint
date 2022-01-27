@@ -110,7 +110,7 @@ private val List<String>.getHostAndPortFromAuthority: String?
   get() = getOrNull(4)?.let { authority ->
     val userInfoEndIndex = authority.lastIndexOf(USER_INFO_END_DELIMITER)
     val hostStartIndex = if (userInfoEndIndex == -1) 0 else userInfoEndIndex + 1
-    authority.substring(hostStartIndex)
+    authority.substring(hostStartIndex).lowercase()
   }
 
 private fun Int.isDefaultPort(scheme: String) = when (scheme) {
