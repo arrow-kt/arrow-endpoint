@@ -20,6 +20,7 @@ kotlin {
       dependencies {
         implementation(libs.kotest.frameworkEngine)
         implementation(libs.kotest.assertionsCore)
+        implementation(libs.kotest.arrowAssertions)
       }
     }
 
