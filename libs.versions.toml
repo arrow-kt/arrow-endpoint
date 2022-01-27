@@ -12,7 +12,6 @@ spring = "2.6.3"
 reactorKotlinExtensions = "1.1.5"
 undertow = "2.2.14.Final"
 kotest = "5.1.0"
-kotestArrow = "1.2.0"
 kotestGradle = "5.1.0"
 graphQL = "16.2"
 kotlinGraphQL = "4.0.0-alpha.17"
@@ -61,7 +60,6 @@ kotest-assertionsCore = { module = "io.kotest:kotest-assertions-core", version.r
 kotest-frameworkEngine = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }
 kotest-property = { module = "io.kotest:kotest-property", version.ref = "kotest" }
 kotest-runnerJUnit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
-kotest-arrowAssertions = { module = "io.kotest.extensions:kotest-assertions-arrow", version.ref = "kotestArrow" }
 
 [plugins]
 arrowGradleConfig-formatter = { id = "io.arrow-kt.arrow-gradle-config-formatter", version.ref = "arrowGradleConfig" }

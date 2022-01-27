@@ -1,7 +1,7 @@
 package arrow.endpoint.model
 
-import io.kotest.assertions.arrow.core.shouldBeLeft
-import io.kotest.assertions.arrow.core.shouldBeRight
+import arrow.endpoint.shouldBeLeft
+import arrow.endpoint.shouldBeRight
 import io.kotest.assertions.fail
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactly
