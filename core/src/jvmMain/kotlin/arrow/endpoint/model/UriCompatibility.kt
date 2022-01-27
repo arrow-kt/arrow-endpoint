@@ -5,7 +5,9 @@ import java.net.URLEncoder
 
 internal actual object UriCompatibility {
   actual fun encodeDNSHost(host: String): String =
-    java.net.IDN.toASCII(host).encode(allowedCharacters = Rfc3986.Host)
+    java.net.IDN.toASCII(host).let {
+      it.encode(allowedCharacters = Rfc3986.Host)
+    }
 
   actual fun encodeQuery(s: String, enc: String): String =
     URLEncoder.encode(s, enc)
