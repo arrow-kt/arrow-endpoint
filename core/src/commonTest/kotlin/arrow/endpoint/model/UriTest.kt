@@ -17,7 +17,7 @@ class UriTest : FunSpec() {
   private val v2encoded = "a%20c"
 
   private val testData: List<Pair<String, List<Pair<String, String>>>> = listOf(
-    /*"basic" to listOf(
+    "basic" to listOf(
       "http://example.com" to "http://example.com",
       "http://example.com/" to "http://example.com/",
       "http://example.com?x=y" to "http://example.com?x=y",
@@ -28,7 +28,7 @@ class UriTest : FunSpec() {
     "scheme" to listOf(
       "https://example.com" to "https://example.com",
       "http://example.com:" to "http://example.com"
-    ),*/
+    ),
     "user info" to listOf(
       "http://user:pass@example.com" to "http://user:pass@example.com",
       "http://$v2@example.com" to "http://$v2encoded@example.com",
@@ -51,9 +51,9 @@ class UriTest : FunSpec() {
       "http://abc/x" to "http://abc/x",
     ),
     "ipv6" to listOf(
-      "http://[::1]/x" to "http://[::1]/x",
-      "http://[1::3:4:5:6:7:8]/x" to "http://[1::3:4:5:6:7:8]/x",
-      "http://[2001:0abcd:1bcde:2cdef::9f2e:0690:6969]/x" to "http://[2001:0abcd:1bcde:2cdef::9f2e:0690:6969]/x",
+     "http://[::1]/x" to "http://[::1]/x",
+     "http://[1::3:4:5:6:7:8]/x" to "http://[1::3:4:5:6:7:8]/x",
+     "http://[2001:0abcd:1bcde:2cdef::9f2e:0690:6969]/x" to "http://[2001:0abcd:1bcde:2cdef::9f2e:0690:6969]/x",
       "http://[::1]:8080/x" to "http://[::1]:8080/x",
       "http://[2001:0abcd:1bcde:2cdef::9f2e:0690:6969]/x" to "http://[2001:0abcd:1bcde:2cdef::9f2e:0690:6969]/x",
       "http://[2001:0db8:85a3:0000:0000:8a2e:0370:7334]:8080" to "http://[2001:0db8:85a3:0000:0000:8a2e:0370:7334]:8080",
@@ -62,8 +62,8 @@ class UriTest : FunSpec() {
       "http://example.com:8080" to "http://example.com:8080",
       "http://example.com:8080/x" to "http://example.com:8080/x",
       "http://example.com:/x" to "http://example.com/x",
-    )
-    /*"path" to listOf(
+    ),
+    "path" to listOf(
       "http://example.com/$v1" to "http://example.com/$v1",
       "http://example.com/$v1/" to "http://example.com/$v1/",
       "http://example.com/$v2" to "http://example.com/$v2encoded",
@@ -112,7 +112,7 @@ class UriTest : FunSpec() {
       "http://example.com/dont/run/with/✂" to "http://example.com/dont/run/with/%E2%9C%82",
       "http://example.com/in/query?key=🍪" to "http://example.com/in/query?key=%F0%9F%8D%AA",
       "http://example.com/in/query?🍪=value" to "http://example.com/in/query?%F0%9F%8D%AA=value"
-    )*/
+    )
   )
 
   private val testTrimStart = listOf(
@@ -214,7 +214,8 @@ class UriTest : FunSpec() {
       parseToUri("http://\n/").shouldBeLeft().shouldBeTypeOf<UriError.InvalidHost>()
       parseToUri("http:// /").shouldBeLeft().shouldBeTypeOf<UriError.InvalidHost>()
       parseToUri("http://%20/").shouldBeLeft().shouldBeTypeOf<UriError.InvalidHost>()
-      UriCompatibility.encodeDNSHost(parseToUri("http://abcd").shouldBeRight().host().toString()) shouldBe "abcd"
+      parseToUri("http://abcd")
+        .fold({ fail("this should work") }, { UriCompatibility.encodeDNSHost(it.host().toString()) shouldBe "abcd" })
       parseToUri("http://ABCD")
         .fold({ fail("this should work") }, { UriCompatibility.encodeDNSHost(it.host().toString()) shouldBe "abcd" })
       parseToUri("http://σ")
@@ -249,11 +250,11 @@ class UriTest : FunSpec() {
       parseToUri("http://host:99/").shouldBeRight().toString().shouldBe("http://host:99/")
       parseToUri("http://host:/").shouldBeRight().toString().shouldBe("http://host/")
       parseToUri("http://host:65535/").shouldBeRight().port() shouldBe 65535
-      parseToUri("http://host:0/").shouldBeRight().shouldBeTypeOf<UriError.InvalidPort>()
-      parseToUri("http://host:65536/").shouldBeTypeOf<UriError.InvalidPort>()
-      parseToUri("http://host:-1/").shouldBeTypeOf<UriError.InvalidPort>()
-      parseToUri("http://host:a/").shouldBeTypeOf<UriError.InvalidPort>()
-      parseToUri("http://host:%39%39/").shouldBeTypeOf<UriError.InvalidPort>()
+      parseToUri("http://host:0/").shouldBeLeft().shouldBeTypeOf<UriError.InvalidPort>()
+      parseToUri("http://host:65536/").shouldBeLeft().shouldBeTypeOf<UriError.InvalidPort>()
+      parseToUri("http://host:-1/").shouldBeLeft().shouldBeTypeOf<UriError.InvalidPort>()
+      parseToUri("http://host:a/").shouldBeLeft().shouldBeTypeOf<UriError.InvalidPort>()
+      parseToUri("http://host:%39%39/").shouldBeLeft().shouldBeTypeOf<UriError.InvalidPort>()
     }
 
     test("paths") {

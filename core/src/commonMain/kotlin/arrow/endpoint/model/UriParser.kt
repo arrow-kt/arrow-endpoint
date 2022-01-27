@@ -3,11 +3,12 @@ package arrow.endpoint.model
 import arrow.core.Either
 import arrow.core.computations.RestrictedEitherEffect
 import arrow.core.computations.either
+import arrow.core.identity
 import arrow.core.left
 import arrow.endpoint.model.Rfc3986.decode
 
 private val schemePattern = Regex("^([a-zA-Z][a-zA-Z0-9+\\-.]*):")
-private val uriPartsRegex = Regex("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?")
+private val uriRegex = Regex("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?")
 
 private const val PORT_START_DELIMITER = ':'
 private const val USER_INFO_END_DELIMITER = '@'
@@ -27,7 +28,7 @@ public fun parseToUri(url: String): Either<UriError, Uri> =
     }
 
     val match: MatchResult =
-      uriPartsRegex.matchEntire(trimmedUrl) ?: UriError.CantParse("Can't parse $trimmedUrl").left().bind()
+      uriRegex.matchEntire(trimmedUrl) ?: UriError.CantParse("Can't parse $trimmedUrl").left().bind()
 
     val groupValues = match.groupValues
 
@@ -44,89 +45,29 @@ public fun parseToUri(url: String): Either<UriError, Uri> =
     )
   }
 
-/*private suspend fun RestrictedEitherEffect<UriError, *>.check(groupValues: List<String>): Unit {
-  val validScheme =
-    groupValues.getOrNull(2) ?: UriError.CantParse("Invalid Uri from String. Scheme is missing.").left().bind()
-
-  val authority = groupValues.getOrNull(4)
-  val path = groupValues.getOrNull(5) ?: ""
-  val query = groupValues.getOrNull(7)
-  val fragment = groupValues.getOrNull(9)
-
-  val userInfoEndIndex = authority?.indexOf(USER_INFO_END_DELIMITER) ?: -1
-
-  val userInfo = if (userInfoEndIndex == -1) null else authority?.substring(startIndex = 0, endIndex = userInfoEndIndex)
-  val uI = getUserInfoOrNull(groupValues)
-  val host = authority?.let {
-    val hostStartIndex = if (userInfoEndIndex == -1) 0 else userInfoEndIndex + 1
-    var hostIpv6EndIndex = it.indexOf(HOST_IPV6_END_DELIMITER)
-    var portStartIndex = it.indexOf(PORT_START_DELIMITER)
-
-    if (hostIpv6EndIndex != -1) {
-      hostIpv6EndIndex += 1
-    }
-
-    if (hostIpv6EndIndex > portStartIndex) {
-      portStartIndex = -1
-    }
-
-    val hostEndIndex =
-      listOf(hostIpv6EndIndex, portStartIndex, it.length).filter { index -> index != -1 }.minOf { index -> index }
-
-    it.substring(startIndex = hostStartIndex, endIndex = hostEndIndex)
-  }
-
-  val port = authority?.let {
-    val hostIpv6EndIndex = it.indexOf(HOST_IPV6_END_DELIMITER)
-    val portStartIndex = it.indexOf(PORT_START_DELIMITER)
-
-    if (portStartIndex == -1 || hostIpv6EndIndex > portStartIndex) {
-      null
-    } else {
-      it.substring(startIndex = portStartIndex + 1)
-    }
-  }?.toIntOrNull()
-
-  println(validScheme)
-  println(userInfo)
-  println(host)
-  println(port)
-  println(path)
-  println(query)
-  println(fragment)
-}*/
-
-private suspend fun RestrictedEitherEffect<UriError, *>.getUserInfoOrNull(groupValues: List<String>): UserInfo? {
-  val authority = groupValues.getOrNull(4)
-  val userInfoEndIndex = authority?.indexOf(USER_INFO_END_DELIMITER) ?: -1
-  val userInfo = if (userInfoEndIndex == -1) null else authority?.substring(startIndex = 0, endIndex = userInfoEndIndex)
-  return userInfo?.let {
+private suspend fun RestrictedEitherEffect<UriError, *>.getUserInfoOrNull(groupValues: List<String>): UserInfo? =
+  groupValues.getUserInfoFromAuthority?.let { userInfo ->
     val userName = userInfo.substringBefore(':').decode().bind()
-    val pw = if (userInfo.indexOf(':') != -1) userInfo.substringAfter(':').decode().bind() else null
+    val pw = userInfo.takeIf { it.indexOf(':') != -1 }?.run { substringAfter(':').decode().bind() }
     UserInfo(userName, pw)
   }
-}
 
 private suspend fun RestrictedEitherEffect<UriError, *>.getHost(groupValues: List<String>): HostSegment {
-  val authority = groupValues.getOrNull(4)
-  val userInfoEndIndex = authority?.indexOf(USER_INFO_END_DELIMITER) ?: -1
-  val host = authority?.let {
-    val hostStartIndex = if (userInfoEndIndex == -1) 0 else userInfoEndIndex + 1
-    var hostIpv6EndIndex = it.indexOf(HOST_IPV6_END_DELIMITER)
-    var portStartIndex = it.indexOf(PORT_START_DELIMITER)
+  val host = groupValues.getHostAndPortFromAuthority?.let {
+    val hostIpv6EndIndex =
+      it.indexOf(HOST_IPV6_END_DELIMITER).let { index ->
+        if (index != -1) index + 1 else index
+      }
 
-    if (hostIpv6EndIndex != -1) {
-      hostIpv6EndIndex += 1
-    }
-
-    if (hostIpv6EndIndex > portStartIndex) {
-      portStartIndex = -1
-    }
+    val portStartIndex =
+      it.lastIndexOf(PORT_START_DELIMITER).let { index ->
+        if (hostIpv6EndIndex > index) -1 else index
+      }
 
     val hostEndIndex =
-      listOf(hostIpv6EndIndex, portStartIndex, it.length).filter { index -> index != -1 }.minOrNull()!!
+      listOf(hostIpv6EndIndex, portStartIndex, it.length).filter { index -> index != -1 }.minOf(::identity)
 
-    it.substring(startIndex = hostStartIndex, endIndex = hostEndIndex)
+    it.substring(0, endIndex = hostEndIndex)
   } ?: UriError.InvalidHost.left().bind()
 
   return host.removeSurrounding(prefix = "[", suffix = "]").let { host: String ->
@@ -138,17 +79,19 @@ private suspend fun RestrictedEitherEffect<UriError, *>.getHost(groupValues: Lis
 }
 
 private suspend fun RestrictedEitherEffect<UriError, *>.getPort(groupValues: List<String>, scheme: String): Int? {
-  val authority = groupValues.getOrNull(4)
-  val port: Int? = authority?.let {
+  val port: Int? = groupValues.getHostAndPortFromAuthority?.let {
     val hostIpv6EndIndex = it.indexOf(HOST_IPV6_END_DELIMITER)
-    val portStartIndex = it.indexOf(PORT_START_DELIMITER)
+    val portStartIndex = it.lastIndexOf(PORT_START_DELIMITER)
 
     if (portStartIndex == -1 || hostIpv6EndIndex > portStartIndex) {
       null
     } else {
-      it.substring(startIndex = portStartIndex + 1)
+      val portString = it.substring(startIndex = portStartIndex + 1)
+      if (portString.isNotEmpty()) {
+        portString.toIntOrNull() ?: UriError.InvalidPort.left().bind()
+      } else null // we can omit it
     }
-  }?.toIntOrNull()
+  }
 
   return when {
     port == null || port.isDefaultPort(scheme) -> null // we can omit it
@@ -156,6 +99,19 @@ private suspend fun RestrictedEitherEffect<UriError, *>.getPort(groupValues: Lis
     else -> UriError.InvalidPort.left().bind()
   }
 }
+
+private val List<String>.getUserInfoFromAuthority: String?
+  get() = getOrNull(4)?.let { authority ->
+    val userInfoEndIndex = authority.lastIndexOf(USER_INFO_END_DELIMITER)
+    if (userInfoEndIndex == -1) null else authority.substring(startIndex = 0, endIndex = userInfoEndIndex)
+  }
+
+private val List<String>.getHostAndPortFromAuthority: String?
+  get() = getOrNull(4)?.let { authority ->
+    val userInfoEndIndex = authority.lastIndexOf(USER_INFO_END_DELIMITER)
+    val hostStartIndex = if (userInfoEndIndex == -1) 0 else userInfoEndIndex + 1
+    authority.substring(hostStartIndex)
+  }
 
 private fun Int.isDefaultPort(scheme: String) = when (scheme) {
   "https" -> 443 == this
