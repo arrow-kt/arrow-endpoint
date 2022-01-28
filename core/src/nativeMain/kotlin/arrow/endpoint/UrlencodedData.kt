@@ -1,11 +1,9 @@
 package arrow.endpoint
 
-import io.ktor.utils.io.charsets.Charset
-
 internal actual object UrlencodedData {
-  actual fun decode(s: String, charset: Charset): List<Pair<String, String>> =
+  actual fun decode(s: String, charset: String): List<Pair<String, String>> =
     TODO()
 
-  actual fun encode(s: List<Pair<String, String>>, charset: Charset): String =
+  actual fun encode(s: List<Pair<String, String>>, charset: String): String =
     TODO()
 }

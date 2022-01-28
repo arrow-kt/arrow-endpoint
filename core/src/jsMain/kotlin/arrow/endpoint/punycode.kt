@@ -1,11 +1,11 @@
 package arrow.endpoint
 
 @Suppress("ClassName")
-@JsModule("punycode")
+@JsModule("punycode/")
 @JsNonModule
 internal external object punycode {
   /** current Punycode.js version number **/
-  val version: String
+  val version: String = definedExternally
 
   /**
    * Converts a Punycode string representing a domain name or an email address
@@ -13,7 +13,7 @@ internal external object punycode {
    * it doesn't matter if you call it on a string that has already been
    * converted to Unicode.
    */
-  fun toUnicode(input: String): String
+  fun toUnicode(input: String): String = definedExternally
 
   /**
    * Converts a Unicode string representing a domain name or an email address to
@@ -21,11 +21,11 @@ internal external object punycode {
    * i.e. it doesn't matter if you call it with a domain that's already in
    * ASCII.
    */
-  fun toASCII(input: String): String
+  fun toASCII(input: String): String = definedExternally
 
   /**
    * Converts a string of Unicode symbols (e.g. a domain name label)
    * to a Punycode string of ASCII-only symbols.
    */
-  fun encode(input: String): String
+  fun encode(input: String): String = definedExternally
 }
