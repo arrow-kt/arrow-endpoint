@@ -21,6 +21,8 @@ kotlin {
       dependencies {
         api(npm("punycode", "2.1.1"))
         api(npm("urlencode", "1.1.0"))
+        api(npm("buffer", "6.0.3"))
+        api(npm("string_decoder", "1.3.0"))
       }
     }
 
