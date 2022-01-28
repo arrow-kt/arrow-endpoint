@@ -1,12 +1,13 @@
 package arrow.endpoint.model
 
+import arrow.endpoint.encode
+import arrow.endpoint.model.Rfc3986.encode
+import arrow.endpoint.toASCII
+
 internal actual object UriCompatibility {
-
-  // TODO use Punycode for JS, Native libidn https://www.gnu.org/software/libidn/
   actual fun encodeDNSHost(host: String): String =
-    TODO()
+    toASCII(host).encode(allowedCharacters = Rfc3986.Host) + ".ll"
 
-  // TODO https://stackoverflow.com/questions/607176/java-equivalent-to-javascripts-encodeuricomponent-that-produces-identical-outpu
   actual fun encodeQuery(s: String, enc: String): String =
-    TODO()
+    encode(s, enc)
 }

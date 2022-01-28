@@ -3,6 +3,7 @@ plugins {
   id(libs.plugins.kotlin.multiplatform.get().pluginId)
   alias(libs.plugins.arrowGradleConfig.kotlin)
   alias(libs.plugins.arrowGradleConfig.publish)
+
 }
 
 kotlin {
@@ -12,7 +13,20 @@ kotlin {
         api(libs.kotlin.stdlibCommon)
         api(libs.arrow.core)
         api(libs.coroutines.core)
-        implementation(libs.ktor.io)
+        api(libs.ktor.io)
+      }
+    }
+
+    jsMain {
+      dependencies {
+        api(npm("punycode", "2.1.1"))
+        api(npm("urlencode", "1.1.0"))
+      }
+    }
+
+    nativeMain {
+      dependencies {
+
       }
     }
 
@@ -20,14 +34,12 @@ kotlin {
       dependencies {
         implementation(libs.kotest.frameworkEngine)
         implementation(libs.kotest.assertionsCore)
+        implementation(libs.kotest.property)
       }
     }
 
     jvmTest {
       dependencies {
-        implementation(rootProject.libs.coroutines.core)
-        implementation(rootProject.libs.kotest.assertionsCore)
-        implementation(rootProject.libs.kotest.property)
         implementation(rootProject.libs.kotest.runnerJUnit5)
       }
     }

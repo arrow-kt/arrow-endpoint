@@ -19,6 +19,7 @@ http4k = "4.19.0.0"
 nettyTransport = "4.1.73.Final"
 http3 = "4.9.3"
 githooks = "0.0.2"
+punycode = "2.1.1"
 
 [libraries]
 kotlin-stdlibCommon = { module = "org.jetbrains.kotlin:kotlin-stdlib-common", version.ref = "kotlin" }
