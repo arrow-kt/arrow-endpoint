@@ -28,6 +28,31 @@
 .idea/**/gradle.xml
 .idea/**/libraries
 
+# dependencies
+/node_modules
+.package.swp
+jspm_packages/
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# misc
+/connect.lock
+/coverage/*
+/report_*
+/reports/
+.sass-cache/
+*.log
+
 # Gradle and Maven with auto-import
 # When using Gradle or Maven with auto-import, you should exclude module files,
 # since they will be recreated, and may cause churn.  Uncomment if using

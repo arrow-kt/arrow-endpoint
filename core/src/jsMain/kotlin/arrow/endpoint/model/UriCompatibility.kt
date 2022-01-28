@@ -6,7 +6,7 @@ import arrow.endpoint.toASCII
 
 internal actual object UriCompatibility {
   actual fun encodeDNSHost(host: String): String =
-    toASCII(host).encode(allowedCharacters = Rfc3986.Host) + ".ll"
+    toASCII(host).encode(allowedCharacters = Rfc3986.Host)
 
   actual fun encodeQuery(s: String, enc: String): String =
     encode(s, enc)
