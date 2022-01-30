@@ -1,6 +1,7 @@
 package arrow.endpoint.model
 
 import arrow.endpoint.model.Rfc3986.encode
+import io.ktor.utils.io.charsets.Charsets
 
 public typealias Encoding = (String) -> String
 
@@ -96,10 +97,10 @@ public sealed interface PathSegments {
 public sealed interface QuerySegment {
 
   public companion object {
-    /** Encodes all reserved characters [jvm target] using [java.net.URLEncoder.encode]. */
+    /** Encodes all reserved characters. */
     public val All: Encoding
       get() = {
-        UriCompatibility.encodeQuery(it, "UTF-8")
+        it.encodeURLQueryComponent(encodeFull = true, charset = Charsets.UTF_8)
       }
 
     /** Encodes only the `&` and `=` reserved characters, which are usually used to separate query parameter names and

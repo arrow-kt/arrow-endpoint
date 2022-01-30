@@ -13,7 +13,6 @@ import arrow.endpoint.model.Uri
 import arrow.endpoint.model.parseToUri
 import io.ktor.utils.io.charsets.Charset
 import io.ktor.utils.io.charsets.Charsets
-import io.ktor.utils.io.charsets.name
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
@@ -280,12 +279,10 @@ public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
       formSeqCodec(charset).map({ it.toMap() }) { it.toList() }
 
     public fun formSeqCodec(charset: Charset): Codec<String, List<Pair<String, String>>, CodecFormat.XWwwFormUrlencoded> =
-      string.format(CodecFormat.XWwwFormUrlencoded).map({ UrlencodedData.decode(it, charset.name) }) {
-        UrlencodedData.encode(
-          it,
-          charset.name
-        )
-      }
+      string.format(CodecFormat.XWwwFormUrlencoded)
+        .map({ UrlencodedData.decode(it, charset) }) {
+          UrlencodedData.encode(it, charset)
+        }
 
     public fun <A, CF : CodecFormat> anyStringCodec(
       schema: Schema<A>,

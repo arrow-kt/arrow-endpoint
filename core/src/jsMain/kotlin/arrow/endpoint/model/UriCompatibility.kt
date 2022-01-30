@@ -1,13 +1,9 @@
 package arrow.endpoint.model
 
-import arrow.endpoint.encode
 import arrow.endpoint.model.Rfc3986.encode
-import arrow.endpoint.punycode
+import org.w3c.dom.url.URL
 
 internal actual object UriCompatibility {
   actual fun encodeDNSHost(host: String): String =
-    punycode.toASCII(host).encode(allowedCharacters = Rfc3986.Host)
-
-  actual fun encodeQuery(s: String, enc: String): String =
-    encode(s, enc)
+    URL("http://$host").host.encode(allowedCharacters = Rfc3986.Host)
 }
