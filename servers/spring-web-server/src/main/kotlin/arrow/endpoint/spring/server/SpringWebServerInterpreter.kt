@@ -80,9 +80,7 @@ private class SpringRequestBody(
     val body: DataBuffer? = request.awaitBodyOrNull()
     return when (bodyType) {
       is EndpointIO.ByteArrayBody -> toByteArray(body)
-      is EndpointIO.ByteBufferBody -> body?.asByteBuffer()
-      is EndpointIO.InputStreamBody -> body?.asInputStream()
-      is EndpointIO.StringBody -> body?.toString(Charsets.UTF_8)
+       is EndpointIO.StringBody -> body?.toString(Charsets.UTF_8)
     } as R
   }
 

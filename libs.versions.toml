@@ -1,7 +1,7 @@
 [versions]
 kotlin = "1.6.10"
 arrow = "1.0.1"
-arrowGradleConfig = "0.9.0"
+arrowGradleConfig = "0.9.1-alpha.3"
 coroutines = "1.6.0"
 kotlinxSerialization = "1.6.10"
 dokka = "1.6.10"
@@ -19,6 +19,7 @@ http4k = "4.19.1.0"
 nettyTransport = "4.1.73.Final"
 http3 = "4.9.3"
 githooks = "0.0.2"
+punycode = "2.1.1"
 
 [libraries]
 kotlin-stdlibCommon = { module = "org.jetbrains.kotlin:kotlin-stdlib-common", version.ref = "kotlin" }
@@ -38,11 +39,12 @@ arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
 arrow-optics = { module = "io.arrow-kt:arrow-optics", version.ref = "arrow" }
 arrow-fx = { module = "io.arrow-kt:arrow-fx-coroutines", version.ref = "arrow" }
 
-http4k-core = { module = "org.http4k:http4k-core", version.ref ="http4k" }
-http4k-client-apache = { module = "org.http4k:http4k-client-apache", version.ref ="http4k" }
-mockwebserver = { module = "com.squareup.okhttp3:mockwebserver", version.ref ="http3" }
+http4k-core = { module = "org.http4k:http4k-core", version.ref = "http4k" }
+http4k-client-apache = { module = "org.http4k:http4k-client-apache", version.ref = "http4k" }
+mockwebserver = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "http3" }
 
 ktor-io = { module = "io.ktor:ktor-io", version.ref = "ktor" }
+ktor-http = { module = "io.ktor:ktor-http", version.ref = "ktor" }
 ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
 ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
@@ -52,8 +54,8 @@ logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "lo
 
 spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "spring" }
 spring-boot-starter-webflux = { module = "org.springframework.boot:spring-boot-starter-webflux", version.ref = "spring" }
-reactor-kotlin-extensions = { module = "io.projectreactor.kotlin:reactor-kotlin-extensions", version.ref ="reactorKotlinExtensions" }
-undertow = { module = "io.undertow:undertow-core", version.ref ="undertow" }
+reactor-kotlin-extensions = { module = "io.projectreactor.kotlin:reactor-kotlin-extensions", version.ref = "reactorKotlinExtensions" }
+undertow = { module = "io.undertow:undertow-core", version.ref = "undertow" }
 netty-transport-native-kqueue = { module = "io.netty:netty-transport-native-kqueue", version.ref = "nettyTransport" }
 
 kotest-assertionsCore = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
@@ -66,7 +68,8 @@ arrowGradleConfig-formatter = { id = "io.arrow-kt.arrow-gradle-config-formatter"
 arrowGradleConfig-kotlin = { id = "io.arrow-kt.arrow-gradle-config-kotlin", version.ref = "arrowGradleConfig" }
 arrowGradleConfig-nexus = { id = "io.arrow-kt.arrow-gradle-config-nexus", version.ref = "arrowGradleConfig" }
 arrowGradleConfig-publish = { id = "io.arrow-kt.arrow-gradle-config-publish", version.ref = "arrowGradleConfig" }
-kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref ="kotlinxSerialization" }
+arrowGradleConfig-versioning = { id = "io.arrow-kt.arrow-gradle-config-versioning", version.ref = "arrowGradleConfig" }
+kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinxSerialization" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 kotest-multiplatform = { id = "io.kotest.multiplatform", version.ref = "kotestGradle" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }

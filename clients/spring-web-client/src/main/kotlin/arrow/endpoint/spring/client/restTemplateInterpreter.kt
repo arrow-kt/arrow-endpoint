@@ -125,8 +125,6 @@ private fun EndpointOutput<*>.getOutputParams(
   when (val output = this) {
     is EndpointOutput.Single<*> -> when (val single = (output as EndpointOutput.Single<Any?>)) {
       is EndpointIO.ByteArrayBody -> single.codec.decode(response.body.readBytes())
-      is EndpointIO.ByteBufferBody -> single.codec.decode(ByteBuffer.wrap(response.body.readBytes()))
-      is EndpointIO.InputStreamBody -> single.codec.decode(response.body.readBytes().inputStream())
       is EndpointIO.StringBody -> single.codec.decode(String(response.body.readBytes()))
       is EndpointIO.Empty -> single.codec.decode(Unit)
       is EndpointOutput.FixedStatusCode -> single.codec.decode(Unit)

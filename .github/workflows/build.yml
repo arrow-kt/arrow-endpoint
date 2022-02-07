@@ -34,4 +34,4 @@ jobs:
             build-gradle-
 
       - name: Build project
-        run: ./gradlew build
+        run: ./gradlew build check

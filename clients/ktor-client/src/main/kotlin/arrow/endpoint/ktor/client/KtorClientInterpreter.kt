@@ -28,7 +28,6 @@ import io.ktor.http.ContentType
 import io.ktor.http.Headers
 import io.ktor.http.HttpMethod
 import io.ktor.http.takeFrom
-import java.nio.ByteBuffer
 
 public fun <A> DecodeResult<A>.getOrThrow(): A =
   when (this) {
@@ -86,9 +85,6 @@ public fun <I, E, O> Endpoint<I, E, O>.toRequestBuilder(baseUrl: String, input: 
     }
     body = when (val body = info.body) {
       is Body.ByteArray -> ByteArrayContent(body.byteArray/* contentType,  statusCode*/)
-      is Body.ByteBuffer -> ByteArrayContent(body.byteBuffer.array())
-      is Body.InputStream -> ByteArrayContent(body.inputStream.readBytes())
-
       // TODO fix ContentType
       is Body.String -> TextContent(body.string, ContentType.Text.Plain)
       null -> EmptyContent
@@ -155,8 +151,6 @@ private suspend fun EndpointOutput<*>.outputParams(
     is EndpointOutput.Single<*> ->
       when (this) {
         is EndpointIO.ByteArrayBody -> codec.decode(response.receive())
-        is EndpointIO.ByteBufferBody -> codec.decode(ByteBuffer.wrap(response.receive<ByteArray>()))
-        is EndpointIO.InputStreamBody -> codec.decode(response.receive())
         is EndpointIO.StringBody -> codec.decode(response.receive())
         is EndpointIO.Empty -> codec.decode(Unit)
         is EndpointIO.Header -> codec.decode(headers.getAll(name).orEmpty())

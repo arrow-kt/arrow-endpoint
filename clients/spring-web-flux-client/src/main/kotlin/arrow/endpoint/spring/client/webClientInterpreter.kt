@@ -17,11 +17,9 @@ import org.springframework.web.reactive.function.client.ClientResponse
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitExchange
 import java.net.URI
-import java.nio.ByteBuffer
 import reactor.core.publisher.Mono
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.awaitBodyOrNull
-import java.io.ByteArrayInputStream
 
 public suspend operator fun <I, E, O> WebClient.invoke(
   endpoint: Endpoint<I, E, O>,
@@ -120,14 +118,6 @@ private suspend fun EndpointOutput<*>.getOutputParams(
   when (val output = this) {
     is EndpointOutput.Single<*> -> when (val single = (output as EndpointOutput.Single<Any?>)) {
       is EndpointIO.ByteArrayBody -> single.codec.decode(response.awaitBodyOrNull(ByteArray::class) ?: byteArrayOf())
-      is EndpointIO.ByteBufferBody -> single.codec.decode(
-        response.awaitBodyOrNull(ByteBuffer::class) ?: ByteBuffer.wrap(byteArrayOf())
-      )
-      is EndpointIO.InputStreamBody -> single.codec.decode(
-        ByteArrayInputStream(
-          response.awaitBodyOrNull(ByteArray::class) ?: byteArrayOf()
-        )
-      )
       is EndpointIO.StringBody -> single.codec.decode(response.awaitBodyOrNull(String::class) ?: "")
       is EndpointIO.Empty -> single.codec.decode(Unit)
       is EndpointOutput.FixedStatusCode -> single.codec.decode(Unit)
