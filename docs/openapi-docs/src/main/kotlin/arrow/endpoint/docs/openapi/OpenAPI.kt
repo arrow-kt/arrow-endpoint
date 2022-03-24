@@ -724,8 +724,9 @@ public sealed class ExampleValue {
  * Defines Union: [A] | [Reference] type of OpenAPI.
  * Defined here instead of using Either since it's more convenient to define a KotlinX serializer here.
  */
+
 @Serializable(with = ReferencedSerializer::class)
-public sealed class Referenced<out A> {
+public open class Referenced<out A> internal constructor() {
   public data class Ref(public val value: Reference) : Referenced<Nothing>()
   public data class Other<A>(val value: A) : Referenced<A>()
 
@@ -733,6 +734,7 @@ public sealed class Referenced<out A> {
     when (this) {
       is Other -> Other(f(value))
       is Ref -> this
+      else -> TODO("Impossible.")
     }
 }
 
