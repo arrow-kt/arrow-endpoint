@@ -1,0 +1,7 @@
+public final class arrow/endpoint/SchemaKt {
+	public static final fun objectInfo (Lkotlin/reflect/KClass;)Larrow/endpoint/Schema$ObjectInfo;
+	public static final fun properties (Lkotlin/reflect/KClass;)Ljava/util/List;
+	public static final fun schema (Lkotlin/reflect/KClass;)Larrow/endpoint/Schema;
+	public static final fun sealedSubclassSchemas (Lkotlin/reflect/KClass;)Larrow/core/NonEmptyList;
+}
+

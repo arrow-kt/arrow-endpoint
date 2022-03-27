@@ -1,35 +1,117 @@
-name: "Publish libraries"
+name: Publish Artifacts
+
 on:
   push:
-    branches:
-      - main
+    tags:
+      - '**'
+
+env:
+  SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
+  SONATYPE_PWD: ${{ secrets.SONATYPE_PWD }}
+  ORG_GRADLE_PROJECT_signingKey: ${{ secrets.PGP_SECRET }}
+  ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.PGP_PASSPHRASE }}
+  OSS_USER: '${{ secrets.OSS_USER }}'
+  OSS_TOKEN: '${{ secrets.OSS_TOKEN }}'
+  OSS_STAGING_PROFILE_ID: '${{ secrets.OSS_STAGING_PROFILE_ID }}'
+  SIGNING_KEY_NAME: '${{ secrets.SIGNING_KEY_NAME }}'
+  SIGNING_KEY_ID: '${{ secrets.SIGNING_KEY_ID }}'
+  SIGNING_KEY_PASSPHRASE: '${{ secrets.SIGNING_KEY_PASSPHRASE }}'
+  SIGNING_KEY: '${{ secrets.SIGNING_KEY }}'
+  GRADLE_PUBLISH_KEY: '${{ secrets.GRADLE_PUBLISH_KEY }}'
+  GRADLE_PUBLISH_SECRET: '${{ secrets.GRADLE_PUBLISH_SECRET }}'
+
 jobs:
-  publish:
-    env:
-      SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
-      SONATYPE_PWD: ${{ secrets.SONATYPE_PWD }}
-      ORG_GRADLE_PROJECT_signingKey: ${{ secrets.PGP_SECRET }}
-      ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.PGP_PASSPHRASE }}
-      OSS_USER: '${{ secrets.OSS_USER }}'
-      OSS_TOKEN: '${{ secrets.OSS_TOKEN }}'
-      OSS_STAGING_PROFILE_ID: '${{ secrets.OSS_STAGING_PROFILE_ID }}'
-      SIGNING_KEY_NAME: '${{ secrets.SIGNING_KEY_NAME }}'
-      SIGNING_KEY_ID: '${{ secrets.SIGNING_KEY_ID }}'
-      SIGNING_KEY_PASSPHRASE: '${{ secrets.SIGNING_KEY_PASSPHRASE }}'
-      SIGNING_KEY: '${{ secrets.SIGNING_KEY }}'
-      GRADLE_PUBLISH_KEY: '${{ secrets.GRADLE_PUBLISH_KEY }}'
-      GRADLE_PUBLISH_SECRET: '${{ secrets.GRADLE_PUBLISH_SECRET }}'
-      GRADLE_OPTS: -Dorg.gradle.configureondemand=true -Dorg.gradle.parallel=false -Dkotlin.incremental=false -Dorg.gradle.jvmargs="-Xmx3g -XX:MaxPermSize=512m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8"
+  build:
 
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    outputs:
+      endpoints-version: ${{ steps.get-endpoints-version.outputs.endpoints-version }}
+
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v3.0.0
         with:
           fetch-depth: 0
 
-      - name: "Publish"
+      - uses: actions/setup-java@v3.0.0
+        with:
+          distribution: 'adopt'
+          java-version: '15'
+
+      - name: Build and test with Gradle
+        uses: gradle/gradle-build-action@v2.1.4
+        with:
+          arguments: -PkotlinVersion=${{ matrix.kotlin }} -PjvmTargetVersion=${{ matrix.jvm_target }} build --scan --stacktrace
+
+      - id: get-endpoints-version
+        name: Get Endpoints version
         run: |
-          ./gradlew publishToSonatype
+          ./gradlew
+          echo "::set-output name=endpoints-version::$(head -n 1 build/semver/version.txt)"
+
+      - name: Upload reports
+        uses: actions/upload-artifact@v3.0.0
+        with:
+          name: 'reports-${{ matrix.os }}'
+          path: '**/build/reports/**'
 
       - name: Stop Gradle daemons
         run: ./gradlew --stop
+
+#      - name: Bundle SARIF report
+#        run: mkdir sarif && find . -name '*.sarif' | xargs -I{} cp "{}" ./sarif/
+#
+#      - name: Upload SARIF report
+#        uses: github/codeql-action/upload-sarif@v1.1.5
+#        continue-on-error: true
+#        with:
+#          # Path to SARIF file relative to the root of the repository
+#          sarif_file: sarif
+#
+  publish:
+    needs: build
+    env:
+      JAVA_OPTS: -Xms512m -Xmx1024m
+
+    runs-on: macos-11
+
+    steps:
+    - uses: actions/checkout@v3.0.0
+
+    - uses: actions/setup-java@v3.0.0
+      with:
+        distribution: 'adopt'
+        java-version: '15'
+        cache: 'gradle'
+
+    - name: Publish alpha/beta/rc artifacts
+      if: |
+        contains(needs.build.outputs.endpoints-version, 'alpha') ||
+        contains(needs.build.outputs.endpoints-version, 'beta') ||
+        contains(needs.build.outputs.endpoints-version, 'rc')
+      run: ./gradlew --full-stacktrace publishToSonatype closeAndReleaseSonatypeStagingRepository
+
+    - name: Publish final artifacts
+      if: |
+        !contains(needs.build.outputs.endpoints-version, 'alpha') &&
+        !contains(needs.build.outputs.endpoints-version, 'beta') &&
+        !contains(needs.build.outputs.endpoints-version, 'rc')
+      run: ./gradlew --full-stacktrace publishToSonatype closeAndReleaseSonatypeStagingRepository
+
+    - name: Publish alpha/beta/rc gradle plugins
+      if: |
+        contains(needs.build.outputs.endpoints-version, 'alpha') ||
+        contains(needs.build.outputs.endpoints-version, 'beta') ||
+        contains(needs.build.outputs.endpoints-version, 'rc')
+      run: ./gradlew --full-stacktrace publishPlugins
+
+    - name: Publish final gradle plugins
+      if: |
+        !contains(needs.build.outputs.endpoints-version, 'alpha') &&
+        !contains(needs.build.outputs.endpoints-version, 'beta') &&
+        !contains(needs.build.outputs.endpoints-version, 'rc')
+      run: ./gradlew --full-stacktrace publishPlugins
+
+    - name: Stop Gradle daemons
+      run: ./gradlew --stop

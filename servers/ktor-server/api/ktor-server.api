@@ -1,0 +1,7 @@
+public final class arrow/endpoint/ktor/server/KtorHttpServerInterpreterKt {
+	public static final fun install (Lio/ktor/application/Application;Larrow/endpoint/server/ServerEndpoint;)V
+	public static final fun install (Lio/ktor/application/Application;Ljava/util/List;)V
+	public static final fun outgoingContent (Larrow/endpoint/model/ServerResponse;)Lio/ktor/http/content/OutgoingContent;
+	public static final fun toServerRequest (Lio/ktor/application/ApplicationCall;)Larrow/endpoint/model/ServerRequest;
+}
+

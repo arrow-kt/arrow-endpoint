@@ -1,0 +1,5 @@
+public final class arrow/endpoint/spring/server/SpringWebServerInterpreterKt {
+	public static final fun routerFunction (Larrow/endpoint/server/ServerEndpoint;)Lorg/springframework/web/reactive/function/server/RouterFunction;
+	public static final fun routerFunction (Ljava/util/List;)Lorg/springframework/web/reactive/function/server/RouterFunction;
+}
+

@@ -1,0 +1,1338 @@
+public abstract interface class arrow/endpoint/docs/openapi/AdditionalProperties {
+}
+
+public final class arrow/endpoint/docs/openapi/AdditionalProperties$Allowed : arrow/endpoint/docs/openapi/AdditionalProperties {
+	public static final synthetic fun box-impl (Z)Larrow/endpoint/docs/openapi/AdditionalProperties$Allowed;
+	public static fun constructor-impl (Z)Z
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (ZLjava/lang/Object;)Z
+	public static final fun equals-impl0 (ZZ)Z
+	public final fun getValue ()Z
+	public fun hashCode ()I
+	public static fun hashCode-impl (Z)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Z)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Z
+}
+
+public final class arrow/endpoint/docs/openapi/AdditionalProperties$PSchema : arrow/endpoint/docs/openapi/AdditionalProperties {
+	public static final synthetic fun box-impl (Larrow/endpoint/docs/openapi/Referenced;)Larrow/endpoint/docs/openapi/AdditionalProperties$PSchema;
+	public static fun constructor-impl (Larrow/endpoint/docs/openapi/Referenced;)Larrow/endpoint/docs/openapi/Referenced;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Larrow/endpoint/docs/openapi/Referenced;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Larrow/endpoint/docs/openapi/Referenced;Larrow/endpoint/docs/openapi/Referenced;)Z
+	public final fun getValue ()Larrow/endpoint/docs/openapi/Referenced;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Larrow/endpoint/docs/openapi/Referenced;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Larrow/endpoint/docs/openapi/Referenced;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Larrow/endpoint/docs/openapi/Referenced;
+}
+
+public final class arrow/endpoint/docs/openapi/Callback {
+	public static final field Companion Larrow/endpoint/docs/openapi/Callback$Companion;
+	public static final synthetic fun box-impl (Ljava/util/Map;)Larrow/endpoint/docs/openapi/Callback;
+	public static fun constructor-impl (Ljava/util/Map;)Ljava/util/Map;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/util/Map;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/util/Map;Ljava/util/Map;)Z
+	public final fun getValue ()Ljava/util/Map;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/util/Map;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/util/Map;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/util/Map;
+}
+
+public final class arrow/endpoint/docs/openapi/Callback$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Larrow/endpoint/docs/openapi/Callback$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize-HAgFUSY (Lkotlinx/serialization/encoding/Decoder;)Ljava/util/Map;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize-m5U21Ak (Lkotlinx/serialization/encoding/Encoder;Ljava/util/Map;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Callback$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Components {
+	public static final field Companion Larrow/endpoint/docs/openapi/Components$Companion;
+	public fun <init> ()V
+	public synthetic fun <init> (ILjava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;)V
+	public synthetic fun <init> (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/util/Map;
+	public final fun component2 ()Ljava/util/Map;
+	public final fun component3 ()Ljava/util/Map;
+	public final fun component4 ()Ljava/util/Map;
+	public final fun component5 ()Ljava/util/Map;
+	public final fun component6 ()Ljava/util/Map;
+	public final fun component7 ()Ljava/util/Map;
+	public final fun component8 ()Ljava/util/Map;
+	public final fun copy (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;)Larrow/endpoint/docs/openapi/Components;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/Components;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/Components;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCallbacks ()Ljava/util/Map;
+	public final fun getExamples ()Ljava/util/Map;
+	public final fun getHeaders ()Ljava/util/Map;
+	public final fun getLinks ()Ljava/util/Map;
+	public final fun getParameters ()Ljava/util/Map;
+	public final fun getRequestBodies ()Ljava/util/Map;
+	public final fun getResponses ()Ljava/util/Map;
+	public final fun getSchemas ()Ljava/util/Map;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Larrow/endpoint/docs/openapi/Components;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class arrow/endpoint/docs/openapi/Components$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Larrow/endpoint/docs/openapi/Components$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Larrow/endpoint/docs/openapi/Components;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Larrow/endpoint/docs/openapi/Components;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Components$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Contact {
+	public static final field Companion Larrow/endpoint/docs/openapi/Contact$Companion;
+	public fun <init> ()V
+	public synthetic fun <init> (ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Larrow/endpoint/docs/openapi/Contact;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/Contact;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/Contact;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getEmail ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getUrl ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Larrow/endpoint/docs/openapi/Contact;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class arrow/endpoint/docs/openapi/Contact$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Larrow/endpoint/docs/openapi/Contact$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Larrow/endpoint/docs/openapi/Contact;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Larrow/endpoint/docs/openapi/Contact;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Contact$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Discriminator {
+	public static final field Companion Larrow/endpoint/docs/openapi/Discriminator$Companion;
+	public synthetic fun <init> (ILjava/lang/String;Ljava/util/Map;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/util/Map;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/util/Map;
+	public final fun copy (Ljava/lang/String;Ljava/util/Map;)Larrow/endpoint/docs/openapi/Discriminator;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/Discriminator;Ljava/lang/String;Ljava/util/Map;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/Discriminator;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getMapping ()Ljava/util/Map;
+	public final fun getPropertyName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Larrow/endpoint/docs/openapi/Discriminator;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class arrow/endpoint/docs/openapi/Discriminator$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Larrow/endpoint/docs/openapi/Discriminator$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Larrow/endpoint/docs/openapi/Discriminator;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Larrow/endpoint/docs/openapi/Discriminator;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Discriminator$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Encoding {
+	public static final field Companion Larrow/endpoint/docs/openapi/Encoding$Companion;
+	public synthetic fun <init> (ILjava/lang/String;Ljava/util/Map;Ljava/lang/String;ZZLkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;ZZ)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;ZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/util/Map;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Z
+	public final fun component5 ()Z
+	public final fun copy (Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;ZZ)Larrow/endpoint/docs/openapi/Encoding;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/Encoding;Ljava/lang/String;Ljava/util/Map;Ljava/lang/String;ZZILjava/lang/Object;)Larrow/endpoint/docs/openapi/Encoding;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAllowReserved ()Z
+	public final fun getContentType ()Ljava/lang/String;
+	public final fun getExplode ()Z
+	public final fun getHeaders ()Ljava/util/Map;
+	public final fun getStyle ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Larrow/endpoint/docs/openapi/Encoding;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class arrow/endpoint/docs/openapi/Encoding$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Larrow/endpoint/docs/openapi/Encoding$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Larrow/endpoint/docs/openapi/Encoding;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Larrow/endpoint/docs/openapi/Encoding;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Encoding$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Example {
+	public static final field Companion Larrow/endpoint/docs/openapi/Example$Companion;
+	public fun <init> ()V
+	public synthetic fun <init> (ILjava/lang/String;Ljava/lang/String;Larrow/endpoint/docs/openapi/ExampleValue;Ljava/lang/String;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Larrow/endpoint/docs/openapi/ExampleValue;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Larrow/endpoint/docs/openapi/ExampleValue;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Larrow/endpoint/docs/openapi/ExampleValue;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Larrow/endpoint/docs/openapi/ExampleValue;Ljava/lang/String;)Larrow/endpoint/docs/openapi/Example;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/Example;Ljava/lang/String;Ljava/lang/String;Larrow/endpoint/docs/openapi/ExampleValue;Ljava/lang/String;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/Example;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDescription ()Ljava/lang/String;
+	public final fun getExternalValue ()Ljava/lang/String;
+	public final fun getSummary ()Ljava/lang/String;
+	public final fun getValue ()Larrow/endpoint/docs/openapi/ExampleValue;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Larrow/endpoint/docs/openapi/Example;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class arrow/endpoint/docs/openapi/Example$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Larrow/endpoint/docs/openapi/Example$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Larrow/endpoint/docs/openapi/Example;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Larrow/endpoint/docs/openapi/Example;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Example$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public abstract class arrow/endpoint/docs/openapi/ExampleValue {
+	public static final field Companion Larrow/endpoint/docs/openapi/ExampleValue$Companion;
+}
+
+public final class arrow/endpoint/docs/openapi/ExampleValue$Companion {
+	public final fun invoke (Larrow/endpoint/Codec;Ljava/lang/Object;)Larrow/endpoint/docs/openapi/ExampleValue;
+	public final fun invoke (Larrow/endpoint/Schema;Ljava/lang/Object;)Larrow/endpoint/docs/openapi/ExampleValue;
+	public final fun invoke (Ljava/lang/String;)Larrow/endpoint/docs/openapi/ExampleValue;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/ExampleValue$Multiple : arrow/endpoint/docs/openapi/ExampleValue {
+	public fun <init> (Ljava/util/List;)V
+	public final fun component1 ()Ljava/util/List;
+	public final fun copy (Ljava/util/List;)Larrow/endpoint/docs/openapi/ExampleValue$Multiple;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/ExampleValue$Multiple;Ljava/util/List;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/ExampleValue$Multiple;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValues ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class arrow/endpoint/docs/openapi/ExampleValue$Single : arrow/endpoint/docs/openapi/ExampleValue {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Larrow/endpoint/docs/openapi/ExampleValue$Single;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/ExampleValue$Single;Ljava/lang/String;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/ExampleValue$Single;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class arrow/endpoint/docs/openapi/ExpressionOrValue {
+}
+
+public final class arrow/endpoint/docs/openapi/ExpressionOrValue$Expression : arrow/endpoint/docs/openapi/ExpressionOrValue {
+	public static final synthetic fun box-impl (Ljava/lang/String;)Larrow/endpoint/docs/openapi/ExpressionOrValue$Expression;
+	public static fun constructor-impl (Ljava/lang/String;)Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class arrow/endpoint/docs/openapi/ExpressionOrValue$Value : arrow/endpoint/docs/openapi/ExpressionOrValue {
+	public static final synthetic fun box-impl (Ljava/lang/Object;)Larrow/endpoint/docs/openapi/ExpressionOrValue$Value;
+	public static fun constructor-impl (Ljava/lang/Object;)Ljava/lang/Object;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/Object;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/Object;Ljava/lang/Object;)Z
+	public final fun getValue ()Ljava/lang/Object;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/Object;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/Object;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/Object;
+}
+
+public final class arrow/endpoint/docs/openapi/ExternalDocs {
+	public static final field Companion Larrow/endpoint/docs/openapi/ExternalDocs$Companion;
+	public synthetic fun <init> (ILjava/lang/String;Ljava/lang/String;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Larrow/endpoint/docs/openapi/ExternalDocs;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/ExternalDocs;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/ExternalDocs;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDescription ()Ljava/lang/String;
+	public final fun getUrl ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Larrow/endpoint/docs/openapi/ExternalDocs;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class arrow/endpoint/docs/openapi/ExternalDocs$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Larrow/endpoint/docs/openapi/ExternalDocs$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Larrow/endpoint/docs/openapi/ExternalDocs;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Larrow/endpoint/docs/openapi/ExternalDocs;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/ExternalDocs$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/ExternalDocumentation {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Larrow/endpoint/docs/openapi/ExternalDocumentation;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/ExternalDocumentation;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/ExternalDocumentation;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDescription ()Ljava/lang/String;
+	public final fun getUrl ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class arrow/endpoint/docs/openapi/Format {
+	public static final field INSTANCE Larrow/endpoint/docs/openapi/Format;
+	public static final field binary Ljava/lang/String;
+	public static final field byte Ljava/lang/String;
+	public static final field date Ljava/lang/String;
+	public static final field datetime Ljava/lang/String;
+	public static final field double Ljava/lang/String;
+	public static final field float Ljava/lang/String;
+	public static final field int32 Ljava/lang/String;
+	public static final field int64 Ljava/lang/String;
+	public static final field password Ljava/lang/String;
+}
+
+public final class arrow/endpoint/docs/openapi/Header {
+	public static final field Companion Larrow/endpoint/docs/openapi/Header$Companion;
+	public fun <init> ()V
+	public synthetic fun <init> (ILjava/lang/String;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Larrow/endpoint/docs/openapi/ExampleValue;Ljava/util/Map;Larrow/endpoint/docs/openapi/Referenced;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Larrow/endpoint/docs/openapi/ExampleValue;Ljava/util/Map;Larrow/endpoint/docs/openapi/Referenced;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Larrow/endpoint/docs/openapi/ExampleValue;Ljava/util/Map;Larrow/endpoint/docs/openapi/Referenced;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/Boolean;
+	public final fun component3 ()Ljava/lang/Boolean;
+	public final fun component4 ()Ljava/lang/Boolean;
+	public final fun component5 ()Ljava/lang/Boolean;
+	public final fun component6 ()Larrow/endpoint/docs/openapi/ExampleValue;
+	public final fun component7 ()Ljava/util/Map;
+	public final fun component8 ()Larrow/endpoint/docs/openapi/Referenced;
+	public final fun copy (Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Larrow/endpoint/docs/openapi/ExampleValue;Ljava/util/Map;Larrow/endpoint/docs/openapi/Referenced;)Larrow/endpoint/docs/openapi/Header;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/Header;Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Larrow/endpoint/docs/openapi/ExampleValue;Ljava/util/Map;Larrow/endpoint/docs/openapi/Referenced;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/Header;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAllowEmptyValue ()Ljava/lang/Boolean;
+	public final fun getDeprecated ()Ljava/lang/Boolean;
+	public final fun getDescription ()Ljava/lang/String;
+	public final fun getExample ()Larrow/endpoint/docs/openapi/ExampleValue;
+	public final fun getExamples ()Ljava/util/Map;
+	public final fun getExplode ()Ljava/lang/Boolean;
+	public final fun getRequired ()Ljava/lang/Boolean;
+	public final fun getSchema ()Larrow/endpoint/docs/openapi/Referenced;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Larrow/endpoint/docs/openapi/Header;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class arrow/endpoint/docs/openapi/Header$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Larrow/endpoint/docs/openapi/Header$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Larrow/endpoint/docs/openapi/Header;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Larrow/endpoint/docs/openapi/Header;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Header$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Info {
+	public static final field Companion Larrow/endpoint/docs/openapi/Info$Companion;
+	public synthetic fun <init> (ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Larrow/endpoint/docs/openapi/Contact;Larrow/endpoint/docs/openapi/License;Ljava/lang/String;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Larrow/endpoint/docs/openapi/Contact;Larrow/endpoint/docs/openapi/License;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Larrow/endpoint/docs/openapi/Contact;Larrow/endpoint/docs/openapi/License;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Larrow/endpoint/docs/openapi/Contact;
+	public final fun component5 ()Larrow/endpoint/docs/openapi/License;
+	public final fun component6 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Larrow/endpoint/docs/openapi/Contact;Larrow/endpoint/docs/openapi/License;Ljava/lang/String;)Larrow/endpoint/docs/openapi/Info;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/Info;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Larrow/endpoint/docs/openapi/Contact;Larrow/endpoint/docs/openapi/License;Ljava/lang/String;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/Info;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getContact ()Larrow/endpoint/docs/openapi/Contact;
+	public final fun getInfoDescription ()Ljava/lang/String;
+	public final fun getLicense ()Larrow/endpoint/docs/openapi/License;
+	public final fun getTermsOfService ()Ljava/lang/String;
+	public final fun getTitle ()Ljava/lang/String;
+	public final fun getVersion ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Larrow/endpoint/docs/openapi/Info;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class arrow/endpoint/docs/openapi/Info$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Larrow/endpoint/docs/openapi/Info$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Larrow/endpoint/docs/openapi/Info;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Larrow/endpoint/docs/openapi/Info;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Info$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/License {
+	public static final field Companion Larrow/endpoint/docs/openapi/License$Companion;
+	public synthetic fun <init> (ILjava/lang/String;Ljava/lang/String;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Larrow/endpoint/docs/openapi/License;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/License;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/License;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getName ()Ljava/lang/String;
+	public final fun getUrl ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Larrow/endpoint/docs/openapi/License;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class arrow/endpoint/docs/openapi/License$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Larrow/endpoint/docs/openapi/License$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Larrow/endpoint/docs/openapi/License;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Larrow/endpoint/docs/openapi/License;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/License$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Link {
+	public static final field Companion Larrow/endpoint/docs/openapi/Link$Companion;
+	public synthetic fun <init> (ILjava/lang/String;Ljava/lang/String;Ljava/util/Map;Larrow/endpoint/docs/openapi/ExpressionOrValue;Ljava/lang/String;Larrow/endpoint/docs/openapi/Server;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Larrow/endpoint/docs/openapi/ExpressionOrValue;Ljava/lang/String;Larrow/endpoint/docs/openapi/Server;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Larrow/endpoint/docs/openapi/ExpressionOrValue;Ljava/lang/String;Larrow/endpoint/docs/openapi/Server;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/util/Map;
+	public final fun component4 ()Larrow/endpoint/docs/openapi/ExpressionOrValue;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun component6 ()Larrow/endpoint/docs/openapi/Server;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Larrow/endpoint/docs/openapi/ExpressionOrValue;Ljava/lang/String;Larrow/endpoint/docs/openapi/Server;)Larrow/endpoint/docs/openapi/Link;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/Link;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Larrow/endpoint/docs/openapi/ExpressionOrValue;Ljava/lang/String;Larrow/endpoint/docs/openapi/Server;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/Link;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDescription ()Ljava/lang/String;
+	public final fun getOperationId ()Ljava/lang/String;
+	public final fun getOperationRef ()Ljava/lang/String;
+	public final fun getParameters ()Ljava/util/Map;
+	public final fun getRequestBody ()Larrow/endpoint/docs/openapi/ExpressionOrValue;
+	public final fun getServer ()Larrow/endpoint/docs/openapi/Server;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Larrow/endpoint/docs/openapi/Link;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class arrow/endpoint/docs/openapi/Link$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Larrow/endpoint/docs/openapi/Link$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Larrow/endpoint/docs/openapi/Link;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Larrow/endpoint/docs/openapi/Link;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Link$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/MediaType {
+	public static final field Companion Larrow/endpoint/docs/openapi/MediaType$Companion;
+	public fun <init> ()V
+	public synthetic fun <init> (ILarrow/endpoint/docs/openapi/Referenced;Larrow/endpoint/docs/openapi/ExampleValue;Ljava/util/Map;Ljava/util/Map;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> (Larrow/endpoint/docs/openapi/Referenced;Larrow/endpoint/docs/openapi/ExampleValue;Ljava/util/Map;Ljava/util/Map;)V
+	public synthetic fun <init> (Larrow/endpoint/docs/openapi/Referenced;Larrow/endpoint/docs/openapi/ExampleValue;Ljava/util/Map;Ljava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Larrow/endpoint/docs/openapi/Referenced;
+	public final fun component2 ()Larrow/endpoint/docs/openapi/ExampleValue;
+	public final fun component3 ()Ljava/util/Map;
+	public final fun component4 ()Ljava/util/Map;
+	public final fun copy (Larrow/endpoint/docs/openapi/Referenced;Larrow/endpoint/docs/openapi/ExampleValue;Ljava/util/Map;Ljava/util/Map;)Larrow/endpoint/docs/openapi/MediaType;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/MediaType;Larrow/endpoint/docs/openapi/Referenced;Larrow/endpoint/docs/openapi/ExampleValue;Ljava/util/Map;Ljava/util/Map;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/MediaType;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getEncoding ()Ljava/util/Map;
+	public final fun getExample ()Larrow/endpoint/docs/openapi/ExampleValue;
+	public final fun getExamples ()Ljava/util/Map;
+	public final fun getSchema ()Larrow/endpoint/docs/openapi/Referenced;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Larrow/endpoint/docs/openapi/MediaType;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class arrow/endpoint/docs/openapi/MediaType$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Larrow/endpoint/docs/openapi/MediaType$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Larrow/endpoint/docs/openapi/MediaType;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Larrow/endpoint/docs/openapi/MediaType;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/MediaType$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/OpenAPIDocsOptions {
+	public static final field Companion Larrow/endpoint/docs/openapi/OpenAPIDocsOptions$Companion;
+	public fun <init> ()V
+	public fun <init> (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;)V
+	public synthetic fun <init> (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lkotlin/jvm/functions/Function2;
+	public final fun component2 ()Lkotlin/jvm/functions/Function1;
+	public final fun copy (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;)Larrow/endpoint/docs/openapi/OpenAPIDocsOptions;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/OpenAPIDocsOptions;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/OpenAPIDocsOptions;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getOperationIdGenerator ()Lkotlin/jvm/functions/Function2;
+	public final fun getSchemaName ()Lkotlin/jvm/functions/Function1;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class arrow/endpoint/docs/openapi/OpenAPIDocsOptions$Companion {
+	public final fun defaultOperationIdGenerator-Nr4aQXk (Ljava/util/List;Ljava/lang/String;)Ljava/lang/String;
+	public final fun defaultSchemaName (Larrow/endpoint/Schema$ObjectInfo;)Ljava/lang/String;
+}
+
+public final class arrow/endpoint/docs/openapi/OpenApi {
+	public static final field Companion Larrow/endpoint/docs/openapi/OpenApi$Companion;
+	public synthetic fun <init> (ILarrow/endpoint/docs/openapi/Info;Ljava/util/List;Ljava/util/Map;Larrow/endpoint/docs/openapi/Components;Ljava/util/List;Ljava/util/LinkedHashSet;Larrow/endpoint/docs/openapi/ExternalDocs;Ljava/lang/String;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> (Larrow/endpoint/docs/openapi/Info;Ljava/util/List;Ljava/util/Map;Larrow/endpoint/docs/openapi/Components;Ljava/util/List;Ljava/util/LinkedHashSet;Larrow/endpoint/docs/openapi/ExternalDocs;)V
+	public synthetic fun <init> (Larrow/endpoint/docs/openapi/Info;Ljava/util/List;Ljava/util/Map;Larrow/endpoint/docs/openapi/Components;Ljava/util/List;Ljava/util/LinkedHashSet;Larrow/endpoint/docs/openapi/ExternalDocs;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun addPathItem (Ljava/lang/String;Larrow/endpoint/docs/openapi/PathItem;)Larrow/endpoint/docs/openapi/OpenApi;
+	public final fun component1 ()Larrow/endpoint/docs/openapi/Info;
+	public final fun component2 ()Ljava/util/List;
+	public final fun component3 ()Ljava/util/Map;
+	public final fun component4 ()Larrow/endpoint/docs/openapi/Components;
+	public final fun component5 ()Ljava/util/List;
+	public final fun component6 ()Ljava/util/LinkedHashSet;
+	public final fun component7 ()Larrow/endpoint/docs/openapi/ExternalDocs;
+	public final fun copy (Larrow/endpoint/docs/openapi/Info;Ljava/util/List;Ljava/util/Map;Larrow/endpoint/docs/openapi/Components;Ljava/util/List;Ljava/util/LinkedHashSet;Larrow/endpoint/docs/openapi/ExternalDocs;)Larrow/endpoint/docs/openapi/OpenApi;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/OpenApi;Larrow/endpoint/docs/openapi/Info;Ljava/util/List;Ljava/util/Map;Larrow/endpoint/docs/openapi/Components;Ljava/util/List;Ljava/util/LinkedHashSet;Larrow/endpoint/docs/openapi/ExternalDocs;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/OpenApi;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getComponents ()Larrow/endpoint/docs/openapi/Components;
+	public final fun getExternalDocs ()Larrow/endpoint/docs/openapi/ExternalDocs;
+	public final fun getInfo ()Larrow/endpoint/docs/openapi/Info;
+	public final fun getOpenapi ()Ljava/lang/String;
+	public final fun getPaths ()Ljava/util/Map;
+	public final fun getSecurity ()Ljava/util/List;
+	public final fun getServers ()Ljava/util/List;
+	public final fun getTags ()Ljava/util/LinkedHashSet;
+	public fun hashCode ()I
+	public final fun servers (Ljava/util/List;)Larrow/endpoint/docs/openapi/OpenApi;
+	public final fun tags (Ljava/util/LinkedHashSet;)Larrow/endpoint/docs/openapi/OpenApi;
+	public final fun toJson ()Ljava/lang/String;
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Larrow/endpoint/docs/openapi/OpenApi;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class arrow/endpoint/docs/openapi/OpenApi$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Larrow/endpoint/docs/openapi/OpenApi$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Larrow/endpoint/docs/openapi/OpenApi;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Larrow/endpoint/docs/openapi/OpenApi;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/OpenApi$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/OpenApiType : java/lang/Enum {
+	public static final field Companion Larrow/endpoint/docs/openapi/OpenApiType$Companion;
+	public static final field array Larrow/endpoint/docs/openapi/OpenApiType;
+	public static final field boolean Larrow/endpoint/docs/openapi/OpenApiType;
+	public static final field integer Larrow/endpoint/docs/openapi/OpenApiType;
+	public static final field number Larrow/endpoint/docs/openapi/OpenApiType;
+	public static final field object Larrow/endpoint/docs/openapi/OpenApiType;
+	public static final field string Larrow/endpoint/docs/openapi/OpenApiType;
+	public static fun valueOf (Ljava/lang/String;)Larrow/endpoint/docs/openapi/OpenApiType;
+	public static fun values ()[Larrow/endpoint/docs/openapi/OpenApiType;
+}
+
+public final class arrow/endpoint/docs/openapi/OpenApiType$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Larrow/endpoint/docs/openapi/OpenApiType$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Larrow/endpoint/docs/openapi/OpenApiType;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Larrow/endpoint/docs/openapi/OpenApiType;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/OpenApiType$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Operation {
+	public static final field Companion Larrow/endpoint/docs/openapi/Operation$Companion;
+	public synthetic fun <init> (ILjava/util/List;Ljava/lang/String;Ljava/lang/String;Larrow/endpoint/docs/openapi/ExternalDocs;Ljava/lang/String;Ljava/util/List;Larrow/endpoint/docs/openapi/Referenced;Larrow/endpoint/docs/openapi/Responses;Ljava/util/Map;ZLjava/util/List;Ljava/util/List;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> (Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Larrow/endpoint/docs/openapi/ExternalDocs;Ljava/lang/String;Ljava/util/List;Larrow/endpoint/docs/openapi/Referenced;Larrow/endpoint/docs/openapi/Responses;Ljava/util/Map;ZLjava/util/List;Ljava/util/List;)V
+	public synthetic fun <init> (Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Larrow/endpoint/docs/openapi/ExternalDocs;Ljava/lang/String;Ljava/util/List;Larrow/endpoint/docs/openapi/Referenced;Larrow/endpoint/docs/openapi/Responses;Ljava/util/Map;ZLjava/util/List;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/util/List;
+	public final fun component10 ()Z
+	public final fun component11 ()Ljava/util/List;
+	public final fun component12 ()Ljava/util/List;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Larrow/endpoint/docs/openapi/ExternalDocs;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun component6 ()Ljava/util/List;
+	public final fun component7 ()Larrow/endpoint/docs/openapi/Referenced;
+	public final fun component8 ()Larrow/endpoint/docs/openapi/Responses;
+	public final fun component9 ()Ljava/util/Map;
+	public final fun copy (Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Larrow/endpoint/docs/openapi/ExternalDocs;Ljava/lang/String;Ljava/util/List;Larrow/endpoint/docs/openapi/Referenced;Larrow/endpoint/docs/openapi/Responses;Ljava/util/Map;ZLjava/util/List;Ljava/util/List;)Larrow/endpoint/docs/openapi/Operation;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/Operation;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Larrow/endpoint/docs/openapi/ExternalDocs;Ljava/lang/String;Ljava/util/List;Larrow/endpoint/docs/openapi/Referenced;Larrow/endpoint/docs/openapi/Responses;Ljava/util/Map;ZLjava/util/List;Ljava/util/List;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/Operation;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCallbacks ()Ljava/util/Map;
+	public final fun getDeprecated ()Z
+	public final fun getDescription ()Ljava/lang/String;
+	public final fun getExternalDocs ()Larrow/endpoint/docs/openapi/ExternalDocs;
+	public final fun getOperationId ()Ljava/lang/String;
+	public final fun getParameters ()Ljava/util/List;
+	public final fun getRequestBody ()Larrow/endpoint/docs/openapi/Referenced;
+	public final fun getResponses ()Larrow/endpoint/docs/openapi/Responses;
+	public final fun getSecurity ()Ljava/util/List;
+	public final fun getServers ()Ljava/util/List;
+	public final fun getSummary ()Ljava/lang/String;
+	public final fun getTags ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Larrow/endpoint/docs/openapi/Operation;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class arrow/endpoint/docs/openapi/Operation$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Larrow/endpoint/docs/openapi/Operation$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Larrow/endpoint/docs/openapi/Operation;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Larrow/endpoint/docs/openapi/Operation;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Operation$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Parameter {
+	public static final field Companion Larrow/endpoint/docs/openapi/Parameter$Companion;
+	public synthetic fun <init> (ILjava/lang/String;Larrow/endpoint/docs/openapi/ParameterIn;Ljava/lang/String;ZZZZLarrow/endpoint/docs/openapi/Referenced;Larrow/endpoint/docs/openapi/Style;Ljava/lang/Boolean;Larrow/endpoint/docs/openapi/ExampleValue;Ljava/util/Map;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Larrow/endpoint/docs/openapi/ParameterIn;Ljava/lang/String;ZZZZLarrow/endpoint/docs/openapi/Referenced;Larrow/endpoint/docs/openapi/Style;Ljava/lang/Boolean;Larrow/endpoint/docs/openapi/ExampleValue;Ljava/util/Map;)V
+	public synthetic fun <init> (Ljava/lang/String;Larrow/endpoint/docs/openapi/ParameterIn;Ljava/lang/String;ZZZZLarrow/endpoint/docs/openapi/Referenced;Larrow/endpoint/docs/openapi/Style;Ljava/lang/Boolean;Larrow/endpoint/docs/openapi/ExampleValue;Ljava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component10 ()Ljava/lang/Boolean;
+	public final fun component11 ()Larrow/endpoint/docs/openapi/ExampleValue;
+	public final fun component12 ()Ljava/util/Map;
+	public final fun component2 ()Larrow/endpoint/docs/openapi/ParameterIn;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Z
+	public final fun component5 ()Z
+	public final fun component6 ()Z
+	public final fun component7 ()Z
+	public final fun component8 ()Larrow/endpoint/docs/openapi/Referenced;
+	public final fun component9 ()Larrow/endpoint/docs/openapi/Style;
+	public final fun copy (Ljava/lang/String;Larrow/endpoint/docs/openapi/ParameterIn;Ljava/lang/String;ZZZZLarrow/endpoint/docs/openapi/Referenced;Larrow/endpoint/docs/openapi/Style;Ljava/lang/Boolean;Larrow/endpoint/docs/openapi/ExampleValue;Ljava/util/Map;)Larrow/endpoint/docs/openapi/Parameter;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/Parameter;Ljava/lang/String;Larrow/endpoint/docs/openapi/ParameterIn;Ljava/lang/String;ZZZZLarrow/endpoint/docs/openapi/Referenced;Larrow/endpoint/docs/openapi/Style;Ljava/lang/Boolean;Larrow/endpoint/docs/openapi/ExampleValue;Ljava/util/Map;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/Parameter;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAllowEmptyValue ()Z
+	public final fun getAllowReserved ()Z
+	public final fun getDeprecated ()Z
+	public final fun getDescription ()Ljava/lang/String;
+	public final fun getExample ()Larrow/endpoint/docs/openapi/ExampleValue;
+	public final fun getExamples ()Ljava/util/Map;
+	public final fun getExplode ()Ljava/lang/Boolean;
+	public final fun getInput ()Larrow/endpoint/docs/openapi/ParameterIn;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getRequired ()Z
+	public final fun getSchema ()Larrow/endpoint/docs/openapi/Referenced;
+	public final fun getStyle ()Larrow/endpoint/docs/openapi/Style;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Larrow/endpoint/docs/openapi/Parameter;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class arrow/endpoint/docs/openapi/Parameter$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Larrow/endpoint/docs/openapi/Parameter$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Larrow/endpoint/docs/openapi/Parameter;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Larrow/endpoint/docs/openapi/Parameter;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Parameter$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/ParameterIn : java/lang/Enum {
+	public static final field Companion Larrow/endpoint/docs/openapi/ParameterIn$Companion;
+	public static final field cookie Larrow/endpoint/docs/openapi/ParameterIn;
+	public static final field header Larrow/endpoint/docs/openapi/ParameterIn;
+	public static final field path Larrow/endpoint/docs/openapi/ParameterIn;
+	public static final field query Larrow/endpoint/docs/openapi/ParameterIn;
+	public static fun valueOf (Ljava/lang/String;)Larrow/endpoint/docs/openapi/ParameterIn;
+	public static fun values ()[Larrow/endpoint/docs/openapi/ParameterIn;
+}
+
+public final class arrow/endpoint/docs/openapi/ParameterIn$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Larrow/endpoint/docs/openapi/ParameterIn$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Larrow/endpoint/docs/openapi/ParameterIn;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Larrow/endpoint/docs/openapi/ParameterIn;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/ParameterIn$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/PathItem {
+	public static final field Companion Larrow/endpoint/docs/openapi/PathItem$Companion;
+	public synthetic fun <init> (ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Ljava/util/List;Ljava/util/List;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Ljava/util/List;Ljava/util/List;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Ljava/util/List;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component10 ()Larrow/endpoint/docs/openapi/Operation;
+	public final fun component11 ()Larrow/endpoint/docs/openapi/Operation;
+	public final fun component12 ()Ljava/util/List;
+	public final fun component13 ()Ljava/util/List;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Larrow/endpoint/docs/openapi/Operation;
+	public final fun component5 ()Larrow/endpoint/docs/openapi/Operation;
+	public final fun component6 ()Larrow/endpoint/docs/openapi/Operation;
+	public final fun component7 ()Larrow/endpoint/docs/openapi/Operation;
+	public final fun component8 ()Larrow/endpoint/docs/openapi/Operation;
+	public final fun component9 ()Larrow/endpoint/docs/openapi/Operation;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Ljava/util/List;Ljava/util/List;)Larrow/endpoint/docs/openapi/PathItem;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/PathItem;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Larrow/endpoint/docs/openapi/Operation;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/PathItem;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDelete ()Larrow/endpoint/docs/openapi/Operation;
+	public final fun getDescription ()Ljava/lang/String;
+	public final fun getGet ()Larrow/endpoint/docs/openapi/Operation;
+	public final fun getHead ()Larrow/endpoint/docs/openapi/Operation;
+	public final fun getOptions ()Larrow/endpoint/docs/openapi/Operation;
+	public final fun getParameters ()Ljava/util/List;
+	public final fun getPatch ()Larrow/endpoint/docs/openapi/Operation;
+	public final fun getPost ()Larrow/endpoint/docs/openapi/Operation;
+	public final fun getPut ()Larrow/endpoint/docs/openapi/Operation;
+	public final fun getRef ()Ljava/lang/String;
+	public final fun getServers ()Ljava/util/List;
+	public final fun getSummary ()Ljava/lang/String;
+	public final fun getTrace ()Larrow/endpoint/docs/openapi/Operation;
+	public fun hashCode ()I
+	public final fun mergeWith (Larrow/endpoint/docs/openapi/PathItem;)Larrow/endpoint/docs/openapi/PathItem;
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Larrow/endpoint/docs/openapi/PathItem;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class arrow/endpoint/docs/openapi/PathItem$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Larrow/endpoint/docs/openapi/PathItem$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Larrow/endpoint/docs/openapi/PathItem;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Larrow/endpoint/docs/openapi/PathItem;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/PathItem$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Reference {
+	public static final field Companion Larrow/endpoint/docs/openapi/Reference$Companion;
+	public synthetic fun <init> (ILjava/lang/String;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Larrow/endpoint/docs/openapi/Reference;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/Reference;Ljava/lang/String;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/Reference;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getRef ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Larrow/endpoint/docs/openapi/Reference;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class arrow/endpoint/docs/openapi/Reference$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Larrow/endpoint/docs/openapi/Reference$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Larrow/endpoint/docs/openapi/Reference;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Larrow/endpoint/docs/openapi/Reference;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Reference$Companion {
+	public final fun invoke (Ljava/lang/String;Ljava/lang/String;)Larrow/endpoint/docs/openapi/Reference;
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public abstract class arrow/endpoint/docs/openapi/Referenced {
+	public static final field Companion Larrow/endpoint/docs/openapi/Referenced$Companion;
+	public final fun map (Lkotlin/jvm/functions/Function1;)Larrow/endpoint/docs/openapi/Referenced;
+}
+
+public final class arrow/endpoint/docs/openapi/Referenced$Companion {
+	public final fun serializer (Lkotlinx/serialization/KSerializer;)Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Referenced$Other : arrow/endpoint/docs/openapi/Referenced {
+	public fun <init> (Ljava/lang/Object;)V
+	public final fun component1 ()Ljava/lang/Object;
+	public final fun copy (Ljava/lang/Object;)Larrow/endpoint/docs/openapi/Referenced$Other;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/Referenced$Other;Ljava/lang/Object;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/Referenced$Other;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValue ()Ljava/lang/Object;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class arrow/endpoint/docs/openapi/Referenced$Ref : arrow/endpoint/docs/openapi/Referenced {
+	public fun <init> (Larrow/endpoint/docs/openapi/Reference;)V
+	public final fun component1 ()Larrow/endpoint/docs/openapi/Reference;
+	public final fun copy (Larrow/endpoint/docs/openapi/Reference;)Larrow/endpoint/docs/openapi/Referenced$Ref;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/Referenced$Ref;Larrow/endpoint/docs/openapi/Reference;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/Referenced$Ref;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValue ()Larrow/endpoint/docs/openapi/Reference;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class arrow/endpoint/docs/openapi/RequestBody {
+	public static final field Companion Larrow/endpoint/docs/openapi/RequestBody$Companion;
+	public synthetic fun <init> (ILjava/lang/String;Ljava/util/Map;ZLkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/util/Map;Z)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/Map;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/util/Map;
+	public final fun component3 ()Z
+	public final fun copy (Ljava/lang/String;Ljava/util/Map;Z)Larrow/endpoint/docs/openapi/RequestBody;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/RequestBody;Ljava/lang/String;Ljava/util/Map;ZILjava/lang/Object;)Larrow/endpoint/docs/openapi/RequestBody;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getContent ()Ljava/util/Map;
+	public final fun getDescription ()Ljava/lang/String;
+	public final fun getRequired ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Larrow/endpoint/docs/openapi/RequestBody;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class arrow/endpoint/docs/openapi/RequestBody$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Larrow/endpoint/docs/openapi/RequestBody$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Larrow/endpoint/docs/openapi/RequestBody;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Larrow/endpoint/docs/openapi/RequestBody;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/RequestBody$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Response {
+	public static final field Companion Larrow/endpoint/docs/openapi/Response$Companion;
+	public synthetic fun <init> (ILjava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/util/Map;
+	public final fun component3 ()Ljava/util/Map;
+	public final fun component4 ()Ljava/util/Map;
+	public final fun copy (Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;)Larrow/endpoint/docs/openapi/Response;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/Response;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/Response;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getContent ()Ljava/util/Map;
+	public final fun getDescription ()Ljava/lang/String;
+	public final fun getHeaders ()Ljava/util/Map;
+	public final fun getLinks ()Ljava/util/Map;
+	public fun hashCode ()I
+	public final fun plus (Larrow/endpoint/docs/openapi/Response;)Larrow/endpoint/docs/openapi/Response;
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Larrow/endpoint/docs/openapi/Response;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class arrow/endpoint/docs/openapi/Response$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Larrow/endpoint/docs/openapi/Response$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Larrow/endpoint/docs/openapi/Response;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Larrow/endpoint/docs/openapi/Response;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Response$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Responses {
+	public static final field Companion Larrow/endpoint/docs/openapi/Responses$Companion;
+	public fun <init> (Larrow/endpoint/docs/openapi/Referenced;Ljava/util/Map;)V
+	public synthetic fun <init> (Larrow/endpoint/docs/openapi/Referenced;Ljava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Larrow/endpoint/docs/openapi/Referenced;
+	public final fun component2 ()Ljava/util/Map;
+	public final fun copy (Larrow/endpoint/docs/openapi/Referenced;Ljava/util/Map;)Larrow/endpoint/docs/openapi/Responses;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/Responses;Larrow/endpoint/docs/openapi/Referenced;Ljava/util/Map;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/Responses;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDefault ()Larrow/endpoint/docs/openapi/Referenced;
+	public final fun getResponses ()Ljava/util/Map;
+	public fun hashCode ()I
+	public final fun plus (Larrow/endpoint/docs/openapi/Responses;)Larrow/endpoint/docs/openapi/Responses;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class arrow/endpoint/docs/openapi/Responses$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/ResponsesDescriptor : kotlinx/serialization/descriptors/SerialDescriptor {
+	public static final field INSTANCE Larrow/endpoint/docs/openapi/ResponsesDescriptor;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getAnnotations ()Ljava/util/List;
+	public fun getElementAnnotations (I)Ljava/util/List;
+	public fun getElementDescriptor (I)Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun getElementIndex (Ljava/lang/String;)I
+	public fun getElementName (I)Ljava/lang/String;
+	public fun getElementsCount ()I
+	public fun getKind ()Lkotlinx/serialization/descriptors/SerialKind;
+	public fun getSerialName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun isElementOptional (I)Z
+	public fun isInline ()Z
+	public fun isNullable ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class arrow/endpoint/docs/openapi/Schema {
+	public static final field Companion Larrow/endpoint/docs/openapi/Schema$Companion;
+	public fun <init> ()V
+	public synthetic fun <init> (IILjava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/Boolean;Ljava/util/List;Ljava/util/List;Larrow/endpoint/docs/openapi/Referenced;Ljava/util/List;Ljava/util/Map;Larrow/endpoint/docs/openapi/AdditionalProperties;Larrow/endpoint/docs/openapi/Discriminator;Ljava/lang/Boolean;Ljava/lang/Boolean;Larrow/endpoint/docs/openapi/Xml;Larrow/endpoint/docs/openapi/ExternalDocs;Larrow/endpoint/docs/openapi/ExampleValue;Ljava/lang/Boolean;Ljava/lang/Integer;Ljava/lang/Integer;Larrow/endpoint/docs/openapi/ExampleValue;Larrow/endpoint/docs/openapi/OpenApiType;Ljava/lang/String;Larrow/endpoint/docs/openapi/Referenced;Ljava/math/BigDecimal;Ljava/lang/Boolean;Ljava/math/BigDecimal;Ljava/lang/Boolean;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/Boolean;Ljava/util/List;Ljava/math/BigDecimal;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/Boolean;Ljava/util/List;Ljava/util/List;Larrow/endpoint/docs/openapi/Referenced;Ljava/util/List;Ljava/util/Map;Larrow/endpoint/docs/openapi/AdditionalProperties;Larrow/endpoint/docs/openapi/Discriminator;Ljava/lang/Boolean;Ljava/lang/Boolean;Larrow/endpoint/docs/openapi/Xml;Larrow/endpoint/docs/openapi/ExternalDocs;Larrow/endpoint/docs/openapi/ExampleValue;Ljava/lang/Boolean;Ljava/lang/Integer;Ljava/lang/Integer;Larrow/endpoint/docs/openapi/ExampleValue;Larrow/endpoint/docs/openapi/OpenApiType;Ljava/lang/String;Larrow/endpoint/docs/openapi/Referenced;Ljava/math/BigDecimal;Ljava/lang/Boolean;Ljava/math/BigDecimal;Ljava/lang/Boolean;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/Boolean;Ljava/util/List;Ljava/math/BigDecimal;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/Boolean;Ljava/util/List;Ljava/util/List;Larrow/endpoint/docs/openapi/Referenced;Ljava/util/List;Ljava/util/Map;Larrow/endpoint/docs/openapi/AdditionalProperties;Larrow/endpoint/docs/openapi/Discriminator;Ljava/lang/Boolean;Ljava/lang/Boolean;Larrow/endpoint/docs/openapi/Xml;Larrow/endpoint/docs/openapi/ExternalDocs;Larrow/endpoint/docs/openapi/ExampleValue;Ljava/lang/Boolean;Ljava/lang/Integer;Ljava/lang/Integer;Larrow/endpoint/docs/openapi/ExampleValue;Larrow/endpoint/docs/openapi/OpenApiType;Ljava/lang/String;Larrow/endpoint/docs/openapi/Referenced;Ljava/math/BigDecimal;Ljava/lang/Boolean;Ljava/math/BigDecimal;Ljava/lang/Boolean;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/Boolean;Ljava/util/List;Ljava/math/BigDecimal;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component10 ()Larrow/endpoint/docs/openapi/AdditionalProperties;
+	public final fun component11 ()Larrow/endpoint/docs/openapi/Discriminator;
+	public final fun component12 ()Ljava/lang/Boolean;
+	public final fun component13 ()Ljava/lang/Boolean;
+	public final fun component14 ()Larrow/endpoint/docs/openapi/Xml;
+	public final fun component15 ()Larrow/endpoint/docs/openapi/ExternalDocs;
+	public final fun component16 ()Larrow/endpoint/docs/openapi/ExampleValue;
+	public final fun component17 ()Ljava/lang/Boolean;
+	public final fun component18 ()Ljava/lang/Integer;
+	public final fun component19 ()Ljava/lang/Integer;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component20 ()Larrow/endpoint/docs/openapi/ExampleValue;
+	public final fun component21 ()Larrow/endpoint/docs/openapi/OpenApiType;
+	public final fun component22 ()Ljava/lang/String;
+	public final fun component23 ()Larrow/endpoint/docs/openapi/Referenced;
+	public final fun component24 ()Ljava/math/BigDecimal;
+	public final fun component25 ()Ljava/lang/Boolean;
+	public final fun component26 ()Ljava/math/BigDecimal;
+	public final fun component27 ()Ljava/lang/Boolean;
+	public final fun component28 ()Ljava/lang/Integer;
+	public final fun component29 ()Ljava/lang/Integer;
+	public final fun component3 ()Ljava/util/List;
+	public final fun component30 ()Ljava/lang/String;
+	public final fun component31 ()Ljava/lang/Integer;
+	public final fun component32 ()Ljava/lang/Integer;
+	public final fun component33 ()Ljava/lang/Boolean;
+	public final fun component34 ()Ljava/util/List;
+	public final fun component35 ()Ljava/math/BigDecimal;
+	public final fun component4 ()Ljava/lang/Boolean;
+	public final fun component5 ()Ljava/util/List;
+	public final fun component6 ()Ljava/util/List;
+	public final fun component7 ()Larrow/endpoint/docs/openapi/Referenced;
+	public final fun component8 ()Ljava/util/List;
+	public final fun component9 ()Ljava/util/Map;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/Boolean;Ljava/util/List;Ljava/util/List;Larrow/endpoint/docs/openapi/Referenced;Ljava/util/List;Ljava/util/Map;Larrow/endpoint/docs/openapi/AdditionalProperties;Larrow/endpoint/docs/openapi/Discriminator;Ljava/lang/Boolean;Ljava/lang/Boolean;Larrow/endpoint/docs/openapi/Xml;Larrow/endpoint/docs/openapi/ExternalDocs;Larrow/endpoint/docs/openapi/ExampleValue;Ljava/lang/Boolean;Ljava/lang/Integer;Ljava/lang/Integer;Larrow/endpoint/docs/openapi/ExampleValue;Larrow/endpoint/docs/openapi/OpenApiType;Ljava/lang/String;Larrow/endpoint/docs/openapi/Referenced;Ljava/math/BigDecimal;Ljava/lang/Boolean;Ljava/math/BigDecimal;Ljava/lang/Boolean;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/Boolean;Ljava/util/List;Ljava/math/BigDecimal;)Larrow/endpoint/docs/openapi/Schema;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/Schema;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/Boolean;Ljava/util/List;Ljava/util/List;Larrow/endpoint/docs/openapi/Referenced;Ljava/util/List;Ljava/util/Map;Larrow/endpoint/docs/openapi/AdditionalProperties;Larrow/endpoint/docs/openapi/Discriminator;Ljava/lang/Boolean;Ljava/lang/Boolean;Larrow/endpoint/docs/openapi/Xml;Larrow/endpoint/docs/openapi/ExternalDocs;Larrow/endpoint/docs/openapi/ExampleValue;Ljava/lang/Boolean;Ljava/lang/Integer;Ljava/lang/Integer;Larrow/endpoint/docs/openapi/ExampleValue;Larrow/endpoint/docs/openapi/OpenApiType;Ljava/lang/String;Larrow/endpoint/docs/openapi/Referenced;Ljava/math/BigDecimal;Ljava/lang/Boolean;Ljava/math/BigDecimal;Ljava/lang/Boolean;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/Boolean;Ljava/util/List;Ljava/math/BigDecimal;IILjava/lang/Object;)Larrow/endpoint/docs/openapi/Schema;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAdditionalProperties ()Larrow/endpoint/docs/openapi/AdditionalProperties;
+	public final fun getAllOf ()Ljava/util/List;
+	public final fun getAnyOf ()Ljava/util/List;
+	public final fun getDefault ()Larrow/endpoint/docs/openapi/ExampleValue;
+	public final fun getDeprecated ()Ljava/lang/Boolean;
+	public final fun getDescription ()Ljava/lang/String;
+	public final fun getDiscriminator ()Larrow/endpoint/docs/openapi/Discriminator;
+	public final fun getEnum ()Ljava/util/List;
+	public final fun getExample ()Larrow/endpoint/docs/openapi/ExampleValue;
+	public final fun getExclusiveMaximum ()Ljava/lang/Boolean;
+	public final fun getExclusiveMinimum ()Ljava/lang/Boolean;
+	public final fun getExternalDocs ()Larrow/endpoint/docs/openapi/ExternalDocs;
+	public final fun getFormat ()Ljava/lang/String;
+	public final fun getItems ()Larrow/endpoint/docs/openapi/Referenced;
+	public final fun getMaxItems ()Ljava/lang/Integer;
+	public final fun getMaxLength ()Ljava/lang/Integer;
+	public final fun getMaxProperties ()Ljava/lang/Integer;
+	public final fun getMaximum ()Ljava/math/BigDecimal;
+	public final fun getMinItems ()Ljava/lang/Integer;
+	public final fun getMinLength ()Ljava/lang/Integer;
+	public final fun getMinProperties ()Ljava/lang/Integer;
+	public final fun getMinimum ()Ljava/math/BigDecimal;
+	public final fun getMultipleOf ()Ljava/math/BigDecimal;
+	public final fun getNot ()Larrow/endpoint/docs/openapi/Referenced;
+	public final fun getNullable ()Ljava/lang/Boolean;
+	public final fun getOneOf ()Ljava/util/List;
+	public final fun getPattern ()Ljava/lang/String;
+	public final fun getProperties ()Ljava/util/Map;
+	public final fun getReadOnly ()Ljava/lang/Boolean;
+	public final fun getRequired ()Ljava/util/List;
+	public final fun getTitle ()Ljava/lang/String;
+	public final fun getType ()Larrow/endpoint/docs/openapi/OpenApiType;
+	public final fun getUniqueItems ()Ljava/lang/Boolean;
+	public final fun getWriteOnly ()Ljava/lang/Boolean;
+	public final fun getXml ()Larrow/endpoint/docs/openapi/Xml;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Larrow/endpoint/docs/openapi/Schema;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class arrow/endpoint/docs/openapi/Schema$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Larrow/endpoint/docs/openapi/Schema$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Larrow/endpoint/docs/openapi/Schema;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Larrow/endpoint/docs/openapi/Schema;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Schema$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Server {
+	public static final field Companion Larrow/endpoint/docs/openapi/Server$Companion;
+	public synthetic fun <init> (ILjava/lang/String;Ljava/lang/String;Ljava/util/Map;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/util/Map;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)Larrow/endpoint/docs/openapi/Server;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/Server;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/Server;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDescription ()Ljava/lang/String;
+	public final fun getUrl ()Ljava/lang/String;
+	public final fun getVariables ()Ljava/util/Map;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Larrow/endpoint/docs/openapi/Server;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class arrow/endpoint/docs/openapi/Server$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Larrow/endpoint/docs/openapi/Server$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Larrow/endpoint/docs/openapi/Server;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Larrow/endpoint/docs/openapi/Server;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Server$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/ServerVariable {
+	public static final field Companion Larrow/endpoint/docs/openapi/ServerVariable$Companion;
+	public synthetic fun <init> (ILarrow/core/NonEmptyList;Ljava/lang/String;Ljava/lang/String;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> (Larrow/core/NonEmptyList;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Larrow/core/NonEmptyList;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Larrow/core/NonEmptyList;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun copy (Larrow/core/NonEmptyList;Ljava/lang/String;Ljava/lang/String;)Larrow/endpoint/docs/openapi/ServerVariable;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/ServerVariable;Larrow/core/NonEmptyList;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/ServerVariable;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDefault ()Ljava/lang/String;
+	public final fun getDescription ()Ljava/lang/String;
+	public final fun getEnum ()Larrow/core/NonEmptyList;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Larrow/endpoint/docs/openapi/ServerVariable;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class arrow/endpoint/docs/openapi/ServerVariable$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Larrow/endpoint/docs/openapi/ServerVariable$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Larrow/endpoint/docs/openapi/ServerVariable;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Larrow/endpoint/docs/openapi/ServerVariable;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/ServerVariable$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Style : java/lang/Enum {
+	public static final field Companion Larrow/endpoint/docs/openapi/Style$Companion;
+	public static final field deepObject Larrow/endpoint/docs/openapi/Style;
+	public static final field form Larrow/endpoint/docs/openapi/Style;
+	public static final field label Larrow/endpoint/docs/openapi/Style;
+	public static final field matrix Larrow/endpoint/docs/openapi/Style;
+	public static final field pipeDelimited Larrow/endpoint/docs/openapi/Style;
+	public static final field simple Larrow/endpoint/docs/openapi/Style;
+	public static final field spaceDelimited Larrow/endpoint/docs/openapi/Style;
+	public static fun valueOf (Ljava/lang/String;)Larrow/endpoint/docs/openapi/Style;
+	public static fun values ()[Larrow/endpoint/docs/openapi/Style;
+}
+
+public final class arrow/endpoint/docs/openapi/Style$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Larrow/endpoint/docs/openapi/Style$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Larrow/endpoint/docs/openapi/Style;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Larrow/endpoint/docs/openapi/Style;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Style$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Tag {
+	public static final field Companion Larrow/endpoint/docs/openapi/Tag$Companion;
+	public synthetic fun <init> (ILjava/lang/String;Ljava/lang/String;Larrow/endpoint/docs/openapi/ExternalDocs;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Larrow/endpoint/docs/openapi/ExternalDocs;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Larrow/endpoint/docs/openapi/ExternalDocs;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Larrow/endpoint/docs/openapi/ExternalDocs;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Larrow/endpoint/docs/openapi/ExternalDocs;)Larrow/endpoint/docs/openapi/Tag;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/Tag;Ljava/lang/String;Ljava/lang/String;Larrow/endpoint/docs/openapi/ExternalDocs;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/Tag;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDescription ()Ljava/lang/String;
+	public final fun getExternalDocs ()Larrow/endpoint/docs/openapi/ExternalDocs;
+	public final fun getName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Larrow/endpoint/docs/openapi/Tag;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class arrow/endpoint/docs/openapi/Tag$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Larrow/endpoint/docs/openapi/Tag$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Larrow/endpoint/docs/openapi/Tag;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Larrow/endpoint/docs/openapi/Tag;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Tag$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/ToMediaTypeKt {
+	public static final fun toMediaTypeMap (Larrow/endpoint/Codec;Ljava/util/Map;Ljava/util/List;)Ljava/util/Map;
+}
+
+public final class arrow/endpoint/docs/openapi/ToOpenAPIKt {
+	public static final fun toOpenAPI (Larrow/endpoint/Endpoint;Larrow/endpoint/docs/openapi/Info;Larrow/endpoint/docs/openapi/OpenAPIDocsOptions;)Larrow/endpoint/docs/openapi/OpenApi;
+	public static final fun toOpenAPI (Larrow/endpoint/Endpoint;Ljava/lang/String;Ljava/lang/String;Larrow/endpoint/docs/openapi/OpenAPIDocsOptions;)Larrow/endpoint/docs/openapi/OpenApi;
+	public static final fun toOpenAPI (Ljava/lang/Iterable;Larrow/endpoint/docs/openapi/Info;Larrow/endpoint/docs/openapi/OpenAPIDocsOptions;)Larrow/endpoint/docs/openapi/OpenApi;
+	public static final fun toOpenAPI (Ljava/lang/Iterable;Ljava/lang/String;Ljava/lang/String;Larrow/endpoint/docs/openapi/OpenAPIDocsOptions;)Larrow/endpoint/docs/openapi/OpenApi;
+	public static synthetic fun toOpenAPI$default (Larrow/endpoint/Endpoint;Larrow/endpoint/docs/openapi/Info;Larrow/endpoint/docs/openapi/OpenAPIDocsOptions;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/OpenApi;
+	public static synthetic fun toOpenAPI$default (Larrow/endpoint/Endpoint;Ljava/lang/String;Ljava/lang/String;Larrow/endpoint/docs/openapi/OpenAPIDocsOptions;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/OpenApi;
+	public static synthetic fun toOpenAPI$default (Ljava/lang/Iterable;Larrow/endpoint/docs/openapi/Info;Larrow/endpoint/docs/openapi/OpenAPIDocsOptions;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/OpenApi;
+	public static synthetic fun toOpenAPI$default (Ljava/lang/Iterable;Ljava/lang/String;Ljava/lang/String;Larrow/endpoint/docs/openapi/OpenAPIDocsOptions;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/OpenApi;
+}
+
+public final class arrow/endpoint/docs/openapi/ToOperationResponseKt {
+	public static final fun toOperationResponses (Larrow/endpoint/Endpoint;Ljava/util/Map;)Larrow/endpoint/docs/openapi/Responses;
+	public static final fun toResponse (Larrow/endpoint/EndpointOutput;Ljava/lang/String;Larrow/endpoint/docs/openapi/Response;Ljava/util/Map;)Larrow/endpoint/docs/openapi/Responses;
+}
+
+public final class arrow/endpoint/docs/openapi/ToParameterKt {
+	public static final fun toParameter (Larrow/endpoint/EndpointIO$Header;Larrow/endpoint/docs/openapi/Referenced;)Larrow/endpoint/docs/openapi/Parameter;
+	public static final fun toParameter (Larrow/endpoint/EndpointInput$Cookie;Larrow/endpoint/docs/openapi/Referenced;)Larrow/endpoint/docs/openapi/Parameter;
+	public static final fun toParameter (Larrow/endpoint/EndpointInput$PathCapture;Larrow/endpoint/docs/openapi/Referenced;)Larrow/endpoint/docs/openapi/Parameter;
+	public static final fun toParameter (Larrow/endpoint/EndpointInput$Query;Larrow/endpoint/docs/openapi/Referenced;)Larrow/endpoint/docs/openapi/Parameter;
+}
+
+public final class arrow/endpoint/docs/openapi/ToSchemasKt {
+	public static final fun toSchemas (Ljava/lang/Iterable;Lkotlin/jvm/functions/Function1;)Lkotlin/Pair;
+}
+
+public final class arrow/endpoint/docs/openapi/Xml {
+	public static final field Companion Larrow/endpoint/docs/openapi/Xml$Companion;
+	public synthetic fun <init> (ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/Boolean;Lkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/Boolean;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/Boolean;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/Boolean;
+	public final fun component5 ()Ljava/lang/Boolean;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/Boolean;)Larrow/endpoint/docs/openapi/Xml;
+	public static synthetic fun copy$default (Larrow/endpoint/docs/openapi/Xml;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/Boolean;ILjava/lang/Object;)Larrow/endpoint/docs/openapi/Xml;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAttribute ()Ljava/lang/Boolean;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getNamespace ()Ljava/lang/String;
+	public final fun getPrefix ()Ljava/lang/String;
+	public final fun getWrapped ()Ljava/lang/Boolean;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Larrow/endpoint/docs/openapi/Xml;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class arrow/endpoint/docs/openapi/Xml$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Larrow/endpoint/docs/openapi/Xml$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Larrow/endpoint/docs/openapi/Xml;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Larrow/endpoint/docs/openapi/Xml;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/docs/openapi/Xml$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
