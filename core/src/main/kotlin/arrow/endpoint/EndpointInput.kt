@@ -10,8 +10,8 @@ import arrow.endpoint.model.QueryParams as MQueryParams
 /**
  * Endpoint Input of [A].
  *
- * All [EndpointInput], except pair, have a [Codec].
- * The [Codec] represents the mapping between the low-level HTTP encoding, and the type [A].
+ * All [EndpointInput], except pair, have a [Codec]. The [Codec] represents the mapping between the
+ * low-level HTTP encoding, and the type [A].
  *
  * ```kotlin
  * data class User(val name: String, val age: Int)
@@ -33,14 +33,17 @@ public sealed interface EndpointInput<A> : EndpointTransput<A> {
 
   override fun <B> map(mapping: Mapping<A, B>): EndpointInput<B>
   override fun <B> map(f: (A) -> B, g: (B) -> A): EndpointInput<B> = map(Mapping.from(f, g))
-  override fun <B> mapDecode(f: (A) -> DecodeResult<B>, g: (B) -> A): EndpointInput<B> = map(Mapping.fromDecode(f, g))
+  override fun <B> mapDecode(f: (A) -> DecodeResult<B>, g: (B) -> A): EndpointInput<B> =
+    map(Mapping.fromDecode(f, g))
 
   public sealed interface Single<A> : EndpointInput<A>
-  public sealed interface Basic<L, A, CF : CodecFormat> : Single<A>, EndpointTransput.Basic<L, A, CF> {
+  public sealed interface Basic<L, A, CF : CodecFormat> :
+    Single<A>, EndpointTransput.Basic<L, A, CF> {
 
     override fun <B> copyWith(c: Codec<L, B, CF>, i: EndpointIO.Info<B>): Basic<L, B, CF>
 
-    override fun <B> map(mapping: Mapping<A, B>): Basic<L, B, CF> = copyWith(codec.map(mapping), info.map(mapping))
+    override fun <B> map(mapping: Mapping<A, B>): Basic<L, B, CF> =
+      copyWith(codec.map(mapping), info.map(mapping))
 
     override fun schema(s: Schema<A>?): Basic<L, A, CF> = copyWith(codec.schema(s), info)
     override fun modifySchema(modify: (Schema<A>) -> Schema<A>): Basic<L, A, CF> =
@@ -150,13 +153,19 @@ public sealed interface EndpointInput<A> : EndpointTransput<A> {
     override fun toString(): String = "{cookie $name}"
   }
 
-  public data class MappedPair<A, B, C, D>(val input: Pair<A, B, C>, val mapping: Mapping<C, D>) : Single<D> {
-    override fun <E> map(mapping: Mapping<D, E>): MappedPair<A, B, C, E> = MappedPair(input, this.mapping.map(mapping))
+  public data class MappedPair<A, B, C, D>(val input: Pair<A, B, C>, val mapping: Mapping<C, D>) :
+    Single<D> {
+    override fun <E> map(mapping: Mapping<D, E>): MappedPair<A, B, C, E> =
+      MappedPair(input, this.mapping.map(mapping))
     override fun toString(): String = input.toString()
   }
 
-  /** Not a data class (to avoid copy) and an internal constructor since it should only be constructed with [and] */
-  public class Pair<A, B, C> internal constructor(
+  /**
+   * Not a data class (to avoid copy) and an internal constructor since it should only be
+   * constructed with [and]
+   */
+  public class Pair<A, B, C>
+  internal constructor(
     override val first: EndpointInput<A>,
     override val second: EndpointInput<B>,
     override val combine: CombineParams,
@@ -192,16 +201,26 @@ public sealed interface EndpointInput<A> : EndpointTransput<A> {
   }
 
   private fun toList(): List<EndpointInput<Any?>> =
-    reduce(::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf, ::listOf)
+    reduce(
+      ::listOf,
+      ::listOf,
+      ::listOf,
+      ::listOf,
+      ::listOf,
+      ::listOf,
+      ::listOf,
+      ::listOf,
+      ::listOf,
+      ::listOf
+    )
 
   public fun asListOfBasicInputs(includeAuth: Boolean = true): List<Basic<*, *, *>> =
     toList().mapNotNull {
-//      if(includeAuth) it as? Basic<*, *, *> ?: it as EndpointInput.Auth<*> else
+      //      if(includeAuth) it as? Basic<*, *, *> ?: it as EndpointInput.Auth<*> else
       it as? Basic<*, *, *>
     }
 
-  public fun method(): Method? =
-    toList().firstNotNull { (it as? FixedMethod<*>)?.m }
+  public fun method(): Method? = toList().firstNotNull { (it as? FixedMethod<*>)?.m }
 
   public companion object {
     public fun empty(): EndpointIO.Empty<Unit> =
@@ -211,7 +230,9 @@ public sealed interface EndpointInput<A> : EndpointTransput<A> {
 
 // Small util function that exits-fast to find first value in Iterable
 private inline fun <A, B> Iterable<A>.firstNotNull(predicate: (A) -> B?): B? {
-  for (element in this) predicate(element)?.let { return@firstNotNull it }
+  for (element in this) predicate(element)?.let {
+    return@firstNotNull it
+  }
   return null
 }
 
@@ -239,7 +260,6 @@ public fun <A, B> EndpointInput<A>.reduce(
     is EndpointInput.PathsCapture -> ifPathsCapture(this as EndpointInput.PathsCapture<Any?>)
     is EndpointInput.Query -> ifQuery(this as EndpointInput.Query<Any?>)
     is EndpointInput.QueryParams -> ifQueryParams(this as EndpointInput.QueryParams<Any?>)
-
     is EndpointInput.Pair<*, *, *> ->
       first.reduce(
         ifBody,
@@ -349,121 +369,92 @@ public fun <A, B> EndpointInput<A>.and(other: EndpointInput<B>): EndpointInput<P
     this,
     other,
     { p1, p2 -> Params.ParamsAsList(listOf(p1.asAny, p2.asAny)) },
-    { p ->
-      Pair(
-        Params.ParamsAsAny(p.asList.first()),
-        Params.ParamsAsAny(p.asList.last())
-      )
-    }
+    { p -> Pair(Params.ParamsAsAny(p.asList.first()), Params.ParamsAsAny(p.asList.last())) }
   )
 
 @JvmName("andLeftUnit")
-public fun <A> EndpointInput<Unit>.and(other: EndpointInput<A>, @Suppress("UNUSED_PARAMETER") dummy: Unit = Unit): EndpointInput<A> =
-  EndpointInput.Pair(
-    this,
-    other,
-    { _, p2 -> p2 },
-    { p -> Pair(Params.Unit, p) }
-  )
+public fun <A> EndpointInput<Unit>.and(
+  other: EndpointInput<A>,
+  @Suppress("UNUSED_PARAMETER") dummy: Unit = Unit
+): EndpointInput<A> =
+  EndpointInput.Pair(this, other, { _, p2 -> p2 }, { p -> Pair(Params.Unit, p) })
 
 @JvmName("andRightUnit")
-public fun <A> EndpointInput<A>.and(other: EndpointInput<Unit>, @Suppress("UNUSED_PARAMETER") dummy: Unit = Unit): EndpointInput<A> =
-  EndpointInput.Pair(
-    this,
-    other,
-    { p1, _ -> p1 },
-    { p -> Pair(p, Params.Unit) }
-  )
+public fun <A> EndpointInput<A>.and(
+  other: EndpointInput<Unit>,
+  @Suppress("UNUSED_PARAMETER") dummy: Unit = Unit
+): EndpointInput<A> =
+  EndpointInput.Pair(this, other, { p1, _ -> p1 }, { p -> Pair(p, Params.Unit) })
 
 @JvmName("andLeftRightUnit")
-public fun EndpointInput<Unit>.and(other: EndpointInput<Unit>, @Suppress("UNUSED_PARAMETER") dummy: Unit = Unit): EndpointInput<Unit> =
-  EndpointInput.Pair(
-    this,
-    other,
-    { _, p2 -> p2 },
-    { p -> Pair(Params.Unit, p) }
-  )
+public fun EndpointInput<Unit>.and(
+  other: EndpointInput<Unit>,
+  @Suppress("UNUSED_PARAMETER") dummy: Unit = Unit
+): EndpointInput<Unit> =
+  EndpointInput.Pair(this, other, { _, p2 -> p2 }, { p -> Pair(Params.Unit, p) })
 
 @JvmName("and2")
-public fun <A, B, C> EndpointInput<Pair<A, B>>.and(other: EndpointInput<C>): EndpointInput<Triple<A, B, C>> =
+public fun <A, B, C> EndpointInput<Pair<A, B>>.and(
+  other: EndpointInput<C>
+): EndpointInput<Triple<A, B, C>> =
   EndpointInput.Pair(
     this,
     other,
     { p1, p2 -> Params.ParamsAsList(p1.asList + p2.asAny) },
-    { p ->
-      Pair(
-        Params.ParamsAsList(p.asList.take(2)),
-        Params.ParamsAsAny(p.asList.last())
-      )
-    }
+    { p -> Pair(Params.ParamsAsList(p.asList.take(2)), Params.ParamsAsAny(p.asList.last())) }
   )
 
 @JvmName("and2Pair")
-public fun <A, B, C, D> EndpointInput<Pair<A, B>>.and(other: EndpointInput<Pair<C, D>>): EndpointInput<Tuple4<A, B, C, D>> =
+public fun <A, B, C, D> EndpointInput<Pair<A, B>>.and(
+  other: EndpointInput<Pair<C, D>>
+): EndpointInput<Tuple4<A, B, C, D>> =
   EndpointInput.Pair(
     this,
     other,
     { p1, p2 -> Params.ParamsAsList(p1.asList + p2.asList) },
-    { p ->
-      Pair(
-        Params.ParamsAsList(p.asList.take(2)),
-        Params.ParamsAsList(p.asList.takeLast(2))
-      )
-    }
+    { p -> Pair(Params.ParamsAsList(p.asList.take(2)), Params.ParamsAsList(p.asList.takeLast(2))) }
   )
 
 @JvmName("and2Unit")
-public fun <A, B> EndpointInput<Pair<A, B>>.and(other: EndpointInput<Unit>): EndpointInput<Pair<A, B>> =
+public fun <A, B> EndpointInput<Pair<A, B>>.and(
+  other: EndpointInput<Unit>
+): EndpointInput<Pair<A, B>> =
   EndpointInput.Pair(
     this,
     other,
     { p1, _ -> p1 },
-    { p ->
-      Pair(
-        Params.ParamsAsList(p.asList.take(2)),
-        Params.Unit
-      )
-    }
+    { p -> Pair(Params.ParamsAsList(p.asList.take(2)), Params.Unit) }
   )
 
 @JvmName("and3")
-public fun <A, B, C, D> EndpointInput<Triple<A, B, C>>.and(other: EndpointInput<D>): EndpointInput<Tuple4<A, B, C, D>> =
+public fun <A, B, C, D> EndpointInput<Triple<A, B, C>>.and(
+  other: EndpointInput<D>
+): EndpointInput<Tuple4<A, B, C, D>> =
   EndpointInput.Pair(
     this,
     other,
     { p1, p2 -> Params.ParamsAsList(p1.asList + p2.asAny) },
-    { p ->
-      Pair(
-        Params.ParamsAsList(p.asList.take(3)),
-        Params.ParamsAsAny(p.asList.last())
-      )
-    }
+    { p -> Pair(Params.ParamsAsList(p.asList.take(3)), Params.ParamsAsAny(p.asList.last())) }
   )
 
 @JvmName("and4")
-public fun <A, B, C, D, E> EndpointInput<Tuple4<A, B, C, D>>.and(other: EndpointInput<E>): EndpointInput<Tuple5<A, B, C, D, E>> =
+public fun <A, B, C, D, E> EndpointInput<Tuple4<A, B, C, D>>.and(
+  other: EndpointInput<E>
+): EndpointInput<Tuple5<A, B, C, D, E>> =
   EndpointInput.Pair(
     this,
     other,
     { p1, p2 -> Params.ParamsAsList(p1.asList + p2.asAny) },
-    { p ->
-      Pair(
-        Params.ParamsAsList(p.asList.take(4)),
-        Params.ParamsAsAny(p.asList.last())
-      )
-    }
+    { p -> Pair(Params.ParamsAsList(p.asList.take(4)), Params.ParamsAsAny(p.asList.last())) }
   )
 
 @JvmName("and5")
-public fun <A, B, C, D, E, F> EndpointInput<Tuple5<A, B, C, D, E>>.and(other: EndpointInput<F>): EndpointInput<Tuple6<A, B, C, D, E, F>> =
+public fun <A, B, C, D, E, F> EndpointInput<Tuple5<A, B, C, D, E>>.and(
+  other: EndpointInput<F>
+): EndpointInput<Tuple6<A, B, C, D, E, F>> =
   EndpointInput.Pair(
     this,
     other,
     { p1, p2 -> Params.ParamsAsList(p1.asList + p2.asAny) },
-    { p ->
-      Pair(
-        Params.ParamsAsList(p.asList.take(5)),
-        Params.ParamsAsAny(p.asList.last())
-      )
-    }
+    { p -> Pair(Params.ParamsAsList(p.asList.take(5)), Params.ParamsAsAny(p.asList.last())) }
   )

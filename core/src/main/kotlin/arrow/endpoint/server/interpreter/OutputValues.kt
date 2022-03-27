@@ -29,57 +29,40 @@ internal data class OutputValues(
     copy(headerTransformations = headerTransformations + t)
 
   private fun withDefaultContentType(format: CodecFormat, charset: Charset?): OutputValues =
-    withHeaderTransformation { hs ->
-      if (hs.any { it.hasName(Header.ContentType) }) hs
-      else hs + Header(
-        Header.ContentType,
-        (charset?.let(format.mediaType::charset) ?: format.mediaType).toString()
-      )
-    }
+      withHeaderTransformation { hs ->
+    if (hs.any { it.hasName(Header.ContentType) }) hs
+    else
+      hs +
+        Header(
+          Header.ContentType,
+          (charset?.let(format.mediaType::charset) ?: format.mediaType).toString()
+        )
+  }
 
   private fun withHeader(n: String, v: String): OutputValues =
     copy(baseHeaders = baseHeaders + Header(n, v))
 
-  private fun withStatusCode(sc: StatusCode): OutputValues =
-    copy(statusCode = sc)
+  private fun withStatusCode(sc: StatusCode): OutputValues = copy(statusCode = sc)
 
-  fun headers(): List<Header> =
-    headerTransformations.fold(baseHeaders) { hs, t -> t(hs) }
+  fun headers(): List<Header> = headerTransformations.fold(baseHeaders) { hs, t -> t(hs) }
 
   companion object {
-    fun empty(): OutputValues =
-      OutputValues(null, emptyList(), emptyList(), null)
+    fun empty(): OutputValues = OutputValues(null, emptyList(), emptyList(), null)
 
-    fun of(
-      output: EndpointOutput<*>,
-      params: Params,
-      ov: OutputValues
-    ): OutputValues =
+    fun of(output: EndpointOutput<*>, params: Params, ov: OutputValues): OutputValues =
       when (output) {
         is EndpointIO.Single<*> -> applySingle(output, params, ov)
         is EndpointOutput.Single<*> -> applySingle(output, params, ov)
-        is EndpointOutput.Pair<*, *, *> -> applyPair(
-          output.first,
-          output.second,
-          output.split,
-          params,
-          ov
-        )
-        is EndpointIO.Pair<*, *, *> -> applyPair(
-          output.first,
-          output.second,
-          output.split,
-          params,
-          ov
-        )
+        is EndpointOutput.Pair<*, *, *> ->
+          applyPair(output.first, output.second, output.split, params, ov)
+        is EndpointIO.Pair<*, *, *> ->
+          applyPair(output.first, output.second, output.split, params, ov)
         is EndpointOutput.Void -> throw IllegalArgumentException("Cannot encode a void output!")
       }
 
-    private fun OutputValues.withBody(
-      body: Body,
-      output: EndpointIO.Body<*, *>
-    ): OutputValues =
-      withBody(body).withDefaultContentType(output.codec.format, charset(output.codec.format.mediaType, output))
+    private fun OutputValues.withBody(body: Body, output: EndpointIO.Body<*, *>): OutputValues =
+      withBody(body)
+        .withDefaultContentType(output.codec.format, charset(output.codec.format.mediaType, output))
 
     @Suppress("UNCHECKED_CAST")
     private fun applySingle(
@@ -110,7 +93,10 @@ internal data class OutputValues(
         }
         is EndpointIO.StringBody -> {
           val mapping = output.codec as Mapping<String, Any?>
-          ov.withBody(Body.String(output.charset, mapping.encode(value.asAny), output.codec.format), output)
+          ov.withBody(
+            Body.String(output.charset, mapping.encode(value.asAny), output.codec.format),
+            output
+          )
         }
         is EndpointOutput.StatusCode -> {
           val mapping = output.codec as Mapping<StatusCode, Any?>
@@ -118,10 +104,16 @@ internal data class OutputValues(
         }
         is EndpointOutput.OneOf<*, *> -> {
           val encoded = (output.codec as Mapping<Any?, Any?>).encode(value.asAny)
-          val mapping = output.mappings
-            .firstOrNull { it.appliesTo(encoded) }
-            ?: throw IllegalArgumentException("No status code mapping for value: $encoded, in output: $output")
-          of(mapping.output, Params.ParamsAsAny(encoded), mapping.statusCode?.let(ov::withStatusCode) ?: ov)
+          val mapping =
+            output.mappings.firstOrNull { it.appliesTo(encoded) }
+              ?: throw IllegalArgumentException(
+                "No status code mapping for value: $encoded, in output: $output"
+              )
+          of(
+            mapping.output,
+            Params.ParamsAsAny(encoded),
+            mapping.statusCode?.let(ov::withStatusCode) ?: ov
+          )
         }
         is EndpointIO.MappedPair<*, *, *, *> -> {
           val mapping = output.mapping as Mapping<Any?, Any?>
@@ -141,18 +133,14 @@ internal data class OutputValues(
       ov: OutputValues
     ): OutputValues {
       val (leftParams, rightParams) = split(params)
-      return of(
-        right, rightParams,
-        of(
-          left, leftParams, ov
-        )
-      )
+      return of(right, rightParams, of(left, leftParams, ov))
     }
 
     private fun charset(mediaType: MediaType, body: EndpointIO.Body<*, *>): Charset? =
       when (body) {
         // TODO: add to MediaType - setting optional charset if text
-        is EndpointIO.StringBody -> if (mediaType.mainType.equals("text", ignoreCase = true)) body.charset else null
+        is EndpointIO.StringBody ->
+          if (mediaType.mainType.equals("text", ignoreCase = true)) body.charset else null
         else -> null
       }
   }

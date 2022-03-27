@@ -11,16 +11,14 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.web.reactive.function.server.RouterFunction
 import org.springframework.web.reactive.function.server.ServerResponse
 
-@SpringBootApplication
-open class SpringBoot
+@SpringBootApplication open class SpringBoot
 
 fun main(args: Array<String>) {
   runApplication<SpringBoot>(*args)
 }
 
 val helloSpring: Endpoint<Unit, String, String> =
-  Endpoint
-    .get()
+  Endpoint.get()
     .errorOutput(ArrowEndpoint.stringBody())
     .input(ArrowEndpoint.fixedPath("hello"))
     .output(ArrowEndpoint.stringBody())
@@ -30,13 +28,13 @@ open class SpringBootConfig {
 
   @Bean
   open fun getHelloRoute(): RouterFunction<ServerResponse> {
-    val routerFunction: RouterFunction<ServerResponse> = routerFunction(ServerEndpoint(helloSpring) {
-      if ((1..2).random() == 1)
-        Either.Right("Hello Spring Boot !")
-      else
-        Either.Left("oops, it's just not my day...")
-
-    })
+    val routerFunction: RouterFunction<ServerResponse> =
+      routerFunction(
+        ServerEndpoint(helloSpring) {
+          if ((1..2).random() == 1) Either.Right("Hello Spring Boot !")
+          else Either.Left("oops, it's just not my day...")
+        }
+      )
     return routerFunction
   }
 }

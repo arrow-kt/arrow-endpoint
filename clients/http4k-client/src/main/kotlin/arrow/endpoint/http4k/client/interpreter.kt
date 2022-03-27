@@ -10,14 +10,14 @@ import arrow.endpoint.Mapping
 import arrow.endpoint.Params
 import arrow.endpoint.client.requestInfo
 import arrow.endpoint.model.Body
+import arrow.endpoint.model.Method.Companion.CONNECT
+import arrow.endpoint.model.Method.Companion.DELETE
 import arrow.endpoint.model.Method.Companion.GET
 import arrow.endpoint.model.Method.Companion.HEAD
-import arrow.endpoint.model.Method.Companion.POST
-import arrow.endpoint.model.Method.Companion.PUT
-import arrow.endpoint.model.Method.Companion.DELETE
 import arrow.endpoint.model.Method.Companion.OPTIONS
 import arrow.endpoint.model.Method.Companion.PATCH
-import arrow.endpoint.model.Method.Companion.CONNECT
+import arrow.endpoint.model.Method.Companion.POST
+import arrow.endpoint.model.Method.Companion.PUT
 import arrow.endpoint.model.Method.Companion.TRACE
 import arrow.endpoint.model.StatusCode
 import org.http4k.core.HttpHandler
@@ -64,21 +64,17 @@ public fun <I, E, O> HttpHandler.execute(
 
 public fun <I, E, O> Endpoint<I, E, O>.toRequest(baseUrl: String, i: I): Request {
   val info = input.requestInfo(i, baseUrl)
-  val r = Request(
-    requireNotNull(info.method.toHttp4kMethod()) { "Method ${info.method.value} not supported!" },
-    info.baseUrlWithPath
-  )
-  val r2 = info.cookies.fold(r) { rr, (name, value) ->
-    rr.cookie(name, value)
-  }
-  val r3 = info.headers.fold(r2) { rr, (name, value) ->
-    rr.header(name, value)
-  }
-  val r4 = info.queryParams.all().fold(r3) { rr, (name, params) ->
-    params.fold(rr) { rrr, v ->
-      rrr.query(name, v)
+  val r =
+    Request(
+      requireNotNull(info.method.toHttp4kMethod()) { "Method ${info.method.value} not supported!" },
+      info.baseUrlWithPath
+    )
+  val r2 = info.cookies.fold(r) { rr, (name, value) -> rr.cookie(name, value) }
+  val r3 = info.headers.fold(r2) { rr, (name, value) -> rr.header(name, value) }
+  val r4 =
+    info.queryParams.all().fold(r3) { rr, (name, params) ->
+      params.fold(rr) { rrr, v -> rrr.query(name, v) }
     }
-  }
 
   return when (val body = info.body) {
     is Body.ByteArray -> r4.body(MemoryBody(body.byteArray))
@@ -113,17 +109,19 @@ public fun <I, E, O> Endpoint<I, E, O>.parseResponse(
   val output = if (code.isSuccess()) output else errorOutput
 
   @Suppress("UNCHECKED_CAST")
-  val responseHeaders = response.headers
-    .mapNotNull { if (it.second == null) null else it as Pair<String, String> }
-    .groupBy({ it.first }) { it.second }
+  val responseHeaders =
+    response.headers
+      .mapNotNull { if (it.second == null) null else it as Pair<String, String> }
+      .groupBy({ it.first }) { it.second }
 
   val headers = response.cookies().asHeaders() + responseHeaders
-  val params =
-    output.getOutputParams(response, headers, code)
+  val params = output.getOutputParams(response, headers, code)
 
   @Suppress("UNCHECKED_CAST")
-  val result = params.map { it.asAny }
-    .map { p -> if (code.isSuccess()) Either.Right(p as O) else Either.Left(p as E) }
+  val result =
+    params.map { it.asAny }.map { p ->
+      if (code.isSuccess()) Either.Right(p as O) else Either.Left(p as E)
+    }
 
   return when (result) {
     is DecodeResult.Failure.Error ->
@@ -148,52 +146,47 @@ private fun EndpointOutput<*>.getOutputParams(
   code: StatusCode
 ): DecodeResult<Params> =
   when (val output = this) {
-    is EndpointOutput.Single<*> -> when (val single = (output as EndpointOutput.Single<Any?>)) {
-      is EndpointIO.ByteArrayBody -> single.codec.decode(response.body.payload.array())
-      is EndpointIO.ByteBufferBody -> single.codec.decode(response.body.payload)
-      is EndpointIO.InputStreamBody -> single.codec.decode(response.body.stream)
-      is EndpointIO.StringBody -> single.codec.decode(response.body.toString())
-
-      is EndpointIO.Empty -> single.codec.decode(Unit)
-      is EndpointOutput.FixedStatusCode -> single.codec.decode(Unit)
-      is EndpointOutput.StatusCode -> single.codec.decode(code)
-      is EndpointIO.Header -> single.codec.decode(headers[single.name].orEmpty())
-
-      is EndpointOutput.OneOf<*, *> ->
-        single.mappings.firstOrNull { it.statusCode == null || it.statusCode == code }
-          ?.let { mapping -> mapping.output.getOutputParams(response, headers, code).flatMap { p -> (single.codec as Mapping<Any?, Any?>).decode(p.asAny) } }
-          ?: DecodeResult.Failure.Error(response.status.description, IllegalArgumentException("Cannot find mapping for status code $code in outputs $output"))
-
-      is EndpointIO.MappedPair<*, *, *, *> ->
-        single.wrapped.getOutputParams(response, headers, code).flatMap { p ->
-          (single.mapping as Mapping<Any?, DecodeResult<Any?>>).decode(p.asAny)
-        }
-      is EndpointOutput.MappedPair<*, *, *, *> ->
-        single.output.getOutputParams(response, headers, code).flatMap { p ->
-          (single.mapping as Mapping<Any?, DecodeResult<Any?>>).decode(p.asAny)
-        }
-    }.map { Params.ParamsAsAny(it) }
-
-    is EndpointIO.Pair<*, *, *> -> handleOutputPair(
-      output.first,
-      output.second,
-      output.combine,
-      response,
-      headers,
-      code
-    )
-    is EndpointOutput.Pair<*, *, *> -> handleOutputPair(
-      output.first,
-      output.second,
-      output.combine,
-      response,
-      headers,
-      code
-    )
-    is EndpointOutput.Void -> DecodeResult.Failure.Error(
-      "Cannot convert a void output to a value!",
-      IllegalArgumentException("Cannot convert a void output to a value!")
-    )
+    is EndpointOutput.Single<*> ->
+      when (val single = (output as EndpointOutput.Single<Any?>)) {
+        is EndpointIO.ByteArrayBody -> single.codec.decode(response.body.payload.array())
+        is EndpointIO.ByteBufferBody -> single.codec.decode(response.body.payload)
+        is EndpointIO.InputStreamBody -> single.codec.decode(response.body.stream)
+        is EndpointIO.StringBody -> single.codec.decode(response.body.toString())
+        is EndpointIO.Empty -> single.codec.decode(Unit)
+        is EndpointOutput.FixedStatusCode -> single.codec.decode(Unit)
+        is EndpointOutput.StatusCode -> single.codec.decode(code)
+        is EndpointIO.Header -> single.codec.decode(headers[single.name].orEmpty())
+        is EndpointOutput.OneOf<*, *> ->
+          single.mappings.firstOrNull { it.statusCode == null || it.statusCode == code }?.let {
+            mapping ->
+            mapping.output.getOutputParams(response, headers, code).flatMap { p ->
+              (single.codec as Mapping<Any?, Any?>).decode(p.asAny)
+            }
+          }
+            ?: DecodeResult.Failure.Error(
+              response.status.description,
+              IllegalArgumentException(
+                "Cannot find mapping for status code $code in outputs $output"
+              )
+            )
+        is EndpointIO.MappedPair<*, *, *, *> ->
+          single.wrapped.getOutputParams(response, headers, code).flatMap { p ->
+            (single.mapping as Mapping<Any?, DecodeResult<Any?>>).decode(p.asAny)
+          }
+        is EndpointOutput.MappedPair<*, *, *, *> ->
+          single.output.getOutputParams(response, headers, code).flatMap { p ->
+            (single.mapping as Mapping<Any?, DecodeResult<Any?>>).decode(p.asAny)
+          }
+      }.map { Params.ParamsAsAny(it) }
+    is EndpointIO.Pair<*, *, *> ->
+      handleOutputPair(output.first, output.second, output.combine, response, headers, code)
+    is EndpointOutput.Pair<*, *, *> ->
+      handleOutputPair(output.first, output.second, output.combine, response, headers, code)
+    is EndpointOutput.Void ->
+      DecodeResult.Failure.Error(
+        "Cannot convert a void output to a value!",
+        IllegalArgumentException("Cannot convert a void output to a value!")
+      )
   }
 
 private fun handleOutputPair(

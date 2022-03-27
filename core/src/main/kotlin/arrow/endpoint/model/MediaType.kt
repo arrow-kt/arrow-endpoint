@@ -2,7 +2,11 @@ package arrow.endpoint.model
 
 import java.nio.charset.Charset
 
-public data class MediaType(val mainType: String, val subType: String, val charset: String? = null) {
+public data class MediaType(
+  val mainType: String,
+  val subType: String,
+  val charset: String? = null
+) {
 
   // TODO kotlinx-io-core offers a MPP Charset implementation.
   // Only offers UTF_8 & ISO_8859_1
@@ -25,7 +29,8 @@ public data class MediaType(val mainType: String, val subType: String, val chars
     public val ApplicationRtf: MediaType = MediaType("application", "rtf")
     public val ApplicationXhtml: MediaType = MediaType("application", "xhtml+xml")
     public val ApplicationXml: MediaType = MediaType("application", "xml")
-    public val ApplicationXWwwFormUrlencoded: MediaType = MediaType("application", "x-www-form-urlencoded")
+    public val ApplicationXWwwFormUrlencoded: MediaType =
+      MediaType("application", "x-www-form-urlencoded")
 
     public val ImageGif: MediaType = MediaType("image", "gif")
     public val ImageJpeg: MediaType = MediaType("image", "jpeg")

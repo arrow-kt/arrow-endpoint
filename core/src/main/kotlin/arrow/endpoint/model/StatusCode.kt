@@ -11,15 +11,15 @@ public value class StatusCode(public val code: Int) {
   public fun isServerError(): Boolean = code / 100 == 5
 
   public companion object {
-    /** @throws IllegalArgumentException If the status code is out of range.
-     */
+    /** @throws IllegalArgumentException If the status code is out of range. */
     public fun unsafe(code: Int): StatusCode {
       check(code < 100 || code > 599) { "Status code outside of the allowed range 100-599: $code" }
       return StatusCode(code)
     }
 
     public fun safe(code: Int): Either<String, StatusCode> =
-      if (code < 100 || code > 599) Either.Left("Status code outside of the allowed range 100-599: $code")
+      if (code < 100 || code > 599)
+        Either.Left("Status code outside of the allowed range 100-599: $code")
       else Either.Right(StatusCode(code))
 
     // https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml

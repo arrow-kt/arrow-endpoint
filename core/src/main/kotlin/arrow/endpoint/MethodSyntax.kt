@@ -91,63 +91,72 @@ public interface MethodSyntax {
 
   public fun <A> get(f: PathSyntax.() -> EndpointInput<A>): Endpoint<A, Unit, Unit> =
     Endpoint(
-      ArrowEndpoint.method(Method.GET).and(f(PathSyntax)), EndpointOutput.empty(),
+      ArrowEndpoint.method(Method.GET).and(f(PathSyntax)),
+      EndpointOutput.empty(),
       EndpointOutput.empty(),
       Info.empty()
     )
 
   public fun <A> post(f: PathSyntax.() -> EndpointInput<A>): Endpoint<A, Unit, Unit> =
     Endpoint(
-      ArrowEndpoint.method(Method.POST).and(f(PathSyntax)), EndpointOutput.empty(),
+      ArrowEndpoint.method(Method.POST).and(f(PathSyntax)),
+      EndpointOutput.empty(),
       EndpointOutput.empty(),
       Info.empty()
     )
 
   public fun <A> head(f: PathSyntax.() -> EndpointInput<A>): Endpoint<A, Unit, Unit> =
     Endpoint(
-      ArrowEndpoint.method(Method.HEAD).and(f(PathSyntax)), EndpointOutput.empty(),
+      ArrowEndpoint.method(Method.HEAD).and(f(PathSyntax)),
+      EndpointOutput.empty(),
       EndpointOutput.empty(),
       Info.empty()
     )
 
   public fun <A> put(f: PathSyntax.() -> EndpointInput<A>): Endpoint<A, Unit, Unit> =
     Endpoint(
-      ArrowEndpoint.method(Method.PUT).and(f(PathSyntax)), EndpointOutput.empty(),
+      ArrowEndpoint.method(Method.PUT).and(f(PathSyntax)),
+      EndpointOutput.empty(),
       EndpointOutput.empty(),
       Info.empty()
     )
 
   public fun <A> delete(f: PathSyntax.() -> EndpointInput<A>): Endpoint<A, Unit, Unit> =
     Endpoint(
-      ArrowEndpoint.method(Method.DELETE).and(f(PathSyntax)), EndpointOutput.empty(),
+      ArrowEndpoint.method(Method.DELETE).and(f(PathSyntax)),
+      EndpointOutput.empty(),
       EndpointOutput.empty(),
       Info.empty()
     )
 
   public fun <A> options(f: PathSyntax.() -> EndpointInput<A>): Endpoint<A, Unit, Unit> =
     Endpoint(
-      ArrowEndpoint.method(Method.OPTIONS).and(f(PathSyntax)), EndpointOutput.empty(),
+      ArrowEndpoint.method(Method.OPTIONS).and(f(PathSyntax)),
+      EndpointOutput.empty(),
       EndpointOutput.empty(),
       Info.empty()
     )
 
   public fun <A> patch(f: PathSyntax.() -> EndpointInput<A>): Endpoint<A, Unit, Unit> =
     Endpoint(
-      ArrowEndpoint.method(Method.PATCH).and(f(PathSyntax)), EndpointOutput.empty(),
+      ArrowEndpoint.method(Method.PATCH).and(f(PathSyntax)),
+      EndpointOutput.empty(),
       EndpointOutput.empty(),
       Info.empty()
     )
 
   public fun <A> connect(f: PathSyntax.() -> EndpointInput<A>): Endpoint<A, Unit, Unit> =
     Endpoint(
-      ArrowEndpoint.method(Method.CONNECT).and(f(PathSyntax)), EndpointOutput.empty(),
+      ArrowEndpoint.method(Method.CONNECT).and(f(PathSyntax)),
+      EndpointOutput.empty(),
       EndpointOutput.empty(),
       Info.empty()
     )
 
   public fun <A> trace(f: PathSyntax.() -> EndpointInput<A>): Endpoint<A, Unit, Unit> =
     Endpoint(
-      ArrowEndpoint.method(Method.TRACE).and(f(PathSyntax)), EndpointOutput.empty(),
+      ArrowEndpoint.method(Method.TRACE).and(f(PathSyntax)),
+      EndpointOutput.empty(),
       EndpointOutput.empty(),
       Info.empty()
     )
@@ -162,8 +171,7 @@ public object PathSyntax {
   public fun <A> p(name: String, codec: PlainCodec<A>): EndpointInput.PathCapture<A> =
     ArrowEndpoint.path(name, codec)
 
-  public fun <A> p(codec: PlainCodec<A>): EndpointInput.PathCapture<A> =
-    ArrowEndpoint.path(codec)
+  public fun <A> p(codec: PlainCodec<A>): EndpointInput.PathCapture<A> = ArrowEndpoint.path(codec)
 
   public operator fun <A> String.div(other: EndpointInput<A>): EndpointInput<A> =
     ArrowEndpoint.fixedPath(this).and(other)
@@ -175,25 +183,31 @@ public object PathSyntax {
   public operator fun <A> EndpointInput<Unit>.div(other: EndpointInput<A>): EndpointInput<A> =
     this.and(other)
 
-  public operator fun <A, B> EndpointInput<A>.div(other: EndpointInput<B>): EndpointInput<Pair<A, B>> =
-    this.and(other)
+  public operator fun <A, B> EndpointInput<A>.div(
+    other: EndpointInput<B>
+  ): EndpointInput<Pair<A, B>> = this.and(other)
 
-  public operator fun <A> EndpointInput<A>.div(other: EndpointInput.FixedPath<Unit>): EndpointInput<A> =
-    this.and(other)
+  public operator fun <A> EndpointInput<A>.div(
+    other: EndpointInput.FixedPath<Unit>
+  ): EndpointInput<A> = this.and(other)
 
   @JvmName("div2")
-  public operator fun <A, B, C> EndpointInput<Pair<A, B>>.div(other: EndpointInput.PathCapture<C>): EndpointInput<Triple<A, B, C>> =
-    this.and(other)
+  public operator fun <A, B, C> EndpointInput<Pair<A, B>>.div(
+    other: EndpointInput.PathCapture<C>
+  ): EndpointInput<Triple<A, B, C>> = this.and(other)
 
   @JvmName("div3")
-  public operator fun <A, B, C, D> EndpointInput<Triple<A, B, C>>.div(other: EndpointInput.PathCapture<D>): EndpointInput<Tuple4<A, B, C, D>> =
-    this.and(other)
+  public operator fun <A, B, C, D> EndpointInput<Triple<A, B, C>>.div(
+    other: EndpointInput.PathCapture<D>
+  ): EndpointInput<Tuple4<A, B, C, D>> = this.and(other)
 
   @JvmName("div4")
-  public operator fun <A, B, C, D, E> EndpointInput<Tuple4<A, B, C, D>>.div(other: EndpointInput.PathCapture<E>): EndpointInput<Tuple5<A, B, C, D, E>> =
-    this.and(other)
+  public operator fun <A, B, C, D, E> EndpointInput<Tuple4<A, B, C, D>>.div(
+    other: EndpointInput.PathCapture<E>
+  ): EndpointInput<Tuple5<A, B, C, D, E>> = this.and(other)
 
   @JvmName("div5")
-  public operator fun <A, B, C, D, E, F> EndpointInput<Tuple5<A, B, C, D, E>>.div(other: EndpointInput.PathCapture<F>): EndpointInput<Tuple6<A, B, C, D, E, F>> =
-    this.and(other)
+  public operator fun <A, B, C, D, E, F> EndpointInput<Tuple5<A, B, C, D, E>>.div(
+    other: EndpointInput.PathCapture<F>
+  ): EndpointInput<Tuple6<A, B, C, D, E, F>> = this.and(other)
 }

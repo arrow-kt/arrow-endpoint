@@ -3,12 +3,12 @@ package arrow.endpoint.test
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
+import arrow.endpoint.ArrowEndpoint
 import arrow.endpoint.DecodeResult
 import arrow.endpoint.Endpoint
 import arrow.endpoint.Endpoint.Info
 import arrow.endpoint.EndpointInput
 import arrow.endpoint.EndpointOutput
-import arrow.endpoint.ArrowEndpoint
 import arrow.endpoint.http4k.client.execute
 import arrow.endpoint.input
 import arrow.endpoint.model.Method
@@ -17,7 +17,6 @@ import arrow.endpoint.server.ServerEndpoint
 import arrow.endpoint.test.TestEndpoint.in_byte_array_out_byte_array
 import arrow.endpoint.test.TestEndpoint.in_header_before_path
 import arrow.endpoint.test.TestEndpoint.in_header_out_string
-import arrow.endpoint.test.TestEndpoint.out_value_form_exact_match
 import arrow.endpoint.test.TestEndpoint.in_json_out_json
 import arrow.endpoint.test.TestEndpoint.in_mapped_path_out_string
 import arrow.endpoint.test.TestEndpoint.in_mapped_path_path_out_string
@@ -29,11 +28,12 @@ import arrow.endpoint.test.TestEndpoint.in_query_out_mapped_string
 import arrow.endpoint.test.TestEndpoint.in_query_out_mapped_string_header
 import arrow.endpoint.test.TestEndpoint.in_query_out_string
 import arrow.endpoint.test.TestEndpoint.in_query_query_out_string
-import arrow.endpoint.test.TestEndpoint.out_status_from_string_one_empty
-import arrow.endpoint.test.TestEndpoint.out_reified_status
 import arrow.endpoint.test.TestEndpoint.in_string_out_string
 import arrow.endpoint.test.TestEndpoint.in_two_path_capture
 import arrow.endpoint.test.TestEndpoint.in_unit_out_json_unit
+import arrow.endpoint.test.TestEndpoint.out_reified_status
+import arrow.endpoint.test.TestEndpoint.out_status_from_string_one_empty
+import arrow.endpoint.test.TestEndpoint.out_value_form_exact_match
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import org.http4k.client.ApacheClient
@@ -41,19 +41,20 @@ import org.http4k.core.Request
 import org.http4k.core.Response
 
 /**
- * Overload for CtxServerInterpreterSuite where there is no Server Ctx needs to be threaded between server and client functions
- **/
+ * Overload for CtxServerInterpreterSuite where there is no Server Ctx needs to be threaded between
+ * server and client functions
+ */
 public abstract class ServerInterpreterSuite : CtxServerInterpreterSuite<Unit>()
 
 /**
  * Abstract server interpreter test suite
  *
- * Allows for [Ctx] to be threaded between [withEndpoint] and [request].
- * This is useful for testing frameworks that have specific testing support like Ktor,
- * with these testing frameworks we often have to pass along some test context to pass testing state
- * between server and client.
+ * Allows for [Ctx] to be threaded between [withEndpoint] and [request]. This is useful for testing
+ * frameworks that have specific testing support like Ktor, with these testing frameworks we often
+ * have to pass along some test context to pass testing state between server and client.
  *
- * See the Ktor module for an example that thread `TestApplicationEngine` between [withEndpoint] & [request].
+ * See the Ktor module for an example that thread `TestApplicationEngine` between [withEndpoint] &
+ * [request].
  */
 public abstract class CtxServerInterpreterSuite<Ctx> : FreeSpec() {
 
@@ -77,11 +78,11 @@ public abstract class CtxServerInterpreterSuite<Ctx> : FreeSpec() {
     endpoint: Endpoint<I, E, O>,
     baseUrl: String,
     input: I
-  ): DecodeResult<Either<E, O>> =
-    requestAndStatusCode(endpoint, baseUrl, input).first
+  ): DecodeResult<Either<E, O>> = requestAndStatusCode(endpoint, baseUrl, input).first
 
   init {
-    val empty = Endpoint(EndpointInput.empty(), EndpointOutput.empty(), EndpointOutput.empty(), Info.empty())
+    val empty =
+      Endpoint(EndpointInput.empty(), EndpointOutput.empty(), EndpointOutput.empty(), Info.empty())
     val emptyGet = empty.input(ArrowEndpoint.method(Method.GET))
     val emptyPost = empty.input(ArrowEndpoint.method(Method.POST))
 
@@ -107,24 +108,24 @@ public abstract class CtxServerInterpreterSuite<Ctx> : FreeSpec() {
       expected: Either<E, O>,
       postfix: String = "",
       logic: suspend (input: I) -> Either<E, O>
-    ): Unit =
-      "${endpoint.details()} - $postfix" {
-        withEndpoint(endpoint.logic(logic)) { baseUrl ->
-          request(endpoint, baseUrl, input).map(::normalise) shouldBe DecodeResult.Value(normalise(expected))
-        }
+    ): Unit = "${endpoint.details()} - $postfix" {
+      withEndpoint(endpoint.logic(logic)) { baseUrl ->
+        request(endpoint, baseUrl, input).map(::normalise) shouldBe
+          DecodeResult.Value(normalise(expected))
       }
+    }
 
     fun <E, O> test(
       endpoint: Endpoint<Unit, E, O>,
       expected: Either<E, O>,
       postfix: String = "",
       logic: suspend (input: Unit) -> Either<E, O>
-    ): Unit =
-      "${endpoint.details()} - $postfix" {
-        withEndpoint(endpoint.logic(logic)) { baseUrl ->
-          request(endpoint, baseUrl, Unit).map(::normalise) shouldBe DecodeResult.Value(normalise(expected))
-        }
+    ): Unit = "${endpoint.details()} - $postfix" {
+      withEndpoint(endpoint.logic(logic)) { baseUrl ->
+        request(endpoint, baseUrl, Unit).map(::normalise) shouldBe
+          DecodeResult.Value(normalise(expected))
       }
+    }
 
     fun <I, E, O> test(
       endpoint: Endpoint<I, E, O>,
@@ -132,72 +133,57 @@ public abstract class CtxServerInterpreterSuite<Ctx> : FreeSpec() {
       expected: Pair<Either<E, O>, StatusCode>,
       postfix: String = "",
       logic: suspend (input: I) -> Either<E, O>
-    ): Unit =
-      "${endpoint.details()} - $postfix" {
-        withEndpoint(endpoint.logic(logic)) { baseUrl ->
-          val (normalised, code) = requestAndStatusCode(endpoint, baseUrl, input)
-          Pair(normalised, code) shouldBe Pair(DecodeResult.Value(normalise(expected.first)), expected.second)
-        }
+    ): Unit = "${endpoint.details()} - $postfix" {
+      withEndpoint(endpoint.logic(logic)) { baseUrl ->
+        val (normalised, code) = requestAndStatusCode(endpoint, baseUrl, input)
+        Pair(normalised, code) shouldBe
+          Pair(DecodeResult.Value(normalise(expected.first)), expected.second)
       }
+    }
 
     fun <E, O> test(
       endpoint: Endpoint<Unit, E, O>,
       expected: Pair<Either<E, O>, StatusCode>,
       postfix: String = "",
       logic: suspend (input: Unit) -> Either<E, O>
-    ): Unit =
-      "${endpoint.details()} - $postfix" {
-        withEndpoint(endpoint.logic(logic)) { baseUrl ->
-          val (normalised, code) = requestAndStatusCode(endpoint, baseUrl, Unit)
-          Pair(normalised, code) shouldBe Pair(DecodeResult.Value(normalise(expected.first)), expected.second)
-        }
+    ): Unit = "${endpoint.details()} - $postfix" {
+      withEndpoint(endpoint.logic(logic)) { baseUrl ->
+        val (normalised, code) = requestAndStatusCode(endpoint, baseUrl, Unit)
+        Pair(normalised, code) shouldBe
+          Pair(DecodeResult.Value(normalise(expected.first)), expected.second)
       }
+    }
 
     test(Endpoint.get(), Unit, Unit.right(), "GET a GET endpoint") { it.right() }
     test(in_query_out_string, "orange", "orange".right()) { it.right() }
     test(in_query_out_string, "red apple", "red apple".right(), "URL encoding") { it.right() }
     test(empty, Unit, Unit.right(), "GET empty endpoint") { it.right() }
 
-    test(
-      in_query_out_infallible_string,
-      "kiwi",
-      "fruit: kiwi".right()
-    ) { "fruit: $it".right() }
+    test(in_query_out_infallible_string, "kiwi", "fruit: kiwi".right()) { "fruit: $it".right() }
 
-    test(
-      in_query_query_out_string,
-      Pair("orange", 10),
-      "orange: 10".right(),
-      "Defined"
-    ) { (f, a) -> "$f: $a".right() }
+    test(in_query_query_out_string, Pair("orange", 10), "orange: 10".right(), "Defined") { (f, a) ->
+      "$f: $a".right()
+    }
 
-    test(
-      in_query_query_out_string,
-      Pair("orange", null),
-      "orange: null".right(),
-      "Null"
-    ) { (f, a) -> "$f: $a".right() }
+    test(in_query_query_out_string, Pair("orange", null), "orange: null".right(), "Null") { (f, a)
+      ->
+      "$f: $a".right()
+    }
 
-    test(
-      in_header_out_string,
-      "Admin",
-      "Admin".right()
-    ) { it.right() }
+    test(in_header_out_string, "Admin", "Admin".right()) { it.right() }
 
-    test(
-      in_path_path_out_string,
-      Pair("orange", 20),
-      "orange: 20".right()
-    ) { (fruit, amount) -> "$fruit: $amount".right() }
+    test(in_path_path_out_string, Pair("orange", 20), "orange: 20".right()) { (fruit, amount) ->
+      "$fruit: $amount".right()
+    }
 
-//  TODO fix URL encoding => expected: "apple/red: 20" but was: "apple%2Fred: 20"
-//  this one works for the Spring interpreter
-//    test(
-//      in_path_path_out_string,
-//      Pair("apple/red", 20),
-//      "apple/red: 20".right(),
-//      "URL encoding"
-//    ) { (fruit, amount) -> "$fruit: $amount".right() }
+    //  TODO fix URL encoding => expected: "apple/red: 20" but was: "apple%2Fred: 20"
+    //  this one works for the Spring interpreter
+    //    test(
+    //      in_path_path_out_string,
+    //      Pair("apple/red", 20),
+    //      "apple/red: 20".right(),
+    //      "URL encoding"
+    //    ) { (fruit, amount) -> "$fruit: $amount".right() }
 
     test(
       in_two_path_capture,
@@ -206,23 +192,13 @@ public abstract class CtxServerInterpreterSuite<Ctx> : FreeSpec() {
       "capturing two path parameters with the same specification"
     ) { it.right() }
 
-    test(
-      in_string_out_string,
-      "Sweet",
-      "Sweet".right()
-    ) { it.right() }
+    test(in_string_out_string, "Sweet", "Sweet".right()) { it.right() }
 
-    test(
-      in_mapped_query_out_string,
-      "orange".toList(),
-      "length: 6".right()
-    ) { l -> "length: ${l.size}".right() }
+    test(in_mapped_query_out_string, "orange".toList(), "length: 6".right()) { l ->
+      "length: ${l.size}".right()
+    }
 
-    test(
-      in_mapped_path_out_string,
-      Fruit("kiwi"),
-      "kiwi".right()
-    ) { it.name.right() }
+    test(in_mapped_path_out_string, Fruit("kiwi"), "kiwi".right()) { it.name.right() }
 
     test(
       in_mapped_path_path_out_string,
@@ -236,17 +212,11 @@ public abstract class CtxServerInterpreterSuite<Ctx> : FreeSpec() {
       "FA: FruitAmount(orange, 10) color: yellow".right()
     ) { (fa, color) -> "FA: FruitAmount(${fa.fruit}, ${fa.amount}) color: $color".right() }
 
-    test(
-      in_query_out_mapped_string,
-      "orange",
-      "orange".toList().right()
-    ) { it.toList().right() }
+    test(in_query_out_mapped_string, "orange", "orange".toList().right()) { it.toList().right() }
 
-    test(
-      in_query_out_mapped_string_header,
-      "orange",
-      FruitAmount("orange", 6).right()
-    ) { FruitAmount(it, it.length).right() }
+    test(in_query_out_mapped_string_header, "orange", FruitAmount("orange", 6).right()) {
+      FruitAmount(it, it.length).right()
+    }
 
     test(
       in_header_before_path,
@@ -255,11 +225,10 @@ public abstract class CtxServerInterpreterSuite<Ctx> : FreeSpec() {
       "Header input before path capture input"
     ) { it.reversed().right() }
 
-    test(
-      in_json_out_json,
-      FruitAmount("orange", 11),
-      FruitAmount("orange banana", 22).right()
-    ) { (fruit, amount) -> FruitAmount("$fruit banana", amount * 2).right() }
+    test(in_json_out_json, FruitAmount("orange", 11), FruitAmount("orange banana", 22).right()) {
+      (fruit, amount) ->
+      FruitAmount("$fruit banana", amount * 2).right()
+    }
 
     test(
       in_byte_array_out_byte_array,
@@ -267,11 +236,7 @@ public abstract class CtxServerInterpreterSuite<Ctx> : FreeSpec() {
       "banana kiwi".toByteArray().right(),
     ) { it.right() }
 
-    test(
-      in_unit_out_json_unit,
-      Unit.right(),
-      "unit json mapper"
-    ) { it.right() }
+    test(in_unit_out_json_unit, Unit.right(), "unit json mapper") { it.right() }
 
     test(
       out_reified_status.name("status 1/2"),
@@ -283,15 +248,13 @@ public abstract class CtxServerInterpreterSuite<Ctx> : FreeSpec() {
       Pair(1.left().right(), StatusCode.Accepted),
     ) { 1.left().right() }
 
-    test(
-      out_value_form_exact_match.name("status A"),
-      Pair("A".right(), StatusCode.Ok)
-    ) { "A".right() }
+    test(out_value_form_exact_match.name("status A"), Pair("A".right(), StatusCode.Ok)) {
+      "A".right()
+    }
 
-    test(
-      out_value_form_exact_match.name("status B"),
-      Pair("B".right(), StatusCode.Accepted)
-    ) { "B".right() }
+    test(out_value_form_exact_match.name("status B"), Pair("B".right(), StatusCode.Accepted)) {
+      "B".right()
+    }
 
     test(
       out_status_from_string_one_empty.name("status string"),

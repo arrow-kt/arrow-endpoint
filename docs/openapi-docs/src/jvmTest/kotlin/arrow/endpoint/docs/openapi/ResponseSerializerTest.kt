@@ -4,45 +4,34 @@ import io.kotest.core.spec.style.StringSpec
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-class ResponseSerializerTest : StringSpec({
+class ResponseSerializerTest :
+  StringSpec({
+    val json = Json {
+      encodeDefaults = false
+      prettyPrint = true
+    }
 
-  val json = Json {
-    encodeDefaults = false
-    prettyPrint = true
-  }
+    "default response" {
+      val response = Response("response")
+      val str = json.encodeToString(response)
+    }
 
-  "default response" {
-    val response = Response("response")
-    val str = json.encodeToString(response)
-  }
-
-  "response with MediaType" {
-    val response = Response(
-      "response",
-      content = mapOf(
-        "text/plain" to MediaType(
-          schema = Referenced.Other(
-            value = Schema()
-          )
+    "response with MediaType" {
+      val response =
+        Response(
+          "response",
+          content = mapOf("text/plain" to MediaType(schema = Referenced.Other(value = Schema())))
         )
-      )
-    )
-    val str = json.encodeToString(response)
-  }
+      val str = json.encodeToString(response)
+    }
 
-  "Referenced.Other" {
-    val referenced = Referenced.Other(
-      Schema()
-    ) as Referenced<Schema>
-    val str = json.encodeToString(referenced)
-  }
+    "Referenced.Other" {
+      val referenced = Referenced.Other(Schema()) as Referenced<Schema>
+      val str = json.encodeToString(referenced)
+    }
 
-  "MediaType" {
-    val mediaType = MediaType(
-      schema = Referenced.Other(
-        value = Schema()
-      )
-    )
-    val str = json.encodeToString(mediaType)
-  }
-})
+    "MediaType" {
+      val mediaType = MediaType(schema = Referenced.Other(value = Schema()))
+      val str = json.encodeToString(mediaType)
+    }
+  })
