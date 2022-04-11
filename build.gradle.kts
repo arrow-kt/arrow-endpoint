@@ -8,9 +8,20 @@ plugins {
   alias(libs.plugins.kotest.multiplatform) apply false
   alias(libs.plugins.kotlinxSerialization) apply false
   alias(libs.plugins.arrowGradleConfig.nexus)
+  alias(libs.plugins.arrowGradleConfig.kotlin) apply false
+  alias(libs.plugins.arrowGradleConfig.versioning)
+  alias(libs.plugins.arrowGradleConfig.formatter)
+  alias(libs.plugins.kotlin.binaryCompatibilityValidator)
 }
 
 allprojects {
+  apply(plugin = "io.kotest.multiplatform")
+  apply(plugin = "org.gradle.idea")
+
+
+  repositories {
+    mavenCentral()
+  }
   group = property("projects.group").toString()
 }
 
@@ -30,17 +41,5 @@ tasks {
     }
     sourceCompatibility = JavaVersion.VERSION_1_8.toString()
     targetCompatibility = JavaVersion.VERSION_1_8.toString()
-  }
-}
-
-allprojects {
-  apply(plugin = "io.kotest.multiplatform")
-  apply(plugin = "org.gradle.idea")
-
-  group = "io.arrow-kt"
-  version = "0.1.0-SNAPSHOT"
-
-  repositories {
-    mavenCentral()
   }
 }

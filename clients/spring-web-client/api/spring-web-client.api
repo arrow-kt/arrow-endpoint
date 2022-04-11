@@ -1,0 +1,10 @@
+public final class arrow/endpoint/spring/client/RestTemplateInterpreterKt {
+	public static final fun execute (Lorg/springframework/web/client/RestTemplate;Larrow/endpoint/Endpoint;Ljava/lang/String;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun getOrNull (Larrow/endpoint/DecodeResult;)Ljava/lang/Object;
+	public static final fun getOrThrow (Larrow/endpoint/DecodeResult;)Ljava/lang/Object;
+	public static final fun invoke (Lorg/springframework/web/client/RestTemplate;Larrow/endpoint/Endpoint;Ljava/lang/String;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun method-2JpsQE4 (Ljava/lang/String;)Lorg/springframework/http/HttpMethod;
+	public static final fun parseResponse (Larrow/endpoint/Endpoint;Lorg/springframework/http/client/ClientHttpRequest;Lorg/springframework/http/client/ClientHttpResponse;)Larrow/endpoint/DecodeResult;
+	public static final fun toRequest (Larrow/endpoint/Endpoint;Lorg/springframework/http/client/ClientHttpRequestFactory;Ljava/lang/String;Ljava/lang/Object;)Lorg/springframework/http/client/ClientHttpRequest;
+}
+

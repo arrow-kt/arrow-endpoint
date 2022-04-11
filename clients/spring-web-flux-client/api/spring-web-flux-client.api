@@ -1,0 +1,8 @@
+public final class arrow/endpoint/spring/client/WebClientInterpreterKt {
+	public static final fun execute (Lorg/springframework/web/reactive/function/client/WebClient;Larrow/endpoint/Endpoint;Ljava/lang/String;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun invoke (Lorg/springframework/web/reactive/function/client/WebClient;Larrow/endpoint/Endpoint;Ljava/lang/String;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun method-2JpsQE4 (Ljava/lang/String;)Lorg/springframework/http/HttpMethod;
+	public static final fun parseResponse (Larrow/endpoint/Endpoint;Lorg/springframework/http/HttpMethod;Ljava/lang/String;Lorg/springframework/web/reactive/function/client/ClientResponse;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun toRequest (Lorg/springframework/web/reactive/function/client/WebClient;Larrow/endpoint/client/RequestInfo;Lorg/springframework/http/HttpMethod;)Lorg/springframework/web/reactive/function/client/WebClient$RequestBodyUriSpec;
+}
+

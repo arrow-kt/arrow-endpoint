@@ -6,27 +6,25 @@ import arrow.core.right
 import java.lang.IllegalStateException
 
 /**
- * An HTTP header.
- * The [name] property is case-insensitive during equality checks.
- * To compare if two headers have the same name, use the [hasName] method, which does a case-insensitive check,
+ * An HTTP header. The [name] property is case-insensitive during equality checks. To compare if two
+ * headers have the same name, use the [hasName] method, which does a case-insensitive check,
  * instead of comparing the [name] property.
  *
- * The [name] and [value] should be already encoded (if necessary), as when serialised, they end up unmodified in
- * the header.
+ * The [name] and [value] should be already encoded (if necessary), as when serialised, they end up
+ * unmodified in the header.
  */
 public data class Header(val name: String, val value: String) {
 
   /**
-   * Check if the name of this header is the same as the given one. The names are compared in a case-insensitive way.
+   * Check if the name of this header is the same as the given one. The names are compared in a
+   * case-insensitive way.
    */
-  public fun hasName(otherName: String): Boolean =
-    name.equals(otherName, ignoreCase = true)
+  public fun hasName(otherName: String): Boolean = name.equals(otherName, ignoreCase = true)
 
   /** @return Representation in the format: `[name]: [value]`. */
   override fun toString(): String = toStringSafe()
 
-  override fun hashCode(): Int =
-    (31 * name.lowercase().hashCode()) + value.hashCode()
+  override fun hashCode(): Int = (31 * name.lowercase().hashCode()) + value.hashCode()
 
   override fun equals(other: Any?): Boolean =
     when (other) {
@@ -35,8 +33,8 @@ public data class Header(val name: String, val value: String) {
     }
 
   /**
-   *  @return Representation in the format: `[name]: [value]`.
-   *  If the header is sensitive (see [Header.SensitiveHeaders]), the value is omitted.
+   * @return Representation in the format: `[name]: [value]`. If the header is sensitive (see
+   * [Header.SensitiveHeaders]), the value is omitted.
    */
   public fun toStringSafe(sensitiveHeaders: Set<String> = SensitiveHeaders): String =
     "$name: ${if (isSensitive(name, sensitiveHeaders)) "***" else value}"
@@ -44,8 +42,8 @@ public data class Header(val name: String, val value: String) {
   public companion object {
     /** @throws IllegalArgumentException If the header name contains illegal characters. */
     public fun unsafe(name: String, value: String): Header =
-      Rfc2616.validateToken("Header name", name)
-        ?.let { throw IllegalStateException(it) } ?: Header(name, value)
+      Rfc2616.validateToken("Header name", name)?.let { throw IllegalStateException(it) }
+        ?: Header(name, value)
 
     public fun of(name: String, value: String): Either<String, Header> =
       Rfc2616.validateToken("Header name", name)?.left() ?: Header(name, value).right()
@@ -130,26 +128,22 @@ public data class Header(val name: String, val value: String) {
     public val SensitiveHeaders: Set<String> =
       setOf(Authorization, Cookie, SetCookie).map(String::lowercase).toSet()
 
-    /** Performs a case-insensitive check, whether this header name is content-related.
-     */
+    /** Performs a case-insensitive check, whether this header name is content-related. */
     public fun isContent(headerName: String): Boolean =
       ContentHeaders.contains(headerName.lowercase().trim())
 
     /** Performs a case-insensitive check, whether this header is content-related. */
-    public fun isContent(header: Header): Boolean =
-      isContent(header.name)
+    public fun isContent(header: Header): Boolean = isContent(header.name)
 
     /** Performs a case-insensitive check, whether this header name is sensitive. */
-    public fun isSensitive(headerName: String): Boolean =
-      isSensitive(headerName, SensitiveHeaders)
+    public fun isSensitive(headerName: String): Boolean = isSensitive(headerName, SensitiveHeaders)
 
     /** Performs a case-insensitive check, whether this header name is sensitive. */
     public fun isSensitive(headerName: String, sensitiveHeaders: Set<String>): Boolean =
       sensitiveHeaders.map(String::lowercase).contains(headerName.lowercase().trim())
 
     /** Performs a case-insensitive check, whether this header is sensitive. */
-    public fun isSensitive(header: Header): Boolean =
-      isSensitive(header.name, SensitiveHeaders)
+    public fun isSensitive(header: Header): Boolean = isSensitive(header.name, SensitiveHeaders)
 
     /** Performs a case-insensitive check, whether this header is sensitive. */
     public fun isSensitive(header: Header, sensitiveHeaders: Set<String>): Boolean =
@@ -157,17 +151,17 @@ public data class Header(val name: String, val value: String) {
   }
 }
 
-public fun List<Header>.toStringSafe(sensitiveHeaders: Set<String> = Header.SensitiveHeaders): List<String> =
-  map { it.toStringSafe(sensitiveHeaders) }
+public fun List<Header>.toStringSafe(
+  sensitiveHeaders: Set<String> = Header.SensitiveHeaders
+): List<String> = map { it.toStringSafe(sensitiveHeaders) }
 
-public fun List<Header>.header(h: String): String? =
-  firstOrNull { it.hasName(h) }?.value
+public fun List<Header>.header(h: String): String? = firstOrNull { it.hasName(h) }?.value
 
-public fun List<Header>.headers(h: String): List<String> =
-  mapNotNull { if (it.hasName(h)) it.value else null }
+public fun List<Header>.headers(h: String): List<String> = mapNotNull {
+  if (it.hasName(h)) it.value else null
+}
 
-public fun List<Header>.contentType(): String? =
-  header(Header.ContentType)
+public fun List<Header>.contentType(): String? = header(Header.ContentType)
 
 public fun List<Header>.contentLength(): Long? =
   header(Header.ContentLength)?.let(String::toLongOrNull)

@@ -1,0 +1,159 @@
+public abstract class arrow/endpoint/test/ClientInterpreterSuite : io/kotest/core/spec/style/FreeSpec {
+	public fun <init> ()V
+	public final fun request (Larrow/endpoint/Endpoint;Ljava/lang/String;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun requestAndStatusCode (Larrow/endpoint/Endpoint;Ljava/lang/String;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract class arrow/endpoint/test/CtxServerInterpreterSuite : io/kotest/core/spec/style/FreeSpec {
+	public fun <init> ()V
+	public fun requestAndStatusCode (Ljava/lang/Object;Larrow/endpoint/Endpoint;Ljava/lang/String;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun withEndpoint (Larrow/endpoint/server/ServerEndpoint;Lkotlin/jvm/functions/Function3;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class arrow/endpoint/test/DomainKt {
+	public static final fun formFruitAmount (Larrow/endpoint/Codec$Companion;)Larrow/endpoint/Codec;
+	public static final fun fruitAmount (Larrow/endpoint/Schema$Companion;)Larrow/endpoint/Schema;
+	public static final fun jsonFruitAmount (Larrow/endpoint/Codec$Companion;)Larrow/endpoint/Codec;
+	public static final fun jsonNullableFruitAmount (Larrow/endpoint/Codec$Companion;)Larrow/endpoint/Codec;
+	public static final fun person (Larrow/endpoint/Codec$Companion;)Larrow/endpoint/Codec;
+	public static final fun person (Larrow/endpoint/Schema$Companion;)Larrow/endpoint/Schema;
+}
+
+public final class arrow/endpoint/test/Fruit {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Larrow/endpoint/test/Fruit;
+	public static synthetic fun copy$default (Larrow/endpoint/test/Fruit;Ljava/lang/String;ILjava/lang/Object;)Larrow/endpoint/test/Fruit;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class arrow/endpoint/test/FruitAmount {
+	public static final field Companion Larrow/endpoint/test/FruitAmount$Companion;
+	public synthetic fun <init> (ILjava/lang/String;ILkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;I)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()I
+	public final fun copy (Ljava/lang/String;I)Larrow/endpoint/test/FruitAmount;
+	public static synthetic fun copy$default (Larrow/endpoint/test/FruitAmount;Ljava/lang/String;IILjava/lang/Object;)Larrow/endpoint/test/FruitAmount;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAmount ()I
+	public final fun getFruit ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Larrow/endpoint/test/FruitAmount;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class arrow/endpoint/test/FruitAmount$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Larrow/endpoint/test/FruitAmount$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Larrow/endpoint/test/FruitAmount;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Larrow/endpoint/test/FruitAmount;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/test/FruitAmount$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/test/MockWebServerKt {
+	public static final fun setBody (Lokhttp3/mockwebserver/MockResponse;Larrow/endpoint/model/ServerResponse;)Lokhttp3/mockwebserver/MockResponse;
+	public static final fun toDispatcher (Larrow/endpoint/server/ServerEndpoint;)Lokhttp3/mockwebserver/Dispatcher;
+	public static final fun toServerRequest (Lokhttp3/mockwebserver/RecordedRequest;)Larrow/endpoint/model/ServerRequest;
+}
+
+public final class arrow/endpoint/test/Person {
+	public static final field Companion Larrow/endpoint/test/Person$Companion;
+	public synthetic fun <init> (ILjava/lang/String;ILkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;I)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()I
+	public final fun copy (Ljava/lang/String;I)Larrow/endpoint/test/Person;
+	public static synthetic fun copy$default (Larrow/endpoint/test/Person;Ljava/lang/String;IILjava/lang/Object;)Larrow/endpoint/test/Person;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAge ()I
+	public final fun getName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public static final fun write$Self (Larrow/endpoint/test/Person;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class arrow/endpoint/test/Person$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Larrow/endpoint/test/Person$$serializer;
+	public static final synthetic field descriptor Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Larrow/endpoint/test/Person;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Larrow/endpoint/test/Person;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class arrow/endpoint/test/Person$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public abstract class arrow/endpoint/test/ServerInterpreterSuite : arrow/endpoint/test/CtxServerInterpreterSuite {
+	public fun <init> ()V
+}
+
+public final class arrow/endpoint/test/Test : java/lang/Enum {
+	public static final field A Larrow/endpoint/test/Test;
+	public static final field B Larrow/endpoint/test/Test;
+	public static final field C Larrow/endpoint/test/Test;
+	public static fun valueOf (Ljava/lang/String;)Larrow/endpoint/test/Test;
+	public static fun values ()[Larrow/endpoint/test/Test;
+}
+
+public final class arrow/endpoint/test/TestEndpoint {
+	public static final field INSTANCE Larrow/endpoint/test/TestEndpoint;
+	public final fun getDelete_endpoint ()Larrow/endpoint/Endpoint;
+	public final fun getFruitParam ()Larrow/endpoint/EndpointInput$Query;
+	public final fun getIn_4query_out_4header_extended ()Larrow/endpoint/Endpoint;
+	public final fun getIn_byte_array_out_byte_array ()Larrow/endpoint/Endpoint;
+	public final fun getIn_byte_buffer_out_byte_buffer ()Larrow/endpoint/Endpoint;
+	public final fun getIn_content_type_header_with_custom_decode_results ()Larrow/endpoint/Endpoint;
+	public final fun getIn_cookie_cookie_out_header ()Larrow/endpoint/Endpoint;
+	public final fun getIn_form_out_form ()Larrow/endpoint/Endpoint;
+	public final fun getIn_header_before_path ()Larrow/endpoint/Endpoint;
+	public final fun getIn_header_out_string ()Larrow/endpoint/Endpoint;
+	public final fun getIn_input_stream_out_input_stream ()Larrow/endpoint/Endpoint;
+	public final fun getIn_json_out_json ()Larrow/endpoint/Endpoint;
+	public final fun getIn_mapped_path_out_string ()Larrow/endpoint/Endpoint;
+	public final fun getIn_mapped_path_path_out_string ()Larrow/endpoint/Endpoint;
+	public final fun getIn_mapped_query_out_string ()Larrow/endpoint/Endpoint;
+	public final fun getIn_optional_json_out_optional_json ()Larrow/endpoint/Endpoint;
+	public final fun getIn_path ()Larrow/endpoint/Endpoint;
+	public final fun getIn_path_fixed_capture_fixed_capture ()Larrow/endpoint/Endpoint;
+	public final fun getIn_path_path_out_string ()Larrow/endpoint/Endpoint;
+	public final fun getIn_path_paths_out_header_body ()Larrow/endpoint/Endpoint;
+	public final fun getIn_paths_out_string ()Larrow/endpoint/Endpoint;
+	public final fun getIn_query_list_out_header_list ()Larrow/endpoint/Endpoint;
+	public final fun getIn_query_mapped_path_path_out_string ()Larrow/endpoint/Endpoint;
+	public final fun getIn_query_out_infallible_string ()Larrow/endpoint/Endpoint;
+	public final fun getIn_query_out_mapped_string ()Larrow/endpoint/Endpoint;
+	public final fun getIn_query_out_mapped_string_header ()Larrow/endpoint/Endpoint;
+	public final fun getIn_query_out_string ()Larrow/endpoint/Endpoint;
+	public final fun getIn_query_params_out_string ()Larrow/endpoint/Endpoint;
+	public final fun getIn_query_query_out_string ()Larrow/endpoint/Endpoint;
+	public final fun getIn_root_path ()Larrow/endpoint/Endpoint;
+	public final fun getIn_single_path ()Larrow/endpoint/Endpoint;
+	public final fun getIn_string_out_status ()Larrow/endpoint/Endpoint;
+	public final fun getIn_string_out_stream_with_header ()Larrow/endpoint/Endpoint;
+	public final fun getIn_string_out_string ()Larrow/endpoint/Endpoint;
+	public final fun getIn_two_path_capture ()Larrow/endpoint/Endpoint;
+	public final fun getIn_unit_out_json_unit ()Larrow/endpoint/Endpoint;
+	public final fun getIn_unit_out_string ()Larrow/endpoint/Endpoint;
+	public final fun getMediaType (Larrow/endpoint/Codec$Companion;)Larrow/endpoint/Codec;
+	public final fun getOut_reified_status ()Larrow/endpoint/Endpoint;
+	public final fun getOut_status_from_string_one_empty ()Larrow/endpoint/Endpoint;
+	public final fun getOut_value_form_exact_match ()Larrow/endpoint/Endpoint;
+}
+

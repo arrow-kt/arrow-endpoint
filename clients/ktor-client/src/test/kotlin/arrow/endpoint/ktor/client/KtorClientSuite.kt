@@ -17,7 +17,8 @@ class KtorClientSuite : ClientInterpreterSuite() {
     baseUrl: String,
     input: I
   ): Pair<DecodeResult<Either<E, O>>, StatusCode> {
-    val (_, response, result) = client.config { expectSuccess = false }.execute(endpoint, baseUrl, input)
+    val (_, response, result) =
+      client.config { expectSuccess = false }.execute(endpoint, baseUrl, input)
     return Pair(result, StatusCode(response.status.value))
   }
 }

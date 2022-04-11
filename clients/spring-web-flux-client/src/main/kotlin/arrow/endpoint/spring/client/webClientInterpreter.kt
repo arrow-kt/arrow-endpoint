@@ -12,16 +12,16 @@ import arrow.endpoint.client.RequestInfo
 import arrow.endpoint.client.requestInfo
 import arrow.endpoint.model.Method
 import arrow.endpoint.model.StatusCode
-import org.springframework.http.HttpMethod
-import org.springframework.web.reactive.function.client.ClientResponse
-import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.awaitExchange
+import java.io.ByteArrayInputStream
 import java.net.URI
 import java.nio.ByteBuffer
-import reactor.core.publisher.Mono
+import org.springframework.http.HttpMethod
 import org.springframework.web.reactive.function.BodyInserters
+import org.springframework.web.reactive.function.client.ClientResponse
+import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBodyOrNull
-import java.io.ByteArrayInputStream
+import org.springframework.web.reactive.function.client.awaitExchange
+import reactor.core.publisher.Mono
 
 public suspend operator fun <I, E, O> WebClient.invoke(
   endpoint: Endpoint<I, E, O>,
@@ -32,9 +32,7 @@ public suspend operator fun <I, E, O> WebClient.invoke(
   val method = info.method.method()
   requireNotNull(method)
   val request = toRequest(info, method)
-  return request.awaitExchange { response ->
-    endpoint.parseResponse(method, baseUrl, response)
-  }
+  return request.awaitExchange { response -> endpoint.parseResponse(method, baseUrl, response) }
 }
 
 public suspend fun <I, E, O> WebClient.execute(
@@ -57,12 +55,8 @@ public fun WebClient.toRequest(
 ): WebClient.RequestBodyUriSpec =
   method(method).apply {
     uri(URI.create(info.fullUrl))
-    info.headers.forEach { (name, value) ->
-      header(name, value)
-    }
-    info.cookies.forEach { (name, value) ->
-      cookie(name, value)
-    }
+    info.headers.forEach { (name, value) -> header(name, value) }
+    info.cookies.forEach { (name, value) -> cookie(name, value) }
     info.body?.toByteArray()?.let {
       body(BodyInserters.fromPublisher(Mono.just(it), ByteArray::class.java))
     }
@@ -77,11 +71,18 @@ public suspend fun <I, E, O> Endpoint<I, E, O>.parseResponse(
   val output = if (code.isSuccess()) output else errorOutput
 
   val params =
-    output.getOutputParams(response, response.headers().asHttpHeaders(), code, response.statusCode().reasonPhrase)
+    output.getOutputParams(
+      response,
+      response.headers().asHttpHeaders(),
+      code,
+      response.statusCode().reasonPhrase
+    )
 
   @Suppress("UNCHECKED_CAST")
-  val result = params.map { it.asAny }
-    .map { p -> if (code.isSuccess()) Either.Right(p as O) else Either.Left(p as E) }
+  val result =
+    params.map { it.asAny }.map { p ->
+      if (code.isSuccess()) Either.Right(p as O) else Either.Left(p as E)
+    }
 
   return when (result) {
     is DecodeResult.Failure.Error ->
@@ -118,57 +119,71 @@ private suspend fun EndpointOutput<*>.getOutputParams(
   statusText: String
 ): DecodeResult<Params> =
   when (val output = this) {
-    is EndpointOutput.Single<*> -> when (val single = (output as EndpointOutput.Single<Any?>)) {
-      is EndpointIO.ByteArrayBody -> single.codec.decode(response.awaitBodyOrNull(ByteArray::class) ?: byteArrayOf())
-      is EndpointIO.ByteBufferBody -> single.codec.decode(
-        response.awaitBodyOrNull(ByteBuffer::class) ?: ByteBuffer.wrap(byteArrayOf())
+    is EndpointOutput.Single<*> ->
+      when (val single = (output as EndpointOutput.Single<Any?>)) {
+        is EndpointIO.ByteArrayBody ->
+          single.codec.decode(response.awaitBodyOrNull(ByteArray::class) ?: byteArrayOf())
+        is EndpointIO.ByteBufferBody ->
+          single.codec.decode(
+            response.awaitBodyOrNull(ByteBuffer::class) ?: ByteBuffer.wrap(byteArrayOf())
+          )
+        is EndpointIO.InputStreamBody ->
+          single.codec.decode(
+            ByteArrayInputStream(response.awaitBodyOrNull(ByteArray::class) ?: byteArrayOf())
+          )
+        is EndpointIO.StringBody ->
+          single.codec.decode(response.awaitBodyOrNull(String::class) ?: "")
+        is EndpointIO.Empty -> single.codec.decode(Unit)
+        is EndpointOutput.FixedStatusCode -> single.codec.decode(Unit)
+        is EndpointOutput.StatusCode -> single.codec.decode(code)
+        is EndpointIO.Header -> single.codec.decode(headers[single.name].orEmpty())
+        is EndpointOutput.OneOf<*, *> ->
+          single.mappings.firstOrNull { it.statusCode == null || it.statusCode == code }?.let {
+            mapping ->
+            mapping.output.getOutputParams(response, headers, code, statusText).flatMap { p ->
+              (single.codec as Mapping<Any?, Any?>).decode(p.asAny)
+            }
+          }
+            ?: DecodeResult.Failure.Error(
+              statusText,
+              IllegalArgumentException(
+                "Cannot find mapping for status code $code in outputs $output"
+              )
+            )
+        is EndpointIO.MappedPair<*, *, *, *> ->
+          single.wrapped.getOutputParams(response, headers, code, statusText).flatMap { p ->
+            (single.mapping as Mapping<Any?, Any?>).decode(p.asAny)
+          }
+        is EndpointOutput.MappedPair<*, *, *, *> ->
+          single.output.getOutputParams(response, headers, code, statusText).flatMap { p ->
+            (single.mapping as Mapping<Any?, Any?>).decode(p.asAny)
+          }
+      }.map { Params.ParamsAsAny(it) }
+    is EndpointIO.Pair<*, *, *> ->
+      handleOutputPair(
+        output.first,
+        output.second,
+        output.combine,
+        response,
+        headers,
+        code,
+        statusText
       )
-      is EndpointIO.InputStreamBody -> single.codec.decode(
-        ByteArrayInputStream(
-          response.awaitBodyOrNull(ByteArray::class) ?: byteArrayOf()
-        )
+    is EndpointOutput.Pair<*, *, *> ->
+      handleOutputPair(
+        output.first,
+        output.second,
+        output.combine,
+        response,
+        headers,
+        code,
+        statusText
       )
-      is EndpointIO.StringBody -> single.codec.decode(response.awaitBodyOrNull(String::class) ?: "")
-      is EndpointIO.Empty -> single.codec.decode(Unit)
-      is EndpointOutput.FixedStatusCode -> single.codec.decode(Unit)
-      is EndpointOutput.StatusCode -> single.codec.decode(code)
-      is EndpointIO.Header -> single.codec.decode(headers[single.name].orEmpty())
-      is EndpointOutput.OneOf<*, *> -> single.mappings.firstOrNull { it.statusCode == null || it.statusCode == code }
-        ?.let { mapping -> mapping.output.getOutputParams(response, headers, code, statusText).flatMap { p -> (single.codec as Mapping<Any?, Any?>).decode(p.asAny) } }
-        ?: DecodeResult.Failure.Error(statusText, IllegalArgumentException("Cannot find mapping for status code $code in outputs $output"))
-
-      is EndpointIO.MappedPair<*, *, *, *> ->
-        single.wrapped.getOutputParams(response, headers, code, statusText).flatMap { p ->
-          (single.mapping as Mapping<Any?, Any?>).decode(p.asAny)
-        }
-      is EndpointOutput.MappedPair<*, *, *, *> ->
-        single.output.getOutputParams(response, headers, code, statusText).flatMap { p ->
-          (single.mapping as Mapping<Any?, Any?>).decode(p.asAny)
-        }
-    }.map { Params.ParamsAsAny(it) }
-
-    is EndpointIO.Pair<*, *, *> -> handleOutputPair(
-      output.first,
-      output.second,
-      output.combine,
-      response,
-      headers,
-      code,
-      statusText
-    )
-    is EndpointOutput.Pair<*, *, *> -> handleOutputPair(
-      output.first,
-      output.second,
-      output.combine,
-      response,
-      headers,
-      code,
-      statusText
-    )
-    is EndpointOutput.Void -> DecodeResult.Failure.Error(
-      "",
-      IllegalArgumentException("Cannot convert a void output to a value!")
-    )
+    is EndpointOutput.Void ->
+      DecodeResult.Failure.Error(
+        "",
+        IllegalArgumentException("Cannot convert a void output to a value!")
+      )
   }
 
 private suspend fun handleOutputPair(

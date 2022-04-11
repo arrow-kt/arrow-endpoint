@@ -11,6 +11,8 @@ import arrow.endpoint.Params
 import arrow.endpoint.client.requestInfo
 import arrow.endpoint.model.Method
 import arrow.endpoint.model.StatusCode
+import java.net.URI
+import java.nio.ByteBuffer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runInterruptible
 import org.springframework.http.HttpMethod
@@ -18,8 +20,6 @@ import org.springframework.http.client.ClientHttpRequest
 import org.springframework.http.client.ClientHttpRequestFactory
 import org.springframework.http.client.ClientHttpResponse
 import org.springframework.web.client.RestTemplate
-import java.net.URI
-import java.nio.ByteBuffer
 
 public fun <A> DecodeResult<A>.getOrThrow(): A =
   when (this) {
@@ -64,12 +64,8 @@ public fun <I, E, O> Endpoint<I, E, O>.toRequest(
   val httpMethod = info.method.method()
   requireNotNull(httpMethod) { "Method not defined!" }
   return requestFactory.createRequest(URI.create(info.fullUrl), httpMethod).apply {
-    info.cookies.forEach { (name, value) ->
-      headers.add(name, value)
-    }
-    info.headers.forEach { (name, value) ->
-      headers.add(name, value)
-    }
+    info.cookies.forEach { (name, value) -> headers.add(name, value) }
+    info.headers.forEach { (name, value) -> headers.add(name, value) }
     info.body?.toByteArray()?.let(body::write)
   }
 }
@@ -85,8 +81,10 @@ public fun <I, E, O> Endpoint<I, E, O>.parseResponse(
     output.getOutputParams(response, response.headers, code, response.statusCode.reasonPhrase)
 
   @Suppress("UNCHECKED_CAST")
-  val result = params.map { it.asAny }
-    .map { p -> if (code.isSuccess()) Either.Right(p as O) else Either.Left(p as E) }
+  val result =
+    params.map { it.asAny }.map { p ->
+      if (code.isSuccess()) Either.Right(p as O) else Either.Left(p as E)
+    }
 
   return when (result) {
     is DecodeResult.Failure.Error ->
@@ -123,51 +121,65 @@ private fun EndpointOutput<*>.getOutputParams(
   statusText: String
 ): DecodeResult<Params> =
   when (val output = this) {
-    is EndpointOutput.Single<*> -> when (val single = (output as EndpointOutput.Single<Any?>)) {
-      is EndpointIO.ByteArrayBody -> single.codec.decode(response.body.readBytes())
-      is EndpointIO.ByteBufferBody -> single.codec.decode(ByteBuffer.wrap(response.body.readBytes()))
-      is EndpointIO.InputStreamBody -> single.codec.decode(response.body.readBytes().inputStream())
-      is EndpointIO.StringBody -> single.codec.decode(String(response.body.readBytes()))
-      is EndpointIO.Empty -> single.codec.decode(Unit)
-      is EndpointOutput.FixedStatusCode -> single.codec.decode(Unit)
-      is EndpointOutput.StatusCode -> single.codec.decode(code)
-      is EndpointIO.Header -> single.codec.decode(headers[single.name].orEmpty())
-      is EndpointOutput.OneOf<*, *> -> single.mappings.firstOrNull { it.statusCode == null || it.statusCode == code }
-        ?.let { mapping -> mapping.output.getOutputParams(response, headers, code, statusText).flatMap { p -> (single.codec as Mapping<Any?, Any?>).decode(p.asAny) } }
-        ?: DecodeResult.Failure.Error(statusText, IllegalArgumentException("Cannot find mapping for status code $code in outputs $output"))
-
-      is EndpointIO.MappedPair<*, *, *, *> ->
-        single.wrapped.getOutputParams(response, headers, code, statusText).flatMap { p ->
-          (single.mapping as Mapping<Any?, Any?>).decode(p.asAny)
-        }
-      is EndpointOutput.MappedPair<*, *, *, *> ->
-        single.output.getOutputParams(response, headers, code, statusText).flatMap { p ->
-          (single.mapping as Mapping<Any?, Any?>).decode(p.asAny)
-        }
-    }.map { Params.ParamsAsAny(it) }
-
-    is EndpointIO.Pair<*, *, *> -> handleOutputPair(
-      output.first,
-      output.second,
-      output.combine,
-      response,
-      headers,
-      code,
-      statusText
-    )
-    is EndpointOutput.Pair<*, *, *> -> handleOutputPair(
-      output.first,
-      output.second,
-      output.combine,
-      response,
-      headers,
-      code,
-      statusText
-    )
-    is EndpointOutput.Void -> DecodeResult.Failure.Error(
-      "",
-      IllegalArgumentException("Cannot convert a void output to a value!")
-    )
+    is EndpointOutput.Single<*> ->
+      when (val single = (output as EndpointOutput.Single<Any?>)) {
+        is EndpointIO.ByteArrayBody -> single.codec.decode(response.body.readBytes())
+        is EndpointIO.ByteBufferBody ->
+          single.codec.decode(ByteBuffer.wrap(response.body.readBytes()))
+        is EndpointIO.InputStreamBody ->
+          single.codec.decode(response.body.readBytes().inputStream())
+        is EndpointIO.StringBody -> single.codec.decode(String(response.body.readBytes()))
+        is EndpointIO.Empty -> single.codec.decode(Unit)
+        is EndpointOutput.FixedStatusCode -> single.codec.decode(Unit)
+        is EndpointOutput.StatusCode -> single.codec.decode(code)
+        is EndpointIO.Header -> single.codec.decode(headers[single.name].orEmpty())
+        is EndpointOutput.OneOf<*, *> ->
+          single.mappings.firstOrNull { it.statusCode == null || it.statusCode == code }?.let {
+            mapping ->
+            mapping.output.getOutputParams(response, headers, code, statusText).flatMap { p ->
+              (single.codec as Mapping<Any?, Any?>).decode(p.asAny)
+            }
+          }
+            ?: DecodeResult.Failure.Error(
+              statusText,
+              IllegalArgumentException(
+                "Cannot find mapping for status code $code in outputs $output"
+              )
+            )
+        is EndpointIO.MappedPair<*, *, *, *> ->
+          single.wrapped.getOutputParams(response, headers, code, statusText).flatMap { p ->
+            (single.mapping as Mapping<Any?, Any?>).decode(p.asAny)
+          }
+        is EndpointOutput.MappedPair<*, *, *, *> ->
+          single.output.getOutputParams(response, headers, code, statusText).flatMap { p ->
+            (single.mapping as Mapping<Any?, Any?>).decode(p.asAny)
+          }
+      }.map { Params.ParamsAsAny(it) }
+    is EndpointIO.Pair<*, *, *> ->
+      handleOutputPair(
+        output.first,
+        output.second,
+        output.combine,
+        response,
+        headers,
+        code,
+        statusText
+      )
+    is EndpointOutput.Pair<*, *, *> ->
+      handleOutputPair(
+        output.first,
+        output.second,
+        output.combine,
+        response,
+        headers,
+        code,
+        statusText
+      )
+    is EndpointOutput.Void ->
+      DecodeResult.Failure.Error(
+        "",
+        IllegalArgumentException("Cannot convert a void output to a value!")
+      )
   }
 
 private fun handleOutputPair(

@@ -9,6 +9,7 @@ internal object Rfc2616 {
   val Parameter: Regex = "$TokenRegexPart=$TokenRegexPart".toRegex()
 
   fun validateToken(componentName: String, v: String): String? =
-    if (Token.split(v).isEmpty()) """$componentName can not contain separators: ()<>@,;:\"/[]?={}, or whitespace."""
+    if (Token.split(v).isEmpty())
+      """$componentName can not contain separators: ()<>@,;:\"/[]?={}, or whitespace."""
     else null
 }
