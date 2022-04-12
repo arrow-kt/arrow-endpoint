@@ -3,7 +3,6 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
   base
-  alias(libs.plugins.dokka)
   alias(libs.plugins.kotlin.multiplatform) apply false
   alias(libs.plugins.kotest.multiplatform) apply false
   alias(libs.plugins.kotlinxSerialization) apply false
