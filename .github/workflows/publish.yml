@@ -80,14 +80,14 @@ jobs:
         contains(needs.build.outputs.endpoints-version, 'alpha') ||
         contains(needs.build.outputs.endpoints-version, 'beta') ||
         contains(needs.build.outputs.endpoints-version, 'rc')
-      run: ./gradlew --full-stacktrace publishToSonatype closeAndReleaseSonatypeStagingRepository
+      run: ./gradlew --full-stacktrace publishToSonatype closeAndReleaseSonatypeStagingRepository -x dokkaHtml
 
     - name: Publish final artifacts
       if: |
         !contains(needs.build.outputs.endpoints-version, 'alpha') &&
         !contains(needs.build.outputs.endpoints-version, 'beta') &&
         !contains(needs.build.outputs.endpoints-version, 'rc')
-      run: ./gradlew --full-stacktrace publishToSonatype closeAndReleaseSonatypeStagingRepository
+      run: ./gradlew --full-stacktrace publishToSonatype closeAndReleaseSonatypeStagingRepository -x dokkaHtml
 
     - name: Stop Gradle daemons
       run: ./gradlew --stop
