@@ -29,15 +29,15 @@ internal data class OutputValues(
     copy(headerTransformations = headerTransformations + t)
 
   private fun withDefaultContentType(format: CodecFormat, charset: Charset?): OutputValues =
-      withHeaderTransformation { hs ->
-    if (hs.any { it.hasName(Header.ContentType) }) hs
-    else
-      hs +
-        Header(
-          Header.ContentType,
-          (charset?.let(format.mediaType::charset) ?: format.mediaType).toString()
-        )
-  }
+    withHeaderTransformation { hs ->
+      if (hs.any { it.hasName(Header.ContentType) }) hs
+      else
+        hs +
+          Header(
+            Header.ContentType,
+            (charset?.let(format.mediaType::charset) ?: format.mediaType).toString()
+          )
+    }
 
   private fun withHeader(n: String, v: String): OutputValues =
     copy(baseHeaders = baseHeaders + Header(n, v))

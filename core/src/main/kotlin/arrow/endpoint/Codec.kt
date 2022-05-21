@@ -245,8 +245,8 @@ public interface Codec<L, H, out CF : CodecFormat> : Mapping<L, H> {
       c: Codec<A, B, CF>
     ): Codec<List<A>, List<B>, CF> =
       id(c.format, Schema.binary<List<A>>()).mapDecode({ aas ->
-        aas.traverseDecodeResult(c::decode)
-      }) { bbs -> bbs.map(c::encode) }
+          aas.traverseDecodeResult(c::decode)
+        }) { bbs -> bbs.map(c::encode) }
 
     /**
      * Create a codec which requires that a list of low-level values contains a single element.

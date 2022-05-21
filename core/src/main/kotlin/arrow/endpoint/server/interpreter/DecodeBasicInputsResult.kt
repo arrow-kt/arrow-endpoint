@@ -306,21 +306,21 @@ public object DecodeBasicInputs {
     }
 
   private fun compose(vararg fs: DecodeInputResultTransform): DecodeInputResultTransform =
-      { values, ctx ->
-    when {
-      fs.isNotEmpty() -> {
-        val ff = fs.first()
-        val res = ff(values, ctx)
-        val (values2, ctx2) = res
-        when (values2) {
-          is DecodeBasicInputsResult.Values ->
-            compose(*fs.drop(1).toTypedArray()).invoke(values2, ctx2)
-          else -> res
+    { values, ctx ->
+      when {
+        fs.isNotEmpty() -> {
+          val ff = fs.first()
+          val res = ff(values, ctx)
+          val (values2, ctx2) = res
+          when (values2) {
+            is DecodeBasicInputsResult.Values ->
+              compose(*fs.drop(1).toTypedArray()).invoke(values2, ctx2)
+            else -> res
+          }
         }
+        else -> Pair(values, ctx)
       }
-      else -> Pair(values, ctx)
     }
-  }
 }
 
 private typealias DecodeInputResultTransform =
