@@ -1,7 +1,7 @@
 [versions]
 kotlin = "1.6.20"
 arrow = "1.0.1"
-arrowGradleConfig = "0.10.0"
+arrowGradleConfig = "0.10.3-alpha.1"
 coroutines = "1.6.1"
 kotlinxSerialization = "1.6.20"
 dokka = "1.6.10"
