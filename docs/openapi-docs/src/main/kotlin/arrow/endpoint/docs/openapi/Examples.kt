@@ -9,9 +9,9 @@ internal data class Examples(
 )
 
 internal fun <A> List<EndpointIO.Info.Example<A>>.toExamples(codec: Codec<*, A, *>): Examples =
-    convertExamples {
-  ExampleValue(codec, it)
-}
+  convertExamples {
+    ExampleValue(codec, it)
+  }
 
 private fun <A> List<EndpointIO.Info.Example<A>>.convertExamples(
   exampleValue: (value: A) -> ExampleValue?
