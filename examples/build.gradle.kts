@@ -15,7 +15,7 @@ dependencies {
   implementation(libs.spring.boot.starter.webflux)
   implementation(libs.logback.classic)
   implementation(libs.kotlinx.serialization.json)
-  implementation(project(":arrow-endpoint-spring-web-server"))
+  implementation(projects.arrowEndpointSpringWebfluxServer)
 }
 
 application {

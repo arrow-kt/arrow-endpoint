@@ -18,10 +18,10 @@ rootProject.name = "arrow-endpoint"
 include(":arrow-endpoint-core", ":arrow-endpoint-examples", ":arrow-endpoint-schema-reflect", ":arrow-endpoint-test")
 
 // clients
-include(":arrow-endpoint-ktor-client", ":arrow-endpoint-http4k-client", ":arrow-endpoint-spring-web-client", ":arrow-endpoint-spring-web-flux-client")
+include(":arrow-endpoint-ktor-client", ":arrow-endpoint-http4k-client", ":arrow-endpoint-spring-web-client", ":arrow-endpoint-spring-webflux-client")
 
 // servers
-include(":arrow-endpoint-ktor-server", ":arrow-endpoint-spring-web-server")
+include(":arrow-endpoint-ktor-server", ":arrow-endpoint-spring-webflux-server")
 
 // docs
 include(":arrow-endpoint-openapi-docs")
@@ -33,7 +33,7 @@ project(":arrow-endpoint-test").projectDir = file("test")
 project(":arrow-endpoint-ktor-client").projectDir = file("clients/ktor-client")
 project(":arrow-endpoint-http4k-client").projectDir = file("clients/http4k-client")
 project(":arrow-endpoint-spring-web-client").projectDir = file("clients/spring-web-client")
-project(":arrow-endpoint-spring-web-flux-client").projectDir = file("clients/spring-web-flux-client")
+project(":arrow-endpoint-spring-webflux-client").projectDir = file("clients/spring-webflux-client")
 project(":arrow-endpoint-ktor-server").projectDir = file("servers/ktor-server")
-project(":arrow-endpoint-spring-web-server").projectDir = file("servers/spring-web-server")
+project(":arrow-endpoint-spring-webflux-server").projectDir = file("servers/spring-webflux-server")
 project(":arrow-endpoint-openapi-docs").projectDir = file("docs/openapi-docs")

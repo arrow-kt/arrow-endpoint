@@ -13,7 +13,7 @@ dependencies {
 
   implementation(projects.arrowEndpointHttp4kClient)
   implementation(projects.arrowEndpointSpringWebClient)
-  implementation(projects.arrowEndpointSpringWebFluxClient)
+  implementation(projects.arrowEndpointSpringWebfluxClient)
   implementation(libs.kotlinx.serialization.json)
   implementation(libs.http4k.client.apache)
   implementation(libs.mockwebserver)
