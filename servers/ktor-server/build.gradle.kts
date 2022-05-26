@@ -7,11 +7,11 @@ plugins {
 }
 
 dependencies {
-  api(projects.core)
+  api(projects.arrowEndpointCore)
   api(libs.ktor.server.core)
 
-  testImplementation(projects.test)
-  testImplementation(projects.clients.ktorClient)
+  testImplementation(projects.arrowEndpointTest)
+  testImplementation(projects.arrowEndpointKtorClient)
   testImplementation(libs.ktor.test)
   testImplementation(libs.ktor.server.netty)
   testImplementation(libs.coroutines.core)

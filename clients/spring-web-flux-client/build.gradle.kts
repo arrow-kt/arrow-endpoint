@@ -7,13 +7,13 @@ plugins {
 }
 
 dependencies {
-  api(projects.core)
+  api(projects.arrowEndpointCore)
   api(libs.coroutines.reactive)
   api(libs.coroutines.reactor)
   api(libs.spring.boot.starter.webflux)
   api(libs.netty.transport.native.kqueue)
 
-  testImplementation(projects.test)
+  testImplementation(projects.arrowEndpointTest)
   testImplementation(libs.coroutines.core)
   testImplementation(libs.kotest.assertionsCore)
   testImplementation(libs.kotest.property)
