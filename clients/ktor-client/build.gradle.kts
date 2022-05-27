@@ -7,12 +7,12 @@ plugins {
 }
 
 dependencies {
-  api(projects.core)
+  api(projects.arrowEndpointCore)
   api(libs.ktor.client.core)
 
-  testImplementation(projects.core)
+  testImplementation(projects.arrowEndpointCore)
   testImplementation(libs.ktor.client.cio)
-  testImplementation(projects.test)
+  testImplementation(projects.arrowEndpointTest)
   testImplementation(libs.coroutines.core)
   testImplementation(libs.kotest.assertionsCore)
   testImplementation(libs.kotest.property)

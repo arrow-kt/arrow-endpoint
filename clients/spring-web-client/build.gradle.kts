@@ -7,10 +7,10 @@ plugins {
 }
 
 dependencies {
-  api(projects.core)
+  api(projects.arrowEndpointCore)
   api(libs.spring.boot.starter.web)
 
-  testImplementation(projects.test)
+  testImplementation(projects.arrowEndpointTest)
   testImplementation(libs.coroutines.core)
   testImplementation(libs.kotest.assertionsCore)
   testImplementation(libs.kotest.property)

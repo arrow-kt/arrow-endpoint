@@ -7,15 +7,15 @@ plugins {
 }
 
 dependencies {
-  api(projects.core)
+  api(projects.arrowEndpointCore)
   implementation(libs.coroutines.reactive)
   implementation(libs.coroutines.reactor)
   implementation(libs.spring.boot.starter.webflux)
   implementation(libs.reactor.kotlin.extensions)
   implementation(libs.netty.transport.native.kqueue)
 
-  testImplementation(projects.test)
-  testImplementation(projects.clients.springWebFluxClient)
+  testImplementation(projects.arrowEndpointTest)
+  testImplementation(projects.arrowEndpointSpringWebfluxClient)
   testImplementation(libs.undertow)
   testImplementation(rootProject.libs.coroutines.core)
   testImplementation(rootProject.libs.kotest.assertionsCore)

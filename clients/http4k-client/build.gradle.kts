@@ -7,10 +7,10 @@ plugins {
 }
 
 dependencies {
-  api(projects.core)
+  api(projects.arrowEndpointCore)
   api(libs.http4k.core)
 
-  testImplementation(projects.test)
+  testImplementation(projects.arrowEndpointTest)
   testImplementation(libs.http4k.client.apache)
   testImplementation(libs.coroutines.core)
   testImplementation(libs.kotest.assertionsCore)

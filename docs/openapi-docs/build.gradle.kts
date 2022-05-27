@@ -8,7 +8,7 @@ plugins {
 apply(plugin = "kotlinx-serialization")
 
 dependencies {
-  api(projects.core)
+  api(projects.arrowEndpointCore)
   implementation(libs.kotlinx.serialization.json)
 
   testImplementation(rootProject.libs.coroutines.core)

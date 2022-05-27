@@ -8,7 +8,7 @@ plugins {
 
 dependencies {
   runtimeOnly(libs.kotlin.reflect)
-  api(projects.core)
+  api(projects.arrowEndpointCore)
 
   testImplementation(rootProject.libs.coroutines.core)
   testImplementation(rootProject.libs.kotest.assertionsCore)
