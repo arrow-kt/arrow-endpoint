@@ -15,7 +15,7 @@ dependencies {
   implementation(libs.netty.transport.native.kqueue)
 
   testImplementation(projects.arrowEndpointTest)
-//  testImplementation(projects.arrowEndpointSpringWebFluxClient)
+  testImplementation(projects.arrowEndpointSpringWebfluxClient)
   testImplementation(libs.undertow)
   testImplementation(rootProject.libs.coroutines.core)
   testImplementation(rootProject.libs.kotest.assertionsCore)
