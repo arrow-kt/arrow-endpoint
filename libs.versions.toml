@@ -1,5 +1,5 @@
 [versions]
-kotlin = "1.6.20"
+kotlin = "1.7.10"
 arrow = "1.0.1"
 arrowGradleConfig = "0.10.3-alpha.1"
 coroutines = "1.6.1"
