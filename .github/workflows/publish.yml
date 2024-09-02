@@ -49,7 +49,7 @@ jobs:
           echo "::set-output name=endpoints-version::$(head -n 1 build/semver/version.txt)"
 
       - name: Upload reports
-        uses: actions/upload-artifact@v3.0.0
+        uses: actions/upload-artifact@v3.2.1
         with:
           name: 'reports-${{ matrix.os }}'
           path: '**/build/reports/**'
